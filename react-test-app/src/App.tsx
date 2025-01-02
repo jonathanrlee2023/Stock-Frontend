@@ -13,7 +13,7 @@ const App: React.FC = () => {
         <SearchBar setSearchQuery={setSearchQuery} />
       </div>
       <div className="card">
-        <div className="card-title">Stock Statistics</div>
+        <div className="card-title">{searchQuery} Statistics</div>
         <StockStatisticsComponent stockSymbol={searchQuery} />
       </div>
       <div className="card">
