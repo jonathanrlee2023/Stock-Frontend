@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 export type StockStatistics = {
   Volatility: number;
   StandardDeviation: number;
+  RecentClose: number;
 };
 
 interface StockStatisticsProps {
@@ -41,6 +42,7 @@ export const StockStatisticsComponent: React.FC<StockStatisticsProps> = ({
         setStockStatistics({
           Volatility: data.Volatility,
           StandardDeviation: data.StandardDeviation,
+          RecentClose: data.RecentClose,
         });
       } catch (error) {
         setError((error as Error).message || "Failed to fetch data.");
@@ -66,9 +68,9 @@ export const StockStatisticsComponent: React.FC<StockStatisticsProps> = ({
         {stockStatistics.StandardDeviation.toFixed(6)}%
       </p>
       <p>
-        The stock's volatility reflects the degree of variation in its trading
-        price over time. Higher volatility indicates more significant price
-        swings.
+        <strong>Most Recent Close Price:</strong>
+        {" $"}
+        {stockStatistics.RecentClose.toFixed(2)}
       </p>
     </div>
   );
