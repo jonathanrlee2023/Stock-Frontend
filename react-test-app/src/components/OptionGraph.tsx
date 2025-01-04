@@ -1,0 +1,113 @@
+import React, { useState, useEffect } from "react";
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+export type CombinedOptions = {
+  price: number; // Corresponds to float64 in Go
+  timestamp: string; // Changed to string since JSON typically returns ISO timestamps
+};
+
+export type OptionsPrices = {
+  options: CombinedOptions[]; // Array of CombinedOptions
+};
+
+export type OptionsSymbol = {
+  symbol: OptionsPrices; // Array of OptionsPrices
+};
+
+export const OptionsDataComponent = () => {
+  const [optionsData, setOptionsData] = useState<OptionsSymbol | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchEarningsData = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:8080/options?symbol=TGT&start=2025-01-02&end=2025-01-02&timeframe=10Min",
+          {
+            method: "GET",
+            headers: {
+              "APCA-API-KEY-ID": "AK5Y9SVP72X34QDD7EKI",
+              "APCA-API-SECRET-KEY": "wbY3o9CLbWDNdaGzaBXHjmLMiO1cbFLkl7sUz6VU",
+              Accept: "application/json",
+            },
+          }
+        );
+
+        if (!response.ok)
+          throw new Error(`HTTP error! Status: ${response.status}`);
+
+        const data: OptionsSymbol = await response.json();
+        setOptionsData(data);
+      } catch (error) {
+        console.error("Failed to fetch earnings data", error);
+        setErrorMessage("Failed to fetch data. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEarningsData();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+  if (errorMessage) return <div>{errorMessage}</div>;
+  if (!optionsData || !optionsData.symbol.options.length)
+    return <div>No data available</div>;
+
+  const sortedOptions = [...optionsData.symbol.options].sort(
+    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+  );
+
+  const labels = sortedOptions.map((option) =>
+    new Date(option.timestamp).toLocaleString()
+  );
+  const dataValues = sortedOptions.map((option) => option.price);
+
+  const graphData = {
+    labels,
+    datasets: [
+      {
+        label: `Options Prices`,
+        data: dataValues,
+        fill: false,
+        borderColor: "rgb(75, 192, 192)",
+        tension: 0.1,
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: { position: "top" as const },
+      title: { display: true, text: `Options Chart` },
+    },
+  };
+
+  return (
+    <div style={{ padding: "20px" }}>
+      <Line options={options} data={graphData} />
+    </div>
+  );
+};

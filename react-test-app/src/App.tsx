@@ -1,6 +1,7 @@
 import "./App.css";
 import { StockStatisticsComponent } from "./components/StockStatistics";
 import { EarningsDateComponent } from "./components/EarningsData";
+import { OptionsDataComponent } from "./components/OptionGraph";
 import SearchBar from "./components/SearchBar";
 import { useState } from "react";
 
@@ -19,6 +20,10 @@ const App: React.FC = () => {
       <div className="card">
         <div className="card-title">Earnings Data</div>
         <EarningsDateComponent stockSymbol={searchQuery} />
+      </div>
+      <div className="card">
+        <div className="card-title">Options Data</div>
+        <OptionsDataComponent />
       </div>
     </div>
   );
