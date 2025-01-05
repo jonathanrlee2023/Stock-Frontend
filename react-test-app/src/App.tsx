@@ -23,7 +23,7 @@ const App: React.FC = () => {
       </div>
       <div className="card">
         <div className="card-title">Options Data</div>
-        <OptionsDataComponent />
+        <OptionsDataComponent stockSymbol={searchQuery} />
       </div>
     </div>
   );

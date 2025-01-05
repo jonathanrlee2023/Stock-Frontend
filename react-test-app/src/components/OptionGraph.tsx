@@ -33,8 +33,13 @@ export type OptionsPrices = {
 export type OptionsSymbol = {
   symbol: OptionsPrices; // Array of OptionsPrices
 };
+interface StockStatisticsProps {
+  stockSymbol: string; // The stock symbol to fetch data for
+}
 
-export const OptionsDataComponent = () => {
+export const OptionsDataComponent: React.FC<StockStatisticsProps> = ({
+  stockSymbol,
+}) => {
   const [optionsData, setOptionsData] = useState<OptionsSymbol | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -52,7 +57,7 @@ export const OptionsDataComponent = () => {
       const yesterday = getYesterday();
       try {
         const response = await fetch(
-          `http://localhost:8080/options?symbol=TGT&start=${yesterday}&end=${yesterday}&timeframe=10Min`,
+          `http://localhost:8080/options?symbol=${stockSymbol}&start=${yesterday}&end=${yesterday}&timeframe=10Min`,
           {
             method: "GET",
             headers: {
@@ -69,7 +74,7 @@ export const OptionsDataComponent = () => {
         const data: OptionsSymbol = await response.json();
         setOptionsData(data);
       } catch (error) {
-        console.error("Failed to fetch earnings data", error);
+        console.error("Failed to fetch options data", error);
         setErrorMessage("Failed to fetch data. Please try again later.");
       } finally {
         setLoading(false);
@@ -77,16 +82,19 @@ export const OptionsDataComponent = () => {
     };
 
     fetchEarningsData();
-  }, []);
+  }, [stockSymbol]);
 
+  if (!stockSymbol) return <div>Enter Stock Symbol...</div>;
   if (loading) return <div>Loading...</div>;
-  if (errorMessage) return <div>{errorMessage}</div>;
-  if (!optionsData || !optionsData.symbol.options.length)
+  if (!optionsData || !optionsData.symbol.options)
     return <div>No data available</div>;
 
-  const sortedOptions = [...optionsData.symbol.options].sort(
-    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-  );
+  const sortedOptions = optionsData?.symbol?.options
+    ? [...optionsData.symbol.options].sort(
+        (a, b) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      )
+    : [];
 
   const labels = sortedOptions.map((option) =>
     new Date(option.timestamp).toLocaleString()
