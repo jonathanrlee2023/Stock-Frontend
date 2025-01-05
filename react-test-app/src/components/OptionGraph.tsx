@@ -40,10 +40,19 @@ export const OptionsDataComponent = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    const getYesterday = () => {
+      const today = new Date();
+      today.setDate(today.getDate() - 1);
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
     const fetchEarningsData = async () => {
+      const yesterday = getYesterday();
       try {
         const response = await fetch(
-          "http://localhost:8080/options?symbol=TGT&start=2025-01-02&end=2025-01-02&timeframe=10Min",
+          `http://localhost:8080/options?symbol=TGT&start=${yesterday}&end=${yesterday}&timeframe=10Min`,
           {
             method: "GET",
             headers: {
@@ -91,7 +100,7 @@ export const OptionsDataComponent = () => {
         label: `Options Prices`,
         data: dataValues,
         fill: false,
-        borderColor: "rgb(75, 192, 192)",
+        borderColor: "rgb(37, 186, 106)",
         tension: 0.1,
       },
     ],
