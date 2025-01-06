@@ -32,6 +32,9 @@ export type OptionsPrices = {
 
 export type OptionsSymbol = {
   symbol: OptionsPrices; // Array of OptionsPrices
+  price: number;
+  ticker: string;
+  expirationDate: string;
 };
 interface StockStatisticsProps {
   stockSymbol: string; // The stock symbol to fetch data for
@@ -115,7 +118,7 @@ export const OptionsDataComponent: React.FC<StockStatisticsProps> = ({
     labels,
     datasets: [
       {
-        label: `Options Prices`,
+        label: `Price`,
         data: dataValues,
         fill: false,
         borderColor: "rgb(66, 0, 189)",
@@ -128,7 +131,10 @@ export const OptionsDataComponent: React.FC<StockStatisticsProps> = ({
     responsive: true,
     plugins: {
       legend: { position: "top" as const },
-      title: { display: true, text: `Options Chart` },
+      title: {
+        display: true,
+        text: `$${optionsData.price} Call Expiring ${optionsData.expirationDate}`,
+      },
     },
   };
 
