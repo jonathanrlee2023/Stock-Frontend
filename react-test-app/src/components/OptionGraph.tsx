@@ -45,16 +45,26 @@ export const OptionsDataComponent: React.FC<StockStatisticsProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const getYesterday = () => {
+    const getMostRecentWeekday = () => {
       const today = new Date();
-      today.setDate(today.getDate() - 1);
+      today.setDate(today.getDate() - 1); // Start with yesterday
+      let dayOfWeek = today.getDay(); // Get the day of the week (0 = Sunday, 6 = Saturday)
+
+      // If it's Sunday (0) or Saturday (6), adjust to the most recent Friday (5)
+      if (dayOfWeek === 0) {
+        today.setDate(today.getDate() - 2); // Move back to Friday
+      } else if (dayOfWeek === 6) {
+        today.setDate(today.getDate() - 1); // Move back to Friday
+      }
+
       const year = today.getFullYear();
       const month = String(today.getMonth() + 1).padStart(2, "0");
       const day = String(today.getDate()).padStart(2, "0");
+
       return `${year}-${month}-${day}`;
     };
     const fetchEarningsData = async () => {
-      const yesterday = getYesterday();
+      const yesterday = getMostRecentWeekday();
       try {
         const response = await fetch(
           `http://localhost:8080/options?symbol=${stockSymbol}&start=${yesterday}&end=${yesterday}&timeframe=10Min`,
@@ -108,7 +118,7 @@ export const OptionsDataComponent: React.FC<StockStatisticsProps> = ({
         label: `Options Prices`,
         data: dataValues,
         fill: false,
-        borderColor: "rgb(37, 186, 106)",
+        borderColor: "rgb(66, 0, 189)",
         tension: 0.1,
       },
     ],
