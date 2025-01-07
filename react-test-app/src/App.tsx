@@ -1,83 +1,88 @@
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import "./App.css";
+import React, { useState } from "react";
 import { StockStatisticsComponent } from "./components/StockStatistics";
 import { EarningsDateComponent } from "./components/EarningsData";
 import { OptionsDataComponent } from "./components/OptionGraph";
 import SearchBar from "./components/SearchBar";
-import { useState } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const App: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>(""); // Persistent state for search query
+  const [activeCard, setActiveCard] = useState<string>("home"); // State to track the active screen
 
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <div className="home-screen">
-                <h1>Welcome to Stock Tracker</h1>
-                <SearchBar setSearchQuery={setSearchQuery} />
-                <div className="d-flex gap-3">
-                  <Link to="/statistics" className="btn btn-primary">
-                    Statistics
-                  </Link>
-                  <Link to="/earnings" className="btn btn-primary">
-                    Earnings Data
-                  </Link>
-                  <Link to="/options" className="btn btn-primary">
-                    Options Data
-                  </Link>
-                </div>
-              </div>
-            }
+    <div className="App">
+      {activeCard === "home" && (
+        <div className="home-screen">
+          <h1>Welcome to Stock Tracker</h1>
+          <SearchBar
+            setSearchQuery={setSearchQuery}
+            searchQuery={searchQuery}
           />
-          <Route
-            path="/statistics"
-            element={
-              <div className="card">
-                <Link to="/" className="btn btn-secondary">
-                  Back to Home
-                </Link>
-                <div className="card-title">
-                  {searchQuery || "Enter a symbol"} Statistics
-                </div>
-                <StockStatisticsComponent stockSymbol={searchQuery} />
-              </div>
-            }
-          />
-          <Route
-            path="/earnings"
-            element={
-              <div className="card">
-                <Link to="/" className="btn btn-secondary">
-                  Back to Home
-                </Link>
-                <div className="card-title">
-                  Earnings Data for {searchQuery || "Enter a symbol"}
-                </div>
-                <EarningsDateComponent stockSymbol={searchQuery} />
-              </div>
-            }
-          />
-          <Route
-            path="/options"
-            element={
-              <div className="card">
-                <Link to="/" className="btn btn-secondary">
-                  Back to Home
-                </Link>
-                <div className="card-title">
-                  Options Data for {searchQuery || "Enter a symbol"}
-                </div>
-                <OptionsDataComponent stockSymbol={searchQuery} />
-              </div>
-            }
-          />
-        </Routes>
-      </div>
-    </Router>
+          <div className="d-flex gap-3">
+            <button
+              className="btn btn-primary"
+              onClick={() => setActiveCard("statistics")}
+            >
+              Statistics
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={() => setActiveCard("earnings")}
+            >
+              Earnings Data
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={() => setActiveCard("options")}
+            >
+              Options Data
+            </button>
+          </div>
+        </div>
+      )}
+      {activeCard === "statistics" && (
+        <div className="card">
+          <button
+            className="btn btn-secondary"
+            onClick={() => setActiveCard("home")}
+          >
+            Back to Home
+          </button>
+          <div className="card-title">
+            {searchQuery || "Enter a symbol"} Statistics
+          </div>
+          <StockStatisticsComponent stockSymbol={searchQuery} />
+        </div>
+      )}
+      {activeCard === "earnings" && (
+        <div className="card">
+          <button
+            className="btn btn-secondary"
+            onClick={() => setActiveCard("home")}
+          >
+            Back to Home
+          </button>
+          <div className="card-title">
+            Earnings Data for {searchQuery || "Enter a symbol"}
+          </div>
+          <EarningsDateComponent stockSymbol={searchQuery} />
+        </div>
+      )}
+      {activeCard === "options" && (
+        <div className="card">
+          <button
+            className="btn btn-secondary"
+            onClick={() => setActiveCard("home")}
+          >
+            Back to Home
+          </button>
+          <div className="card-title">
+            Options Data for {searchQuery || "Enter a symbol"}
+          </div>
+          <OptionsDataComponent stockSymbol={searchQuery} />
+        </div>
+      )}
+    </div>
   );
 };
 
