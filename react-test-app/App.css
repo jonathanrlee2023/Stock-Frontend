@@ -27,4 +27,37 @@
     background-color: #f2f2f2;
     text-align: left;
   }
+
+  button {
+    border: 1px solid #000000; /* Border style */
+    border-radius: 16px; /* Slightly rounded edges */
+    padding: 16px; /* Adjust padding for a rectangular look */
+    margin: 50px; /* Space between buttons */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    background-color: #7e7cf3; /* White background */
+    cursor: pointer; /* Pointer cursor on hover */
+    font-size: 24px; /* Font size for readability */
+    transition: all 0.2s ease; /* Smooth hover effect */
+  }
+  
+  button:hover {
+    background-color: #f0f0f0; /* Light grey background on hover */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Slightly larger shadow */
+  }
+  
+  button:focus {
+    outline: none; /* Remove default focus outline */
+    border-color: #007bff; /* Highlight border on focus */
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.8); /* Blue glow on focus */
+  }
+  
+  .grid-container {
+    display: grid; /* Enable grid layout */
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Dynamic columns */
+    gap: 4px; 
+    justify-items: center; 
+    margin: 20px 0; 
+  }
+
+
   
