@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { StockStatisticsComponent } from "./components/StockStatistics";
 import { EarningsDateComponent } from "./components/EarningsData";
 import { OptionsDataComponent } from "./components/OptionGraph";
+import { EarningsVolatilityComponent } from "./components/EarningsVolatility";
 import SearchBar from "./components/SearchBar";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -27,9 +28,15 @@ const App: React.FC = () => {
             </button>
             <button
               className="btn btn-primary btn-lg"
-              onClick={() => setActiveCard("earnings")}
+              onClick={() => setActiveCard("earningsCalender")}
             >
               Earnings Data
+            </button>
+            <button
+              className="btn btn-primary btn-lg"
+              onClick={() => setActiveCard("earningsVolatility")}
+            >
+              Earnings Volatility
             </button>
             <button
               className="btn btn-primary btn-lg"
@@ -54,7 +61,7 @@ const App: React.FC = () => {
           <StockStatisticsComponent stockSymbol={searchQuery} />
         </div>
       )}
-      {activeCard === "earnings" && (
+      {activeCard === "earningsCalender" && (
         <div className="card">
           <button
             className="btn btn-secondary"
@@ -66,6 +73,20 @@ const App: React.FC = () => {
             Earnings Data for {searchQuery || "Enter a symbol"}
           </div>
           <EarningsDateComponent stockSymbol={searchQuery} />
+        </div>
+      )}
+      {activeCard === "earningsVolatility" && (
+        <div className="card">
+          <button
+            className="btn btn-secondary"
+            onClick={() => setActiveCard("home")}
+          >
+            Back to Home
+          </button>
+          <div className="card-title">
+            Earnings Data for {searchQuery || "Enter a symbol"}
+          </div>
+          <EarningsVolatilityComponent stockSymbol={searchQuery} />
         </div>
       )}
       {activeCard === "options" && (

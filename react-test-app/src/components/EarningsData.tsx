@@ -31,7 +31,7 @@ export const EarningsDateComponent: React.FC<StockStatisticsProps> = ({
       setEarningsData(null);
       try {
         const response = await fetch(
-          `http://localhost:8080/earnings?symbol=${stockSymbol}&apikey=6UBNJGP08SOGI9HV`
+          `http://localhost:8080/earningsCalender?symbol=${stockSymbol}&apikey=6UBNJGP08SOGI9HV`
         );
         const data: EarningsDateResponse = await response.json();
         setEarningsData(data);
