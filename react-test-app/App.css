@@ -59,5 +59,11 @@
     margin: 20px 0; 
   }
 
+  h1 {
+    text-align: center; /* Center text horizontally */
+    margin: 0 auto; /* Ensures the header is centered */
+  }
 
-  
+  .App {
+    margin: 15px; /* Adjust the margin value as needed */
+  }

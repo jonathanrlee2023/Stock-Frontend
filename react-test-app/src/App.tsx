@@ -13,26 +13,26 @@ const App: React.FC = () => {
     <div className="App">
       {activeCard === "home" && (
         <div className="home-screen">
-          <h1>Welcome to Stock Tracker</h1>
+          <h1>Stock Tracker</h1>
           <SearchBar
             setSearchQuery={setSearchQuery}
             searchQuery={searchQuery}
           />
-          <div className="d-flex gap-3">
+          <div className="d-flex gap-5">
             <button
-              className="btn btn-primary"
+              className="btn btn-primary btn-lg"
               onClick={() => setActiveCard("statistics")}
             >
               Statistics
             </button>
             <button
-              className="btn btn-primary"
+              className="btn btn-primary btn-lg"
               onClick={() => setActiveCard("earnings")}
             >
               Earnings Data
             </button>
             <button
-              className="btn btn-primary"
+              className="btn btn-primary btn-lg"
               onClick={() => setActiveCard("options")}
             >
               Options Data
