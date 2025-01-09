@@ -3,6 +3,7 @@ import { StockStatisticsComponent } from "./components/StockStatistics";
 import { EarningsDateComponent } from "./components/EarningsData";
 import { OptionsDataComponent } from "./components/OptionGraph";
 import { EarningsVolatilityComponent } from "./components/EarningsVolatility";
+import { TodayStockComponent } from "./components/TodayGraph";
 import SearchBar from "./components/SearchBar";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -19,6 +20,7 @@ const App: React.FC = () => {
             setSearchQuery={setSearchQuery}
             searchQuery={searchQuery}
           />
+          <TodayStockComponent stockSymbol={searchQuery} />
           <div className="d-flex gap-5">
             <button
               className="btn btn-primary btn-lg"

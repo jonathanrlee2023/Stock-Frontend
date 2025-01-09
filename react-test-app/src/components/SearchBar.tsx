@@ -12,14 +12,29 @@ const SearchBar: React.FC<SearchBarProps> = ({
 }) => {
   const [inputValue, setInputValue] = useState<string>(searchQuery); // Local state to keep input value
 
+  const makeApiCalls = async () => {
+    try {
+      await fetch(
+        `http://localhost:8080/earningsCalender?symbol=${searchQuery}&apikey=6UBNJGP08SOGI9HV`
+      ); // First API call
+      await fetch(
+        `http://localhost:8080/stock?symbol=${searchQuery}&apikey=X8531ZcJaqW6j7l9tG1PVFBZnwMNRs72`
+      ); // Second API call
+    } catch (error) {
+      console.error("Error making API calls:", error);
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       setSearchQuery(inputValue); // Update the global search query state on Enter key press
+      makeApiCalls();
     }
   };
 
   const handleSearchClick = () => {
     setSearchQuery(inputValue); // Update the global search query state on button click
+    makeApiCalls();
   };
 
   return (

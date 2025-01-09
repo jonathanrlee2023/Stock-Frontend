@@ -21,13 +21,13 @@ ChartJS.register(
   Legend
 );
 
-export type CombinedOptions = {
+export type CombinedStock = {
   price: number; // Corresponds to float64 in Go
   timestamp: string; // Changed to string since JSON typically returns ISO timestamps
 };
 
-export type OptionsSymbol = {
-  symbol: CombinedOptions[]; // Array of OptionsPrices
+export type StockSymbol = {
+  symbol: CombinedStock[]; // Array of OptionsPrices
   price: number;
   ticker: string;
   expirationDate: string;
@@ -36,17 +36,16 @@ interface StockStatisticsProps {
   stockSymbol: string; // The stock symbol to fetch data for
 }
 
-export const OptionsDataComponent: React.FC<StockStatisticsProps> = ({
+export const TodayStockComponent: React.FC<StockStatisticsProps> = ({
   stockSymbol,
 }) => {
-  const [optionsData, setOptionsData] = useState<OptionsSymbol | null>(null);
+  const [stockData, setStockData] = useState<StockSymbol | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const getMostRecentWeekday = () => {
       const today = new Date();
-      today.setDate(today.getDate() - 1); // Start with Today
       let dayOfWeek = today.getDay(); // Get the day of the week (0 = Sunday, 6 = Saturday)
 
       // If it's Sunday (0) or Saturday (6), adjust to the most recent Friday (5)
@@ -62,11 +61,11 @@ export const OptionsDataComponent: React.FC<StockStatisticsProps> = ({
 
       return `${year}-${month}-${day}`;
     };
-    const fetchOptionsData = async () => {
+    const fetchTodayStockData = async () => {
       const mostRecentWeekday = getMostRecentWeekday();
       try {
         const response = await fetch(
-          `http://localhost:8080/options?symbol=${stockSymbol}&start=${mostRecentWeekday}&end=${mostRecentWeekday}&timeframe=10Min`,
+          `http://localhost:8080/todayStock?symbol=${stockSymbol}&start=${mostRecentWeekday}&timeframe=10Min`,
           {
             method: "GET",
             headers: {
@@ -80,8 +79,8 @@ export const OptionsDataComponent: React.FC<StockStatisticsProps> = ({
         if (!response.ok)
           throw new Error(`HTTP error! Status: ${response.status}`);
 
-        const data: OptionsSymbol = await response.json();
-        setOptionsData(data);
+        const data: StockSymbol = await response.json();
+        setStockData(data);
       } catch (error) {
         console.error("Failed to fetch options data", error);
         setErrorMessage("Failed to fetch data. Please try again later.");
@@ -90,24 +89,24 @@ export const OptionsDataComponent: React.FC<StockStatisticsProps> = ({
       }
     };
 
-    fetchOptionsData();
+    fetchTodayStockData();
   }, [stockSymbol]);
 
   if (!stockSymbol) return <div>Enter Stock Symbol...</div>;
   if (loading) return <div>Loading...</div>;
-  if (!optionsData || !optionsData.symbol) return <div>No data available</div>;
+  if (!stockData || !stockData.symbol) return <div>No data available</div>;
 
-  const sortedOptions = optionsData?.symbol
-    ? [...optionsData.symbol].sort(
+  const sortedStocks = stockData?.symbol
+    ? [...stockData.symbol].sort(
         (a, b) =>
           new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
       )
     : [];
 
-  const labels = sortedOptions.map((option) =>
-    new Date(option.timestamp).toLocaleString()
+  const labels = sortedStocks.map((stock) =>
+    new Date(stock.timestamp).toLocaleString()
   );
-  const dataValues = sortedOptions.map((option) => option.price);
+  const dataValues = sortedStocks.map((stock) => stock.price);
 
   const graphData = {
     labels,
@@ -128,7 +127,7 @@ export const OptionsDataComponent: React.FC<StockStatisticsProps> = ({
       legend: { position: "top" as const },
       title: {
         display: true,
-        text: `$${optionsData.price} Call Expiring ${optionsData.expirationDate}`,
+        text: `${stockData.ticker}`,
       },
     },
   };
