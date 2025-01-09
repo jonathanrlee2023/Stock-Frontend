@@ -67,11 +67,6 @@ export const StockStatisticsComponent: React.FC<StockStatisticsProps> = ({
         <strong>Standard Deviation:</strong>{" "}
         {stockStatistics.StandardDeviation.toFixed(6)}%
       </p>
-      <p>
-        <strong>Most Recent Close Price:</strong>
-        {" $"}
-        {stockStatistics.RecentClose.toFixed(2)}
-      </p>
     </div>
   );
 };
