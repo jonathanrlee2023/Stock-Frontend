@@ -65,7 +65,7 @@ export const TodayStockComponent: React.FC<StockStatisticsProps> = ({
       const mostRecentWeekday = getMostRecentWeekday();
       try {
         const response = await fetch(
-          `http://localhost:8080/todayStock?symbol=${stockSymbol}&start=${mostRecentWeekday}&timeframe=10Min`,
+          `http://localhost:8080/todayStock?symbol=${stockSymbol}&start=${mostRecentWeekday}&timeframe=5Min`,
           {
             method: "GET",
             headers: {
@@ -92,7 +92,7 @@ export const TodayStockComponent: React.FC<StockStatisticsProps> = ({
     fetchTodayStockData();
   }, [stockSymbol]);
 
-  if (!stockSymbol) return <div>Enter Stock Symbol...</div>;
+  if (!stockSymbol) return;
   if (loading) return <div>Loading...</div>;
   if (!stockData || !stockData.symbol) return <div>No data available</div>;
 
