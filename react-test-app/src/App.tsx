@@ -42,9 +42,15 @@ const App: React.FC = () => {
             </button>
             <button
               className="btn btn-primary btn-lg"
-              onClick={() => setActiveCard("options")}
+              onClick={() => setActiveCard("callOption")}
             >
-              Options Data
+              Call Option Data
+            </button>
+            <button
+              className="btn btn-primary btn-lg"
+              onClick={() => setActiveCard("putOption")}
+            >
+              Put Option Data
             </button>
           </div>
         </div>
@@ -91,7 +97,7 @@ const App: React.FC = () => {
           <EarningsVolatilityComponent stockSymbol={searchQuery} />
         </div>
       )}
-      {activeCard === "options" && (
+      {activeCard === "callOption" && (
         <div className="card">
           <button
             className="btn btn-secondary"
@@ -100,9 +106,23 @@ const App: React.FC = () => {
             Back to Home
           </button>
           <div className="card-title">
-            Options Data for {searchQuery || "Enter a symbol"}
+            Call Option Data for {searchQuery || "Enter a symbol"}
           </div>
-          <OptionsDataComponent stockSymbol={searchQuery} />
+          <OptionsDataComponent stockSymbol={searchQuery} optionType="Call" />
+        </div>
+      )}
+      {activeCard === "putOption" && (
+        <div className="card">
+          <button
+            className="btn btn-secondary"
+            onClick={() => setActiveCard("home")}
+          >
+            Back to Home
+          </button>
+          <div className="card-title">
+            Put Option Data for {searchQuery || "Enter a symbol"}
+          </div>
+          <OptionsDataComponent stockSymbol={searchQuery} optionType="Put" />
         </div>
       )}
     </div>

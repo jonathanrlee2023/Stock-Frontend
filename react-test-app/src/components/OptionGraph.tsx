@@ -34,10 +34,12 @@ export type OptionsSymbol = {
 };
 interface StockStatisticsProps {
   stockSymbol: string; // The stock symbol to fetch data for
+  optionType: string;
 }
 
 export const OptionsDataComponent: React.FC<StockStatisticsProps> = ({
   stockSymbol,
+  optionType,
 }) => {
   const [optionsData, setOptionsData] = useState<OptionsSymbol | null>(null);
   const [loading, setLoading] = useState(true);
@@ -66,7 +68,7 @@ export const OptionsDataComponent: React.FC<StockStatisticsProps> = ({
       const mostRecentWeekday = getMostRecentWeekday();
       try {
         const response = await fetch(
-          `http://localhost:8080/options?symbol=${stockSymbol}&start=${mostRecentWeekday}&end=${mostRecentWeekday}&timeframe=10Min`,
+          `http://localhost:8080/options?symbol=${stockSymbol}&start=${mostRecentWeekday}&end=${mostRecentWeekday}&timeframe=10Min&type=${optionType}`,
           {
             method: "GET",
             headers: {
@@ -128,7 +130,7 @@ export const OptionsDataComponent: React.FC<StockStatisticsProps> = ({
       legend: { position: "top" as const },
       title: {
         display: true,
-        text: `$${optionsData.price} Call Expiring ${optionsData.expirationDate}`,
+        text: `$${optionsData.price} ${optionType} Expiring ${optionsData.expirationDate}`,
       },
     },
   };
