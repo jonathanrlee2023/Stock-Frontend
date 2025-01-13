@@ -43,8 +43,7 @@ export const EconomicDataComponent: React.FC = () => {
     };
 
     fetchEconomicData();
-  }, []); // Removed dependency on undefined `stockSymbol`
-
+  }, []);
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
   if (!economicData) return <div>No data available</div>;
