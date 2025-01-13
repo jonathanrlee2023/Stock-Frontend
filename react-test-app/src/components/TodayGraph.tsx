@@ -61,6 +61,18 @@ export const TodayStockComponent: React.FC<StockStatisticsProps> = ({
 
       return `${year}-${month}-${day}`;
     };
+    const makeApiCalls = async () => {
+      try {
+        await fetch(
+          `http://localhost:8080/earningsCalender?symbol=${stockSymbol}&apikey=6UBNJGP08SOGI9HV`
+        ); // First API call
+        await fetch(
+          `http://localhost:8080/stock?symbol=${stockSymbol}&apikey=X8531ZcJaqW6j7l9tG1PVFBZnwMNRs72`
+        ); // Second API call
+      } catch (error) {
+        console.error("Error making API calls:", error);
+      }
+    };
     const fetchTodayStockData = async () => {
       const mostRecentWeekday = getMostRecentWeekday();
       try {
@@ -87,6 +99,7 @@ export const TodayStockComponent: React.FC<StockStatisticsProps> = ({
       } finally {
         setLoading(false);
       }
+      makeApiCalls();
     };
 
     fetchTodayStockData();
