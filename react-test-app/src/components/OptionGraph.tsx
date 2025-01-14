@@ -32,6 +32,10 @@ export type OptionsSymbol = {
   ticker: string;
   expirationDate: string;
 };
+
+export type ImpliedVolatility = {
+  volatility: number;
+};
 interface StockStatisticsProps {
   stockSymbol: string; // The stock symbol to fetch data for
   optionType: string;
@@ -42,6 +46,8 @@ export const OptionsDataComponent: React.FC<StockStatisticsProps> = ({
   optionType,
 }) => {
   const [optionsData, setOptionsData] = useState<OptionsSymbol | null>(null);
+  const [volatilityData, setVolatilityData] =
+    useState<ImpliedVolatility | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -67,7 +73,7 @@ export const OptionsDataComponent: React.FC<StockStatisticsProps> = ({
     const fetchOptionsData = async () => {
       const mostRecentWeekday = getMostRecentWeekday();
       try {
-        const response = await fetch(
+        const optionsResponse = await fetch(
           `http://localhost:8080/options?symbol=${stockSymbol}&start=${mostRecentWeekday}&end=${mostRecentWeekday}&timeframe=10Min&type=${optionType}`,
           {
             method: "GET",
@@ -78,12 +84,27 @@ export const OptionsDataComponent: React.FC<StockStatisticsProps> = ({
             },
           }
         );
+        const volatilityResponse = await fetch(
+          `http://localhost:8080/impliedVolatility?ticker=${stockSymbol}&type=${optionType}`,
+          {
+            method: "GET",
+            headers: {
+              "APCA-API-KEY-ID": "AK5Y9SVP72X34QDD7EKI",
+              "APCA-API-SECRET-KEY": "wbY3o9CLbWDNdaGzaBXHjmLMiO1cbFLkl7sUz6VU",
+              Accept: "application/json",
+            },
+          }
+        );
 
-        if (!response.ok)
-          throw new Error(`HTTP error! Status: ${response.status}`);
+        if (!optionsResponse.ok || !volatilityResponse.ok)
+          throw new Error(`HTTP error! Status: ${optionsResponse.status}`);
 
-        const data: OptionsSymbol = await response.json();
-        setOptionsData(data);
+        const optionsData: OptionsSymbol = await optionsResponse.json();
+        setOptionsData(optionsData);
+
+        const volatilityData: ImpliedVolatility =
+          await volatilityResponse.json();
+        setVolatilityData(volatilityData);
       } catch (error) {
         console.error("Failed to fetch options data", error);
         setErrorMessage("Failed to fetch data. Please try again later.");
@@ -136,7 +157,8 @@ export const OptionsDataComponent: React.FC<StockStatisticsProps> = ({
   };
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div className="card" style={{ padding: "20px" }}>
+      <strong>Implied Volatility:</strong> {volatilityData?.volatility}%
       <Line options={options} data={graphData} />
     </div>
   );
