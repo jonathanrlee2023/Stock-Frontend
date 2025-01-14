@@ -106,7 +106,7 @@ export const TodayStockComponent: React.FC<StockStatisticsProps> = ({
 
   if (!stockSymbol) return;
   if (loading) return <div>Loading...</div>;
-  if (!stockData || !stockData.symbol) return <div>No data available</div>;
+  if (!stockData || !stockData.symbol) return;
 
   const sortedStocks = stockData?.symbol
     ? [...stockData.symbol].sort(

@@ -5,6 +5,7 @@ import { OptionsDataComponent } from "./components/OptionGraph";
 import { EarningsVolatilityComponent } from "./components/EarningsVolatility";
 import { EconomicDataComponent } from "./components/EconomicData";
 import { TodayStockComponent } from "./components/TodayGraph";
+import { CombinedOptionsDataComponent } from "./components/CombinedOptions";
 import SearchBar from "./components/SearchBar";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -53,6 +54,12 @@ const App: React.FC = () => {
               onClick={() => setActiveCard("putOption")}
             >
               Put Option Data
+            </button>
+            <button
+              className="btn btn-primary btn-lg"
+              onClick={() => setActiveCard("combinedOptions")}
+            >
+              Combined Options Data
             </button>
           </div>
         </div>
@@ -125,6 +132,20 @@ const App: React.FC = () => {
             Put Option Data for {searchQuery || "Enter a symbol"}
           </div>
           <OptionsDataComponent stockSymbol={searchQuery} optionType="Put" />
+        </div>
+      )}
+      {activeCard === "combinedOptions" && (
+        <div className="card">
+          <button
+            className="btn btn-secondary"
+            onClick={() => setActiveCard("home")}
+          >
+            Back to Home
+          </button>
+          <div className="card-title">
+            Combined Option Data for {searchQuery || "Enter a symbol"}
+          </div>
+          <CombinedOptionsDataComponent stockSymbol={searchQuery} />
         </div>
       )}
     </div>
