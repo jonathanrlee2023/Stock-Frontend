@@ -74,7 +74,7 @@ export const OptionsDataComponent: React.FC<StockStatisticsProps> = ({
       const mostRecentWeekday = getMostRecentWeekday();
       try {
         const optionsResponse = await fetch(
-          `http://localhost:8080/options?symbol=${stockSymbol}&start=${mostRecentWeekday}&end=${mostRecentWeekday}&timeframe=10Min&type=${optionType}`,
+          `http://localhost:8080/options?symbol=${stockSymbol}&start=${mostRecentWeekday}&end=${mostRecentWeekday}&timeframe=5Min&type=${optionType}`,
           {
             method: "GET",
             headers: {

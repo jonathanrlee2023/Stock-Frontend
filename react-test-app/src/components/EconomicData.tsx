@@ -53,9 +53,6 @@ export const EconomicDataComponent: React.FC = () => {
       <h2>Economic Data</h2>
       <div className="economic-data">
         <p>
-          <strong>Date:</strong> {economicData.date}
-        </p>
-        <p>
           <strong>Federal Funds Rate (FFR):</strong> {economicData.ffr}
         </p>
         <p>
