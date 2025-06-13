@@ -12,14 +12,42 @@ const SearchBar: React.FC<SearchBarProps> = ({
 }) => {
   const [inputValue, setInputValue] = useState<string>(searchQuery); // Local state to keep input value
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       setSearchQuery(inputValue); // Update the global search query state on Enter key press
+      try {
+        // Replace with your actual API endpoint
+        const response = await fetch(
+          `http://localhost:8080/startStockStream?symbol=${inputValue}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.text();
+      } catch (error) {
+        console.error("API call failed:", error);
+      }
     }
   };
 
-  const handleSearchClick = () => {
+  const handleSearchClick = async () => {
     setSearchQuery(inputValue); // Update the global search query state on button click
+    try {
+      // Replace with your actual API endpoint
+      const response = await fetch(
+        `http://localhost:8080/startStockStream?symbol=${inputValue}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.text();
+    } catch (error) {
+      console.error("API call failed:", error);
+    }
   };
 
   return (
