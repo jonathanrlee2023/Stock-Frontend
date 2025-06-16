@@ -1,19 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
+  TimeScale,
   PointElement,
   LineElement,
   Title,
   Tooltip,
   Legend,
 } from "chart.js";
-
+import { useWS } from "./WSContest"; // adjust import
+import "chartjs-adapter-date-fns";
 ChartJS.register(
   CategoryScale,
   LinearScale,
+  TimeScale,
   PointElement,
   LineElement,
   Title,
@@ -21,129 +24,80 @@ ChartJS.register(
   Legend
 );
 
-export type CombinedOptions = {
-  price: number; // Corresponds to float64 in Go
-  timestamp: string; // Changed to string since JSON typically returns ISO timestamps
+type PricePoint = {
+  mark: number;
+  timestamp: number;
 };
-
-export type OptionsSymbol = {
-  symbol: CombinedOptions[]; // Array of OptionsPrices
-  price: number;
-  ticker: string;
-  expirationDate: string;
-};
-
-export type ImpliedVolatility = {
-  volatility: number;
-};
-interface StockStatisticsProps {
-  stockSymbol: string; // The stock symbol to fetch data for
-  optionType: string;
+interface OptionWSProps {
+  stockSymbol: string;
+  day: string;
+  month: string;
+  year: string;
+  strikePrice: string;
+  type: string;
 }
 
-export const OptionsDataComponent: React.FC<StockStatisticsProps> = ({
+export const OptionWSComponent: React.FC<OptionWSProps> = ({
   stockSymbol,
-  optionType,
+  day,
+  month,
+  year,
+  strikePrice,
+  type,
 }) => {
-  const [optionsData, setOptionsData] = useState<OptionsSymbol | null>(null);
-  const [volatilityData, setVolatilityData] =
-    useState<ImpliedVolatility | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
+  const { sendMessage, lastMessage } = useWS();
+  const [symbolPricePoints, setSymbolPricePoints] = useState<
+    Record<string, PricePoint[]>
+  >({});
+  const [delta, setDelta] = useState<number | null>(null);
+  const [gamma, setGamma] = useState<number | null>(null);
+  const [theta, setTheta] = useState<number | null>(null);
+  const [vega, setVega] = useState<number | null>(null);
   useEffect(() => {
-    const getMostRecentWeekday = () => {
-      const today = new Date();
-      today.setDate(today.getDate() - 1); // Start with Today
-      let dayOfWeek = today.getDay(); // Get the day of the week (0 = Sunday, 6 = Saturday)
+    if (lastMessage) {
+      console.log("Processing lastMessage", lastMessage);
+      const { symbol, mark, timestamp, delta, gamma, theta, vega } =
+        lastMessage;
 
-      // If it's Sunday (0) or Saturday (6), adjust to the most recent Friday (5)
-      if (dayOfWeek === 0) {
-        today.setDate(today.getDate() - 2); // Move back to Friday
-      } else if (dayOfWeek === 6) {
-        today.setDate(today.getDate() - 1); // Move back to Friday
+      if (mark !== undefined && timestamp !== undefined) {
+        const point: PricePoint = { mark, timestamp };
+        setSymbolPricePoints((prev) => {
+          const prevPoints = prev[symbol] || [];
+          setDelta(delta);
+          setGamma(gamma);
+          setTheta(theta);
+          setVega(vega);
+          return {
+            ...prev,
+            [symbol]: [...prevPoints.slice(-99), point],
+          };
+        });
+      } else {
+        if (mark === undefined)
+          console.warn("Message missing mark", lastMessage);
+        if (timestamp === undefined)
+          console.warn("Message missing timestamp", lastMessage);
       }
+    }
+  }, [lastMessage]);
 
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, "0");
-      const day = String(today.getDate()).padStart(2, "0");
-
-      return `${year}-${month}-${day}`;
+  const graphData = React.useMemo(() => {
+    const points = symbolPricePoints[stockSymbol] || [];
+    return {
+      datasets: [
+        {
+          label: `${stockSymbol} $${strikePrice} ${type} Expiring ${month}/${day}/${year}`,
+          data: points.map((p) => ({
+            x: new Date(p.timestamp * 1000),
+            y: p.mark,
+          })),
+          fill: false,
+          borderColor: "rgb(66, 0, 189)",
+          tension: 0.1,
+        },
+      ],
     };
-    const fetchOptionsData = async () => {
-      const mostRecentWeekday = getMostRecentWeekday();
-      try {
-        const optionsResponse = await fetch(
-          `http://localhost:8080/options?symbol=${stockSymbol}&start=${mostRecentWeekday}&end=${mostRecentWeekday}&timeframe=5Min&type=${optionType}`,
-          {
-            method: "GET",
-            headers: {
-              "APCA-API-KEY-ID": "AK5Y9SVP72X34QDD7EKI",
-              "APCA-API-SECRET-KEY": "wbY3o9CLbWDNdaGzaBXHjmLMiO1cbFLkl7sUz6VU",
-              Accept: "application/json",
-            },
-          }
-        );
-        const volatilityResponse = await fetch(
-          `http://localhost:8080/impliedVolatility?ticker=${stockSymbol}&type=${optionType}`,
-          {
-            method: "GET",
-            headers: {
-              "APCA-API-KEY-ID": "AK5Y9SVP72X34QDD7EKI",
-              "APCA-API-SECRET-KEY": "wbY3o9CLbWDNdaGzaBXHjmLMiO1cbFLkl7sUz6VU",
-              Accept: "application/json",
-            },
-          }
-        );
-
-        if (!optionsResponse.ok || !volatilityResponse.ok)
-          throw new Error(`HTTP error! Status: ${optionsResponse.status}`);
-
-        const optionsData: OptionsSymbol = await optionsResponse.json();
-        setOptionsData(optionsData);
-
-        const volatilityData: ImpliedVolatility =
-          await volatilityResponse.json();
-        setVolatilityData(volatilityData);
-      } catch (error) {
-        console.error("Failed to fetch options data", error);
-        setErrorMessage("Failed to fetch data. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchOptionsData();
-  }, [stockSymbol]);
-
-  if (!stockSymbol) return <div>Enter Stock Symbol...</div>;
-  if (loading) return <div>Loading...</div>;
-  if (!optionsData || !optionsData.symbol) return <div>No data available</div>;
-
-  const sortedOptions = optionsData?.symbol
-    ? [...optionsData.symbol].sort(
-        (a, b) =>
-          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-      )
-    : [];
-
-  const labels = sortedOptions.map((option) =>
-    new Date(option.timestamp).toLocaleString()
-  );
-  const dataValues = sortedOptions.map((option) => option.price);
-
-  const graphData = {
-    labels,
-    datasets: [
-      {
-        label: `Price`,
-        data: dataValues,
-        fill: false,
-        borderColor: "rgb(66, 0, 189)",
-        tension: 0.1,
-      },
-    ],
-  };
+  }, [symbolPricePoints, stockSymbol]);
 
   const options = {
     responsive: true,
@@ -151,15 +105,27 @@ export const OptionsDataComponent: React.FC<StockStatisticsProps> = ({
       legend: { position: "top" as const },
       title: {
         display: true,
-        text: `$${optionsData.price} ${optionType} Expiring ${optionsData.expirationDate}`,
+        text: `Price History`,
+      },
+    },
+    scales: {
+      x: {
+        type: "time" as const,
+        time: {
+          tooltipFormat: "HH:mm:ss",
+        },
       },
     },
   };
 
   return (
-    <div className="card" style={{ padding: "20px" }}>
-      <strong>Implied Volatility:</strong> {volatilityData?.volatility}%
-      <Line options={options} data={graphData} />
+    <div>
+      <h1>
+        Delta: {delta} Gamma: {gamma} Theta: {theta} Vega: {vega}
+      </h1>
+      <div style={{ padding: "20px" }}>
+        <Line key={stockSymbol} options={options} data={graphData} />
+      </div>
     </div>
   );
 };

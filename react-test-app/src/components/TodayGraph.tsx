@@ -4,6 +4,7 @@ import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
+  TimeScale,
   PointElement,
   LineElement,
   Title,
@@ -11,10 +12,11 @@ import {
   Legend,
 } from "chart.js";
 import { useWS } from "./WSContest"; // adjust import
-
+import "chartjs-adapter-date-fns";
 ChartJS.register(
   CategoryScale,
   LinearScale,
+  TimeScale,
   PointElement,
   LineElement,
   Title,
@@ -22,11 +24,16 @@ ChartJS.register(
   Legend
 );
 
-type LastPricePoint = {
+type IncomingData = {
+  symbol: string;
   mark: number;
   timestamp: number;
 };
 
+type PricePoint = {
+  mark: number;
+  timestamp: number;
+};
 interface TodayStockWSProps {
   stockSymbol: string;
 }
@@ -35,49 +42,50 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   stockSymbol,
 }) => {
   const { sendMessage, lastMessage } = useWS();
-  const [pricePoints, setPricePoints] = useState<LastPricePoint[]>([]);
+  const [symbolPricePoints, setSymbolPricePoints] = useState<
+    Record<string, PricePoint[]>
+  >({});
 
   useEffect(() => {
     if (lastMessage) {
       console.log("Processing lastMessage", lastMessage);
-      const { mark, timestamp } = lastMessage;
+      const { symbol, mark, timestamp } = lastMessage;
 
       if (mark !== undefined && timestamp !== undefined) {
-        const point: LastPricePoint = { mark, timestamp };
-        setPricePoints((prev) => [...prev.slice(-99), point]);
+        const point: PricePoint = { mark, timestamp };
+        setSymbolPricePoints((prev) => {
+          const prevPoints = prev[symbol] || [];
+          return {
+            ...prev,
+            [symbol]: [...prevPoints.slice(-99), point],
+          };
+        });
       } else {
-        if (mark === undefined) {
+        if (mark === undefined)
           console.warn("Message missing mark", lastMessage);
-        }
-        if (timestamp === undefined) {
+        if (timestamp === undefined)
           console.warn("Message missing timestamp", lastMessage);
-        }
       }
     }
   }, [lastMessage]);
 
-  const labels = pricePoints.map((p) =>
-    new Date(p.timestamp * 1000).toLocaleTimeString()
-  );
-  const dataValues = pricePoints.map((p) => p.mark);
-
-  const graphData = React.useMemo(
-    () => ({
-      labels: pricePoints.map((p) =>
-        new Date(p.timestamp * 1000).toLocaleTimeString()
-      ),
+  const graphData = React.useMemo(() => {
+    const points = symbolPricePoints[stockSymbol] || [];
+    return {
       datasets: [
         {
-          label: "Last Price",
-          data: pricePoints.map((p) => p.mark),
+          label: `${stockSymbol} Last Price`,
+          data: points.map((p) => ({
+            x: new Date(p.timestamp * 1000),
+            y: p.mark,
+          })),
           fill: false,
           borderColor: "rgb(66, 0, 189)",
           tension: 0.1,
         },
       ],
-    }),
-    [pricePoints]
-  );
+    };
+  }, [symbolPricePoints, stockSymbol]);
 
   const options = {
     responsive: true,
@@ -85,14 +93,22 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
       legend: { position: "top" as const },
       title: {
         display: true,
-        text: `${stockSymbol} Last Price`,
+        text: `Price History`,
+      },
+    },
+    scales: {
+      x: {
+        type: "time" as const,
+        time: {
+          tooltipFormat: "HH:mm:ss",
+        },
       },
     },
   };
 
   return (
     <div style={{ padding: "20px" }}>
-      <Line options={options} data={graphData} />
+      <Line key={stockSymbol} options={options} data={graphData} />
     </div>
   );
 };

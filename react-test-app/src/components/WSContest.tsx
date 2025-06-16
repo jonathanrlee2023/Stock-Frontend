@@ -31,6 +31,11 @@ export const WSProvider = ({ children }: Props): JSX.Element => {
       setLastMessage(parsed); // This should trigger the useEffect in your component
     };
 
+    ws.current.onclose = () => {
+      console.log("Websocket connection closed");
+      ws.current = new WebSocket(`ws://localhost:8080/connect?id=${clientId}`);
+    };
+
     return () => {
       ws.current?.close();
     };

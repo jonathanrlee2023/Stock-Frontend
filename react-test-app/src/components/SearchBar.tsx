@@ -1,53 +1,34 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { on } from "process";
 
 interface SearchBarProps {
   setSearchQuery: (query: string) => void; // Function to update search query
   searchQuery: string; // Prop to hold the current search query
+  inputMessage: string;
+  onEnter: (input: string) => void; // NEW
+  onSearchClick: (input: string) => void;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
   setSearchQuery,
   searchQuery,
+  inputMessage,
+  onEnter,
+  onSearchClick,
 }) => {
   const [inputValue, setInputValue] = useState<string>(searchQuery); // Local state to keep input value
 
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      setSearchQuery(inputValue); // Update the global search query state on Enter key press
-      try {
-        // Replace with your actual API endpoint
-        const response = await fetch(
-          `http://localhost:8080/startStockStream?symbol=${inputValue}`
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const data = await response.text();
-      } catch (error) {
-        console.error("API call failed:", error);
-      }
+      setSearchQuery(inputValue);
+      onEnter(inputValue);
     }
   };
 
   const handleSearchClick = async () => {
-    setSearchQuery(inputValue); // Update the global search query state on button click
-    try {
-      // Replace with your actual API endpoint
-      const response = await fetch(
-        `http://localhost:8080/startStockStream?symbol=${inputValue}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.text();
-    } catch (error) {
-      console.error("API call failed:", error);
-    }
+    setSearchQuery(inputValue);
+    onSearchClick(inputValue);
   };
 
   return (
@@ -55,7 +36,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       <input
         type="text"
         className="form-control"
-        placeholder="Enter stock symbol..."
+        placeholder={inputMessage}
         value={inputValue} // Use local state for the input field value
         onChange={(e) => setInputValue(e.target.value)} // Update local state
         onKeyDown={handleKeyDown} // Handle Enter key press

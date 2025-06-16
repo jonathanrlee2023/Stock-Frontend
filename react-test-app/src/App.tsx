@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { StockStatisticsComponent } from "./components/StockStatistics";
 import { EarningsDateComponent } from "./components/EarningsData";
-import { OptionsDataComponent } from "./components/OptionGraph";
+import { OptionWSComponent } from "./components/OptionGraph";
 import { EarningsVolatilityComponent } from "./components/EarningsVolatility";
 import { EconomicDataComponent } from "./components/EconomicData";
 import { TodayStockWSComponent } from "./components/TodayGraph";
@@ -9,16 +9,131 @@ import { CombinedOptionsDataComponent } from "./components/CombinedOptions";
 import { WSProvider } from "./components/WSContest";
 import SearchBar from "./components/SearchBar";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { setuid } from "process";
 
 const App: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState<string>(""); // Persistent state for search query
+  const [activeStock, setActiveStock] = useState<string>(""); // Persistent state for search query
   const [activeCard, setActiveCard] = useState<string>("home"); // State to track the active screen
+  const [underlyingStock, setUnderlyingStock] = useState<string>("");
+  const [optionDay, setOptionDay] = useState<string>("");
+  const [optionMonth, setOptionMonth] = useState<string>("");
+  const [optionYear, setOptionYear] = useState<string>("");
+  const [strikePrice, setStrikePrice] = useState<string>("");
+  const [optionType, setOptionType] = useState<string>("");
 
   return (
     <div className="App">
       <WSProvider>
-        <SearchBar setSearchQuery={setSearchQuery} searchQuery={searchQuery} />
-        <TodayStockWSComponent stockSymbol={searchQuery} />
+        {activeCard === "home" && (
+          <div className="home-screen">
+            <SearchBar
+              setSearchQuery={setActiveStock}
+              searchQuery={activeStock}
+              inputMessage="Enter Stock Symbol..."
+              onEnter={(symbol) => {
+                setActiveStock(symbol);
+                fetch(`http://localhost:8080/startStockStream?symbol=${symbol}`)
+                  .then((res) => res.text())
+                  .then((data) => console.log("Data:", data))
+                  .catch((err) => console.error("API error:", err));
+              }}
+              onSearchClick={(symbol) => {
+                setActiveStock(symbol);
+                fetch(`http://localhost:8080/startStockStream?symbol=${symbol}`)
+                  .then((res) => res.text())
+                  .then((data) => console.log("Data:", data))
+                  .catch((err) => console.error("API error:", err));
+              }}
+            />
+            <TodayStockWSComponent stockSymbol={activeStock} />
+            <div className="d-flex justify-content-center mt-0">
+              <button
+                className="btn btn-primary btn-lg mb-3"
+                onClick={() => setActiveCard("options")}
+              >
+                Options
+              </button>
+            </div>
+          </div>
+        )}
+        {activeCard === "options" && (
+          <div className="card">
+            <button
+              className="btn btn-secondary"
+              onClick={() => setActiveCard("home")}
+            >
+              Back to Home
+            </button>
+            <SearchBar
+              setSearchQuery={setUnderlyingStock}
+              searchQuery={underlyingStock}
+              inputMessage="Enter Stock Symbol..."
+              onEnter={setUnderlyingStock}
+              onSearchClick={setUnderlyingStock}
+            />
+            <SearchBar
+              setSearchQuery={setStrikePrice}
+              searchQuery={strikePrice}
+              inputMessage="Enter Strike Price..."
+              onEnter={setStrikePrice}
+              onSearchClick={setStrikePrice}
+            />
+            <SearchBar
+              setSearchQuery={setOptionDay}
+              searchQuery={optionDay}
+              inputMessage="Enter Expiration Day..."
+              onEnter={setOptionDay}
+              onSearchClick={setOptionDay}
+            />
+            <SearchBar
+              setSearchQuery={setOptionMonth}
+              searchQuery={optionMonth}
+              inputMessage="Enter Expiration Month..."
+              onEnter={setOptionMonth}
+              onSearchClick={setOptionMonth}
+            />
+            <SearchBar
+              setSearchQuery={setOptionYear}
+              searchQuery={optionYear}
+              inputMessage="Enter Expiration Year..."
+              onEnter={setOptionYear}
+              onSearchClick={setOptionYear}
+            />
+            <SearchBar
+              setSearchQuery={setOptionType}
+              searchQuery={optionType}
+              inputMessage="Enter Option Type..."
+              onEnter={setOptionType}
+              onSearchClick={setOptionType}
+            />
+            <button
+              className="btn btn-primary btn-lg mb-3"
+              onClick={() => {
+                fetch(
+                  `http://localhost:8080/startOptionStream?symbol=${underlyingStock}&price=${strikePrice}&day=${optionDay}&month=${optionMonth}&year=${optionYear}&type=${optionType}`
+                )
+                  .then((res) => res.text())
+                  .then((data) => console.log("Data:", data))
+                  .catch((err) => console.error("API error:", err));
+              }}
+            >
+              Confirm
+            </button>
+
+            <div className="card-title">
+              {underlyingStock} ${strikePrice} {optionType} Expiring
+              {optionMonth}/{optionDay}/{optionYear}
+            </div>
+            <OptionWSComponent
+              stockSymbol={underlyingStock}
+              strikePrice={strikePrice}
+              year={optionYear}
+              month={optionMonth}
+              day={optionDay}
+              type={optionType}
+            />
+          </div>
+        )}
       </WSProvider>
     </div>
   );
