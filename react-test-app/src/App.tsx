@@ -30,6 +30,57 @@ const App: React.FC = () => {
       .then((data) => console.log("Data:", data))
       .catch((err) => console.error("API error:", err));
   };
+  function formatOptionSymbol(
+    stock: string,
+    day: string,
+    month: string,
+    year: string,
+    type: string,
+    strike: string
+  ): string {
+    const yy = year.length === 4 ? year.slice(2) : year; // Convert YYYY to YY if needed
+    const typeLetter = type.toUpperCase().startsWith("C") ? "C" : "P";
+
+    // Convert strike price string to number, then format
+    const strikeNum = parseFloat(strike);
+    const strikeStr = (strikeNum * 1000).toFixed(0).padStart(8, "0");
+
+    return `${stock.toUpperCase()}_${yy}${month.padStart(2, "0")}${day.padStart(
+      2,
+      "0"
+    )}${typeLetter}${strikeStr}`;
+  }
+  const postData = async () => {
+    const data = {
+      id: formatOptionSymbol(
+        underlyingStock,
+        optionDay,
+        optionMonth,
+        optionYear,
+        optionType,
+        strikePrice
+      ),
+    };
+
+    try {
+      const response = await fetch("http://localhost:8080/newTracker", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const result = await response.text();
+      console.log("Server response:", result);
+    } catch (error) {
+      console.error("POST request failed:", error);
+    }
+  };
 
   return (
     <div className="App">
@@ -122,6 +173,12 @@ const App: React.FC = () => {
                   }}
                 >
                   Confirm
+                </button>
+                <button
+                  className="btn btn-primary btn-lg mb-3"
+                  onClick={postData}
+                >
+                  ADD
                 </button>
                 <OptionWSComponent
                   stockSymbol={underlyingStock}
