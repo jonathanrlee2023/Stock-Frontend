@@ -13,6 +13,7 @@ import {
 } from "chart.js";
 import { useWS } from "./WSContest"; // adjust import
 import "chartjs-adapter-date-fns";
+import { usePriceStream } from "./PriceContext";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -24,16 +25,6 @@ ChartJS.register(
   Legend
 );
 
-type IncomingData = {
-  symbol: string;
-  mark: number;
-  timestamp: number;
-};
-
-type PricePoint = {
-  mark: number;
-  timestamp: number;
-};
 interface TodayStockWSProps {
   stockSymbol: string;
 }
@@ -41,37 +32,12 @@ interface TodayStockWSProps {
 export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   stockSymbol,
 }) => {
-  const { sendMessage, lastMessage } = useWS();
-  const [symbolPricePoints, setSymbolPricePoints] = useState<
-    Record<string, PricePoint[]>
-  >({});
+  const { symbolPricePoints } = usePriceStream();
 
-  useEffect(() => {
-    if (lastMessage) {
-      console.log("Processing lastMessage", lastMessage);
-      const { symbol, mark, timestamp } = lastMessage;
+  const points = symbolPricePoints[stockSymbol] || [];
 
-      if (mark !== undefined && timestamp !== undefined) {
-        const point: PricePoint = { mark, timestamp };
-        setSymbolPricePoints((prev) => {
-          const prevPoints = prev[symbol] || [];
-          return {
-            ...prev,
-            [symbol]: [...prevPoints.slice(-99), point],
-          };
-        });
-      } else {
-        if (mark === undefined)
-          console.warn("Message missing mark", lastMessage);
-        if (timestamp === undefined)
-          console.warn("Message missing timestamp", lastMessage);
-      }
-    }
-  }, [lastMessage]);
-
-  const graphData = React.useMemo(() => {
-    const points = symbolPricePoints[stockSymbol] || [];
-    return {
+  const graphData = React.useMemo(
+    () => ({
       datasets: [
         {
           label: `${stockSymbol} Last Price`,
@@ -84,8 +50,9 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
           tension: 0.1,
         },
       ],
-    };
-  }, [symbolPricePoints, stockSymbol]);
+    }),
+    [points, stockSymbol]
+  );
 
   const options = {
     responsive: true,

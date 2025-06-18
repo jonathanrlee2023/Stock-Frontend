@@ -13,6 +13,7 @@ import {
 } from "chart.js";
 import { useWS } from "./WSContest"; // adjust import
 import "chartjs-adapter-date-fns";
+import { usePriceStream } from "./PriceContext";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -24,10 +25,6 @@ ChartJS.register(
   Legend
 );
 
-type PricePoint = {
-  mark: number;
-  timestamp: number;
-};
 interface OptionWSProps {
   stockSymbol: string;
   day: string;
@@ -35,6 +32,27 @@ interface OptionWSProps {
   year: string;
   strikePrice: string;
   type: string;
+}
+
+function formatOptionSymbol(
+  stock: string,
+  day: string,
+  month: string,
+  year: string,
+  type: string,
+  strike: string
+): string {
+  const yy = year.length === 4 ? year.slice(2) : year; // Convert YYYY to YY if needed
+  const typeLetter = type.toUpperCase().startsWith("C") ? "C" : "P";
+
+  // Convert strike price string to number, then format
+  const strikeNum = parseFloat(strike);
+  const strikeStr = (strikeNum * 1000).toFixed(0).padStart(8, "0");
+
+  return `${stock.toUpperCase()}_${yy}${month.padStart(2, "0")}${day.padStart(
+    2,
+    "0"
+  )}${typeLetter}${strikeStr}`;
 }
 
 export const OptionWSComponent: React.FC<OptionWSProps> = ({
@@ -45,45 +63,20 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
   strikePrice,
   type,
 }) => {
-  const { sendMessage, lastMessage } = useWS();
-  const [symbolPricePoints, setSymbolPricePoints] = useState<
-    Record<string, PricePoint[]>
-  >({});
-  const [delta, setDelta] = useState<number | null>(null);
-  const [gamma, setGamma] = useState<number | null>(null);
-  const [theta, setTheta] = useState<number | null>(null);
-  const [vega, setVega] = useState<number | null>(null);
-  useEffect(() => {
-    if (lastMessage) {
-      console.log("Processing lastMessage", lastMessage);
-      const { symbol, mark, timestamp, delta, gamma, theta, vega } =
-        lastMessage;
+  const { symbolPricePoints, greeks } = usePriceStream();
 
-      if (mark !== undefined && timestamp !== undefined) {
-        const point: PricePoint = { mark, timestamp };
-        setSymbolPricePoints((prev) => {
-          const prevPoints = prev[symbol] || [];
-          setDelta(delta);
-          setGamma(gamma);
-          setTheta(theta);
-          setVega(vega);
-          return {
-            ...prev,
-            [symbol]: [...prevPoints.slice(-99), point],
-          };
-        });
-      } else {
-        if (mark === undefined)
-          console.warn("Message missing mark", lastMessage);
-        if (timestamp === undefined)
-          console.warn("Message missing timestamp", lastMessage);
-      }
-    }
-  }, [lastMessage]);
-
-  const graphData = React.useMemo(() => {
-    const points = symbolPricePoints[stockSymbol] || [];
-    return {
+  const expectedSymbol = formatOptionSymbol(
+    stockSymbol,
+    day,
+    month,
+    year,
+    type,
+    strikePrice
+  );
+  const points = symbolPricePoints[expectedSymbol] || [];
+  const greek = greeks[expectedSymbol] || {};
+  const graphData = React.useMemo(
+    () => ({
       datasets: [
         {
           label: `${stockSymbol} $${strikePrice} ${type} Expiring ${month}/${day}/${year}`,
@@ -96,8 +89,9 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           tension: 0.1,
         },
       ],
-    };
-  }, [symbolPricePoints, stockSymbol]);
+    }),
+    [points, stockSymbol, strikePrice, type, month, day, year]
+  );
 
   const options = {
     responsive: true,
@@ -120,9 +114,29 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
 
   return (
     <div>
-      <h1>
-        Delta: {delta} Gamma: {gamma} Theta: {theta} Vega: {vega}
-      </h1>
+      <div
+        style={{
+          display: "flex",
+          gap: "10px",
+          flexWrap: "wrap",
+          justifyContent: "center",
+        }}
+      >
+        {["IV", "Delta", "Gamma", "Theta", "Vega"].map((name) => (
+          <span
+            key={name}
+            style={{
+              background: "#4200bd",
+              color: "white",
+              padding: "4px 8px",
+              borderRadius: "8px",
+              fontSize: "1rem",
+            }}
+          >
+            {name}: {greek[name.toLowerCase() as keyof typeof greek] ?? "N/A"}
+          </span>
+        ))}
+      </div>
       <div style={{ padding: "20px" }}>
         <Line key={stockSymbol} options={options} data={graphData} />
       </div>

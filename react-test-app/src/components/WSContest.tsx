@@ -6,6 +6,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { usePriceStream } from "./PriceContext";
 
 interface WSContextValue {
   sendMessage: (msg: any) => void;
@@ -15,20 +16,36 @@ interface WSContextValue {
 const WSContext = createContext<WSContextValue | undefined>(undefined);
 interface Props {
   children: ReactNode;
+  clientId: string;
 }
 
-export const WSProvider = ({ children }: Props): JSX.Element => {
+export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
   const ws = useRef<WebSocket | null>(null);
   const [lastMessage, setLastMessage] = useState<any>(null);
+  const { updatePricePoint, updateGreeks } = usePriceStream();
 
   useEffect(() => {
-    const clientId = "TSX_CLIENT";
     ws.current = new WebSocket(`ws://localhost:8080/connect?id=${clientId}`);
 
     ws.current.onmessage = (event) => {
       const parsed = JSON.parse(event.data);
       console.log("Received message:", parsed);
-      setLastMessage(parsed); // This should trigger the useEffect in your component
+
+      const { symbol, mark, timestamp, iv, delta, gamma, theta, vega } = parsed;
+      if (symbol && mark !== undefined && timestamp !== undefined) {
+        updatePricePoint(symbol, { mark, timestamp });
+      }
+
+      if (
+        symbol &&
+        delta !== undefined &&
+        gamma !== undefined &&
+        theta !== undefined &&
+        vega !== undefined &&
+        iv !== undefined
+      ) {
+        updateGreeks(symbol, { iv, delta, gamma, theta, vega });
+      }
     };
 
     ws.current.onclose = () => {
@@ -39,7 +56,7 @@ export const WSProvider = ({ children }: Props): JSX.Element => {
     return () => {
       ws.current?.close();
     };
-  }, []);
+  }, [clientId]);
 
   const sendMessage = (msg: any) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
