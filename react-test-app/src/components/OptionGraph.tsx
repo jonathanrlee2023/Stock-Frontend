@@ -140,6 +140,12 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
       <div style={{ padding: "20px" }}>
         <Line key={stockSymbol} options={options} data={graphData} />
       </div>
+      {/* <button
+        className="btn btn-secondary"
+        onClick={}
+      >
+        Back to Home
+      </button> */}
     </div>
   );
 };
