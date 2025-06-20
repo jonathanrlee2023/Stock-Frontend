@@ -13,6 +13,7 @@ import { setuid } from "process";
 import { PriceStreamProvider } from "./components/PriceContext";
 import { ButtonsProvider } from "./components/ButtonContext";
 import OptionsSearchBar from "./components/OptionsSearchBar";
+import { BalanceWSComponent } from "./components/Balance";
 
 const App: React.FC = () => {
   const [activeStock, setActiveStock] = useState<string>(""); // Persistent state for search query
@@ -88,24 +89,27 @@ const App: React.FC = () => {
         <PriceStreamProvider>
           <WSProvider clientId="STOCK_CLIENT">
             {activeCard === "home" && (
-              <div className="home-screen">
-                <SearchBar
-                  setSearchQuery={setActiveStock}
-                  searchQuery={activeStock}
-                  inputMessage="Enter Stock Symbol..."
-                  onEnter={startStockStream}
-                  onSearchClick={startStockStream}
-                />
-                <TodayStockWSComponent stockSymbol={activeStock} />
-                <div className="d-flex justify-content-center mt-0">
-                  <button
-                    className="btn btn-primary btn-lg mb-3"
-                    onClick={() => setActiveCard("options")}
-                  >
-                    Options
-                  </button>
+              <>
+                <BalanceWSComponent />
+                <div className="home-screen">
+                  <SearchBar
+                    setSearchQuery={setActiveStock}
+                    searchQuery={activeStock}
+                    inputMessage="Enter Stock Symbol..."
+                    onEnter={startStockStream}
+                    onSearchClick={startStockStream}
+                  />
+                  <TodayStockWSComponent stockSymbol={activeStock} />
+                  <div className="d-flex justify-content-center mt-0">
+                    <button
+                      className="btn btn-primary btn-lg mb-3"
+                      onClick={() => setActiveCard("options")}
+                    >
+                      Options
+                    </button>
+                  </div>
                 </div>
-              </div>
+              </>
             )}
           </WSProvider>
         </PriceStreamProvider>

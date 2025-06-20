@@ -47,7 +47,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
           })),
           fill: false,
           borderColor: "rgb(66, 0, 189)",
-          tension: 0.1,
+          tension: 0,
         },
       ],
     }),

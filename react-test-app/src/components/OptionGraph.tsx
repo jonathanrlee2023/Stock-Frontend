@@ -54,6 +54,28 @@ function formatOptionSymbol(
     "0"
   )}${typeLetter}${strikeStr}`;
 }
+const postData = async (optionId: string, price: number, amount: number) => {
+  const data = { id: optionId, price, amount };
+
+  try {
+    const response = await fetch("http://localhost:8080/newPosition", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const result = await response.text();
+    console.log("Server response:", result);
+  } catch (error) {
+    console.error("POST request failed:", error);
+  }
+};
 
 export const OptionWSComponent: React.FC<OptionWSProps> = ({
   stockSymbol,
@@ -75,6 +97,10 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
   );
   const points = symbolPricePoints[expectedSymbol] || [];
   const greek = greeks[expectedSymbol] || {};
+  const [amount, setAmount] = useState<number>(1);
+
+  const latestMark = points.length > 0 ? points[points.length - 1].mark : 0;
+
   const graphData = React.useMemo(
     () => ({
       datasets: [
@@ -140,12 +166,28 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
       <div style={{ padding: "20px" }}>
         <Line key={stockSymbol} options={options} data={graphData} />
       </div>
-      {/* <button
+      <div style={{ marginBottom: "10px" }}>
+        <label>
+          Amount:{" "}
+          <input
+            type="number"
+            value={amount}
+            min={1}
+            onChange={(e) => setAmount(Number(e.target.value))}
+          />
+        </label>
+      </div>
+      <button
         className="btn btn-secondary"
-        onClick={}
+        style={{
+          opacity: latestMark <= 0 ? 0.5 : 1,
+          cursor: latestMark <= 0 ? "not-allowed" : "pointer",
+        }}
+        onClick={() => postData(expectedSymbol, latestMark, amount)}
+        disabled={latestMark <= 0}
       >
-        Back to Home
-      </button> */}
+        Open Position
+      </button>
     </div>
   );
 };

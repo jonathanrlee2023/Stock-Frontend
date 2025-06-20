@@ -29,6 +29,7 @@ export const BalanceWSComponent: React.FC = ({}) => {
   const { symbolPricePoints } = usePriceStream();
 
   const points = symbolPricePoints["balance"] || [];
+  const latestBalance = points.length > 0 ? points[points.length - 1].mark : 0;
 
   const graphData = React.useMemo(
     () => ({
@@ -41,7 +42,7 @@ export const BalanceWSComponent: React.FC = ({}) => {
           })),
           fill: false,
           borderColor: "rgb(66, 0, 189)",
-          tension: 0.1,
+          tension: 0,
         },
       ],
     }),
@@ -69,6 +70,11 @@ export const BalanceWSComponent: React.FC = ({}) => {
 
   return (
     <div style={{ padding: "20px" }}>
+      <div
+        style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "10px" }}
+      >
+        Balance: ${latestBalance.toFixed(2)}
+      </div>
       <Line key={"Balance"} options={options} data={graphData} />
     </div>
   );
