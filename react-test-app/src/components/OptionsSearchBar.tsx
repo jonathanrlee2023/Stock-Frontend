@@ -45,7 +45,7 @@ const OptionsSearchBar: React.FC<OptionsSearchBarProps> = ({
         type="button"
         onClick={handleSearchClick} // Handle search button click
       >
-        Search
+        Confirm
       </button>
     </div>
   );

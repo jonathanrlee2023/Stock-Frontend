@@ -55,7 +55,7 @@ export const BalanceWSComponent: React.FC = ({}) => {
       legend: { position: "top" as const },
       title: {
         display: true,
-        text: `Price History`,
+        text: `Balance`,
       },
     },
     scales: {

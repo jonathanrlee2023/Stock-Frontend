@@ -165,25 +165,25 @@ const App: React.FC = () => {
                   onEnter={setOptionType}
                   onSearchClick={setOptionType}
                 />
-                <button
-                  className="btn btn-primary btn-lg mb-3"
-                  onClick={() => {
-                    fetch(
-                      `http://localhost:8080/startOptionStream?symbol=${underlyingStock}&price=${strikePrice}&day=${optionDay}&month=${optionMonth}&year=${optionYear}&type=${optionType}`
-                    )
-                      .then((res) => res.text())
-                      .then((data) => console.log("Data:", data))
-                      .catch((err) => console.error("API error:", err));
-                  }}
-                >
-                  Confirm
-                </button>
-                <button
-                  className="btn btn-primary btn-lg mb-3"
-                  onClick={postData}
-                >
-                  ADD
-                </button>
+                <div className="d-flex gap-2 mb-6 mx-2">
+                  <button
+                    className="btn btn-primary btn-lg"
+                    onClick={() => {
+                      fetch(
+                        `http://localhost:8080/startOptionStream?symbol=${underlyingStock}&price=${strikePrice}&day=${optionDay}&month=${optionMonth}&year=${optionYear}&type=${optionType}`
+                      )
+                        .then((res) => res.text())
+                        .then((data) => console.log("Data:", data))
+                        .catch((err) => console.error("API error:", err));
+                    }}
+                  >
+                    Search
+                  </button>
+
+                  <button className="btn btn-primary btn-lg" onClick={postData}>
+                    ADD
+                  </button>
+                </div>
                 <OptionWSComponent
                   stockSymbol={underlyingStock}
                   strikePrice={strikePrice}

@@ -54,11 +54,16 @@ function formatOptionSymbol(
     "0"
   )}${typeLetter}${strikeStr}`;
 }
-const postData = async (optionId: string, price: number, amount: number) => {
-  const data = { id: optionId, price, amount };
+const postData = async (
+  openOrClose: string,
+  optionId: string,
+  price: number,
+  amount: number
+) => {
+  const data = { id: openOrClose, optionId, price, amount };
 
   try {
-    const response = await fetch("http://localhost:8080/newPosition", {
+    const response = await fetch(`http://localhost:8080/${openOrClose}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -166,7 +171,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
       <div style={{ padding: "20px" }}>
         <Line key={stockSymbol} options={options} data={graphData} />
       </div>
-      <div style={{ marginBottom: "10px" }}>
+      <div className="mb-2 mx-2">
         <label>
           Amount:{" "}
           <input
@@ -177,17 +182,34 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           />
         </label>
       </div>
-      <button
-        className="btn btn-secondary"
-        style={{
-          opacity: latestMark <= 0 ? 0.5 : 1,
-          cursor: latestMark <= 0 ? "not-allowed" : "pointer",
-        }}
-        onClick={() => postData(expectedSymbol, latestMark, amount)}
-        disabled={latestMark <= 0}
-      >
-        Open Position
-      </button>
+      <div className="d-flex gap-2 mb-2 mx-2">
+        <button
+          className="btn btn-secondary"
+          style={{
+            opacity: latestMark <= 0 ? 0.5 : 1,
+            cursor: latestMark <= 0 ? "not-allowed" : "pointer",
+          }}
+          onClick={() =>
+            postData("openPosition", expectedSymbol, latestMark, amount)
+          }
+          disabled={latestMark <= 0}
+        >
+          Open Position
+        </button>
+        <button
+          className="btn btn-secondary"
+          style={{
+            opacity: latestMark <= 0 ? 0.5 : 1,
+            cursor: latestMark <= 0 ? "not-allowed" : "pointer",
+          }}
+          onClick={() =>
+            postData("closePosition", expectedSymbol, latestMark, amount)
+          }
+          disabled={latestMark <= 0}
+        >
+          Close Position
+        </button>
+      </div>
     </div>
   );
 };
