@@ -82,6 +82,31 @@ const postData = async (
   }
 };
 
+const addNewTracker = async (optionId: string) => {
+  const data = {
+    id: optionId,
+  };
+
+  try {
+    const response = await fetch("http://localhost:8080/newTracker", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const result = await response.text();
+    console.log("Server response:", result);
+  } catch (error) {
+    console.error("POST request failed:", error);
+  }
+};
+
 export const OptionWSComponent: React.FC<OptionWSProps> = ({
   stockSymbol,
   day,
@@ -202,9 +227,10 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
             opacity: latestMark <= 0 ? 0.5 : 1,
             cursor: latestMark <= 0 ? "not-allowed" : "pointer",
           }}
-          onClick={() =>
-            postData("closePosition", expectedSymbol, latestMark, amount)
-          }
+          onClick={() => {
+            postData("closePosition", expectedSymbol, latestMark, amount);
+            addNewTracker(expectedSymbol);
+          }}
           disabled={latestMark <= 0}
         >
           Close Position
