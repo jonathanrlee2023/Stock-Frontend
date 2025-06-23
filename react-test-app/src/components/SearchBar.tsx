@@ -46,7 +46,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   return (
     <>
-      <div className="input-group my-3">
+      <div className="d-flex mb-2 mt-2 mx-2">
         <input
           type="text"
           className="form-control"
@@ -69,7 +69,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <button
             key={btnLabel}
             type="button"
-            className="btn btn-success me-2 mb-2"
+            className="btn btn-success me-2 mb-2 mx-2"
             onClick={() => handleButtonClick(btnLabel)}
           >
             {btnLabel}

@@ -32,9 +32,9 @@ interface TodayStockWSProps {
 export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   stockSymbol,
 }) => {
-  const { symbolPricePoints } = usePriceStream();
+  const { stockPoints } = usePriceStream();
 
-  const points = symbolPricePoints[stockSymbol] || [];
+  const points = stockPoints[stockSymbol] || [];
 
   const graphData = React.useMemo(
     () => ({

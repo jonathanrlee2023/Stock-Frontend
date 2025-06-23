@@ -31,7 +31,7 @@ const OptionsSearchBar: React.FC<OptionsSearchBarProps> = ({
   };
 
   return (
-    <div className="input-group my-3">
+    <div className="d-flex mb-2 mt-2 mx-2" style={{ maxWidth: "800px" }}>
       <input
         type="text"
         className="form-control"

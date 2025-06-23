@@ -60,7 +60,7 @@ const postData = async (
   price: number,
   amount: number
 ) => {
-  const data = { id: openOrClose, optionId, price, amount };
+  const data = { id: optionId, price, amount };
 
   try {
     const response = await fetch(`http://localhost:8080/${openOrClose}`, {
@@ -115,7 +115,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
   strikePrice,
   type,
 }) => {
-  const { symbolPricePoints, greeks } = usePriceStream();
+  const { optionPoints } = usePriceStream();
 
   const expectedSymbol = formatOptionSymbol(
     stockSymbol,
@@ -125,11 +125,11 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
     type,
     strikePrice
   );
-  const points = symbolPricePoints[expectedSymbol] || [];
-  const greek = greeks[expectedSymbol] || {};
+  const points = optionPoints[expectedSymbol] || [];
   const [amount, setAmount] = useState<number>(1);
 
-  const latestMark = points.length > 0 ? points[points.length - 1].mark : 0;
+  const latestPoint = points.length > 0 ? points[points.length - 1] : null;
+  const latestMark = latestPoint?.mark ?? 0;
 
   const graphData = React.useMemo(
     () => ({
@@ -142,7 +142,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           })),
           fill: false,
           borderColor: "rgb(66, 0, 189)",
-          tension: 0.1,
+          tension: 0,
         },
       ],
     }),
@@ -170,6 +170,9 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
 
   return (
     <div>
+      <div style={{ padding: "20px" }}>
+        <Line key={stockSymbol} options={options} data={graphData} />
+      </div>
       <div
         style={{
           display: "flex",
@@ -178,9 +181,9 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           justifyContent: "center",
         }}
       >
-        {["IV", "Delta", "Gamma", "Theta", "Vega"].map((name) => (
+        {["iv", "delta", "gamma", "theta", "vega"].map((g) => (
           <span
-            key={name}
+            key={g}
             style={{
               background: "#4200bd",
               color: "white",
@@ -189,12 +192,12 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
               fontSize: "1rem",
             }}
           >
-            {name}: {greek[name.toLowerCase() as keyof typeof greek] ?? "N/A"}
+            {g.toUpperCase()}:{" "}
+            {latestPoint
+              ? latestPoint[g as keyof typeof latestPoint]?.toFixed(4)
+              : "N/A"}
           </span>
         ))}
-      </div>
-      <div style={{ padding: "20px" }}>
-        <Line key={stockSymbol} options={options} data={graphData} />
       </div>
       <div className="mb-2 mx-2">
         <label>

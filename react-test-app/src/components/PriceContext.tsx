@@ -1,11 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-type PricePoint = {
+type OptionPoint = {
   mark: number;
   timestamp: number;
-};
-
-type Greeks = {
   iv: number;
   delta: number;
   gamma: number;
@@ -13,14 +10,16 @@ type Greeks = {
   vega: number;
 };
 
+type StockPoint = {
+  mark: number;
+  timestamp: number;
+};
+
 type PriceStreamContextValue = {
-  symbolPricePoints: Record<string, PricePoint[]>;
-  updatePricePoint: (symbol: string, point: PricePoint) => void;
-  greeks: Record<
-    string,
-    { iv: number; delta: number; gamma: number; theta: number; vega: number }
-  >;
-  updateGreeks: (symbol: string, g: Greeks) => void;
+  optionPoints: Record<string, OptionPoint[]>;
+  stockPoints: Record<string, StockPoint[]>;
+  updateOptionPoint: (symbol: string, point: OptionPoint) => void;
+  updateStockPoint: (symbol: string, point: StockPoint) => void;
 };
 
 const PriceStreamContext = createContext<PriceStreamContextValue | undefined>(
@@ -30,18 +29,15 @@ const PriceStreamContext = createContext<PriceStreamContextValue | undefined>(
 export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [symbolPricePoints, setSymbolPricePoints] = useState<
-    Record<string, PricePoint[]>
+  const [optionPoints, setOptionPoints] = useState<
+    Record<string, OptionPoint[]>
   >({});
-  const [greeks, setGreeks] = useState<
-    Record<
-      string,
-      { iv: number; delta: number; gamma: number; theta: number; vega: number }
-    >
-  >({});
+  const [stockPoints, setStockPoints] = useState<Record<string, StockPoint[]>>(
+    {}
+  );
 
-  const updatePricePoint = (symbol: string, point: PricePoint) => {
-    setSymbolPricePoints((prev) => {
+  const updateOptionPoint = (symbol: string, point: OptionPoint) => {
+    setOptionPoints((prev) => {
       const prevPoints = prev[symbol] || [];
       return {
         ...prev,
@@ -50,19 +46,24 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   };
 
-  const updateGreeks = (
-    symbol: string,
-    g: { iv: number; delta: number; gamma: number; theta: number; vega: number }
-  ) => {
-    setGreeks((prev) => ({
-      ...prev,
-      [symbol]: g,
-    }));
+  const updateStockPoint = (symbol: string, point: StockPoint) => {
+    setStockPoints((prev) => {
+      const prevPoints = prev[symbol] || [];
+      return {
+        ...prev,
+        [symbol]: [...prevPoints.slice(-99), point],
+      };
+    });
   };
 
   return (
     <PriceStreamContext.Provider
-      value={{ symbolPricePoints, updatePricePoint, greeks, updateGreeks }}
+      value={{
+        optionPoints,
+        stockPoints,
+        updateOptionPoint,
+        updateStockPoint,
+      }}
     >
       {children}
     </PriceStreamContext.Provider>
@@ -71,7 +72,8 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
 
 export const usePriceStream = () => {
   const ctx = useContext(PriceStreamContext);
-  if (!ctx)
-    throw new Error("useOptionStream must be used inside OptionStreamProvider");
+  if (!ctx) {
+    throw new Error("usePriceStream must be used inside PriceStreamProvider");
+  }
   return ctx;
 };

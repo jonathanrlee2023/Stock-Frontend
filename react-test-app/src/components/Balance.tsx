@@ -26,9 +26,9 @@ ChartJS.register(
 );
 
 export const BalanceWSComponent: React.FC = ({}) => {
-  const { symbolPricePoints } = usePriceStream();
+  const { stockPoints } = usePriceStream();
 
-  const points = symbolPricePoints["balance"] || [];
+  const points = stockPoints["balance"] || [];
   const latestBalance = points.length > 0 ? points[points.length - 1].mark : 0;
 
   const graphData = React.useMemo(
@@ -54,8 +54,7 @@ export const BalanceWSComponent: React.FC = ({}) => {
     plugins: {
       legend: { position: "top" as const },
       title: {
-        display: true,
-        text: `Balance`,
+        display: false,
       },
     },
     scales: {

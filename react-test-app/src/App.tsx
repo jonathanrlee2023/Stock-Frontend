@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { act, useState } from "react";
 import { StockStatisticsComponent } from "./components/StockStatistics";
 import { EarningsDateComponent } from "./components/EarningsData";
 import { OptionWSComponent } from "./components/OptionGraph";
@@ -91,30 +91,22 @@ const App: React.FC = () => {
             {activeCard === "home" && (
               <>
                 <BalanceWSComponent />
-                <div className="home-screen">
-                  <SearchBar
-                    setSearchQuery={setActiveStock}
-                    searchQuery={activeStock}
-                    inputMessage="Enter Stock Symbol..."
-                    onEnter={startStockStream}
-                    onSearchClick={startStockStream}
-                  />
-                  <TodayStockWSComponent stockSymbol={activeStock} />
-                  <div className="d-flex justify-content-center mt-0">
-                    <button
-                      className="btn btn-primary btn-lg mb-3"
-                      onClick={() => setActiveCard("options")}
-                    >
-                      Options
-                    </button>
-                  </div>
+                <div className="d-flex justify-content-center mt-0">
+                  <button
+                    className="btn btn-primary btn-lg mb-3 mx-2"
+                    onClick={() => setActiveCard("stock")}
+                  >
+                    Stocks
+                  </button>
+                  <button
+                    className="btn btn-primary btn-lg mb-3 mx-2"
+                    onClick={() => setActiveCard("options")}
+                  >
+                    Options
+                  </button>
                 </div>
               </>
             )}
-          </WSProvider>
-        </PriceStreamProvider>
-        <PriceStreamProvider>
-          <WSProvider clientId="OPTIONS_CLIENT">
             {activeCard === "options" && (
               <div className="card">
                 <button
@@ -123,48 +115,50 @@ const App: React.FC = () => {
                 >
                   Back to Home
                 </button>
-                <OptionsSearchBar
-                  setSearchQuery={setUnderlyingStock}
-                  searchQuery={underlyingStock}
-                  inputMessage="Enter Stock Symbol..."
-                  onEnter={setUnderlyingStock}
-                  onSearchClick={setUnderlyingStock}
-                />
-                <OptionsSearchBar
-                  setSearchQuery={setStrikePrice}
-                  searchQuery={strikePrice}
-                  inputMessage="Enter Strike Price..."
-                  onEnter={setStrikePrice}
-                  onSearchClick={setStrikePrice}
-                />
-                <OptionsSearchBar
-                  setSearchQuery={setOptionDay}
-                  searchQuery={optionDay}
-                  inputMessage="Enter Expiration Day..."
-                  onEnter={setOptionDay}
-                  onSearchClick={setOptionDay}
-                />
-                <OptionsSearchBar
-                  setSearchQuery={setOptionMonth}
-                  searchQuery={optionMonth}
-                  inputMessage="Enter Expiration Month..."
-                  onEnter={setOptionMonth}
-                  onSearchClick={setOptionMonth}
-                />
-                <OptionsSearchBar
-                  setSearchQuery={setOptionYear}
-                  searchQuery={optionYear}
-                  inputMessage="Enter Expiration Year..."
-                  onEnter={setOptionYear}
-                  onSearchClick={setOptionYear}
-                />
-                <OptionsSearchBar
-                  setSearchQuery={setOptionType}
-                  searchQuery={optionType}
-                  inputMessage="Enter Option Type..."
-                  onEnter={setOptionType}
-                  onSearchClick={setOptionType}
-                />
+                <div className="d-flex flex-wrap gap-2 mb-3">
+                  <OptionsSearchBar
+                    setSearchQuery={setUnderlyingStock}
+                    searchQuery={underlyingStock}
+                    inputMessage="Enter Stock Symbol..."
+                    onEnter={setUnderlyingStock}
+                    onSearchClick={setUnderlyingStock}
+                  />
+                  <OptionsSearchBar
+                    setSearchQuery={setStrikePrice}
+                    searchQuery={strikePrice}
+                    inputMessage="Enter Strike Price..."
+                    onEnter={setStrikePrice}
+                    onSearchClick={setStrikePrice}
+                  />
+                  <OptionsSearchBar
+                    setSearchQuery={setOptionDay}
+                    searchQuery={optionDay}
+                    inputMessage="Enter Expiration Day..."
+                    onEnter={setOptionDay}
+                    onSearchClick={setOptionDay}
+                  />
+                  <OptionsSearchBar
+                    setSearchQuery={setOptionMonth}
+                    searchQuery={optionMonth}
+                    inputMessage="Enter Expiration Month..."
+                    onEnter={setOptionMonth}
+                    onSearchClick={setOptionMonth}
+                  />
+                  <OptionsSearchBar
+                    setSearchQuery={setOptionYear}
+                    searchQuery={optionYear}
+                    inputMessage="Enter Expiration Year..."
+                    onEnter={setOptionYear}
+                    onSearchClick={setOptionYear}
+                  />
+                  <OptionsSearchBar
+                    setSearchQuery={setOptionType}
+                    searchQuery={optionType}
+                    inputMessage="Enter Option Type..."
+                    onEnter={setOptionType}
+                    onSearchClick={setOptionType}
+                  />
+                </div>
                 <div className="d-flex gap-2 mb-6 mx-2">
                   <button
                     className="btn btn-primary btn-lg"
@@ -177,7 +171,7 @@ const App: React.FC = () => {
                         .catch((err) => console.error("API error:", err));
                     }}
                   >
-                    Search
+                    SEARCH
                   </button>
 
                   <button className="btn btn-primary btn-lg" onClick={postData}>
@@ -192,6 +186,24 @@ const App: React.FC = () => {
                   day={optionDay}
                   type={optionType}
                 />
+              </div>
+            )}
+            {activeCard == "stock" && (
+              <div className="card">
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setActiveCard("home")}
+                >
+                  Back to Home
+                </button>
+                <SearchBar
+                  setSearchQuery={setActiveStock}
+                  searchQuery={activeStock}
+                  inputMessage="Enter Stock Symbol..."
+                  onEnter={startStockStream}
+                  onSearchClick={startStockStream}
+                />
+                <TodayStockWSComponent stockSymbol={activeStock} />
               </div>
             )}
           </WSProvider>

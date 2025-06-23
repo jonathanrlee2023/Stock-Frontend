@@ -22,20 +22,20 @@ interface Props {
 export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
   const ws = useRef<WebSocket | null>(null);
   const [lastMessage, setLastMessage] = useState<any>(null);
-  const { updatePricePoint, updateGreeks } = usePriceStream();
+  const { updateStockPoint, updateOptionPoint } = usePriceStream();
 
   useEffect(() => {
     ws.current = new WebSocket(`ws://localhost:8080/connect?id=${clientId}`);
+
+    ws.current.onopen = () => {
+      console.log(`Websocket connected ${clientId}`);
+    };
 
     ws.current.onmessage = (event) => {
       const parsed = JSON.parse(event.data);
       console.log("Received message:", parsed);
 
       const { symbol, mark, timestamp, iv, delta, gamma, theta, vega } = parsed;
-      if (symbol && mark !== undefined && timestamp !== undefined) {
-        updatePricePoint(symbol, { mark, timestamp });
-      }
-
       if (
         symbol &&
         delta !== undefined &&
@@ -44,7 +44,17 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
         vega !== undefined &&
         iv !== undefined
       ) {
-        updateGreeks(symbol, { iv, delta, gamma, theta, vega });
+        updateOptionPoint(symbol, {
+          mark,
+          timestamp,
+          iv,
+          delta,
+          gamma,
+          theta,
+          vega,
+        });
+      } else {
+        updateStockPoint(symbol, { mark, timestamp });
       }
     };
 
