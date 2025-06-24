@@ -51,17 +51,20 @@ const App: React.FC = () => {
       "0"
     )}${typeLetter}${strikeStr}`;
   }
-  const postData = async (action: string) => {
-    const data = {
-      id: formatOptionSymbol(
+  const postData = async (action: string, type: string) => {
+    let data: { id: string } = { id: "" };
+    if (type == "Stock") {
+      data.id = activeStock;
+    } else if (type == "Option") {
+      data.id = formatOptionSymbol(
         underlyingStock,
         optionDay,
         optionMonth,
         optionYear,
         optionType,
         strikePrice
-      ),
-    };
+      );
+    }
 
     try {
       const response = await fetch(`http://localhost:8080/${action}`, {
@@ -170,6 +173,7 @@ const App: React.FC = () => {
                         .then((data) => console.log("Data:", data))
                         .catch((err) => console.error("API error:", err));
                     }}
+                    disabled={underlyingStock == ""}
                   >
                     SEARCH
                   </button>
@@ -177,9 +181,10 @@ const App: React.FC = () => {
                     className="btn btn-success btn-lg"
                     onClick={() => {
                       {
-                        postData("newTracker");
+                        postData("newTracker", "Option");
                       }
                     }}
+                    disabled={underlyingStock == ""}
                   >
                     ADD
                   </button>
@@ -187,9 +192,10 @@ const App: React.FC = () => {
                     className="btn btn-success btn-lg"
                     onClick={() => {
                       {
-                        postData("closeTracker");
+                        postData("closeTracker", "Option");
                       }
                     }}
+                    disabled={underlyingStock == ""}
                   >
                     REMOVE
                   </button>
@@ -220,6 +226,30 @@ const App: React.FC = () => {
                   onSearchClick={startStockStream}
                 />
                 <TodayStockWSComponent stockSymbol={activeStock} />
+                <div className="d-flex gap-2 mx-2 mb-2">
+                  <button
+                    className="btn btn-success btn-lg"
+                    onClick={() => {
+                      {
+                        postData("newTracker", "Stock");
+                      }
+                    }}
+                    disabled={activeStock == ""}
+                  >
+                    ADD
+                  </button>
+                  <button
+                    className="btn btn-success btn-lg"
+                    onClick={() => {
+                      {
+                        postData("closeTracker", "Stock");
+                      }
+                    }}
+                    disabled={activeStock == ""}
+                  >
+                    REMOVE
+                  </button>
+                </div>
               </div>
             )}
           </WSProvider>
@@ -228,144 +258,5 @@ const App: React.FC = () => {
     </div>
   );
 };
-
-//   return (
-//     <div className="App">
-//       {activeCard === "home" && (
-//         <div className="home-screen">
-//           <h1>Stock Tracker</h1>
-//           <EconomicDataComponent />
-//           <SearchBar
-//             setSearchQuery={setSearchQuery}
-//             searchQuery={searchQuery}
-//           />
-//           <TodayStockComponent stockSymbol={searchQuery} />
-//           <div className="d-flex gap-5">
-//             <button
-//               className="btn btn-primary btn-lg"
-//               onClick={() => setActiveCard("statistics")}
-//             >
-//               Statistics
-//             </button>
-//             <button
-//               className="btn btn-primary btn-lg"
-//               onClick={() => setActiveCard("earningsCalender")}
-//             >
-//               Earnings Data
-//             </button>
-//             <button
-//               className="btn btn-primary btn-lg"
-//               onClick={() => setActiveCard("earningsVolatility")}
-//             >
-//               Earnings Volatility
-//             </button>
-//             <button
-//               className="btn btn-primary btn-lg"
-//               onClick={() => setActiveCard("callOption")}
-//             >
-//               Call Option Data
-//             </button>
-//             <button
-//               className="btn btn-primary btn-lg"
-//               onClick={() => setActiveCard("putOption")}
-//             >
-//               Put Option Data
-//             </button>
-//             <button
-//               className="btn btn-primary btn-lg"
-//               onClick={() => setActiveCard("combinedOptions")}
-//             >
-//               Combined Options Data
-//             </button>
-//           </div>
-//         </div>
-//       )}
-//       {activeCard === "statistics" && (
-//         <div className="card">
-//           <button
-//             className="btn btn-secondary"
-//             onClick={() => setActiveCard("home")}
-//           >
-//             Back to Home
-//           </button>
-//           <div className="card-title">
-//             {searchQuery || "Enter a symbol"} Statistics
-//           </div>
-//           <StockStatisticsComponent stockSymbol={searchQuery} />
-//         </div>
-//       )}
-//       {activeCard === "earningsCalender" && (
-//         <div className="card">
-//           <button
-//             className="btn btn-secondary"
-//             onClick={() => setActiveCard("home")}
-//           >
-//             Back to Home
-//           </button>
-//           <div className="card-title">
-//             Earnings Data for {searchQuery || "Enter a symbol"}
-//           </div>
-//           <EarningsDateComponent stockSymbol={searchQuery} />
-//         </div>
-//       )}
-//       {activeCard === "earningsVolatility" && (
-//         <div className="card">
-//           <button
-//             className="btn btn-secondary"
-//             onClick={() => setActiveCard("home")}
-//           >
-//             Back to Home
-//           </button>
-//           <div className="card-title">
-//             Earnings Data for {searchQuery || "Enter a symbol"}
-//           </div>
-//           <EarningsVolatilityComponent stockSymbol={searchQuery} />
-//         </div>
-//       )}
-//       {activeCard === "callOption" && (
-//         <div className="card">
-//           <button
-//             className="btn btn-secondary"
-//             onClick={() => setActiveCard("home")}
-//           >
-//             Back to Home
-//           </button>
-//           <div className="card-title">
-//             Call Option Data for {searchQuery || "Enter a symbol"}
-//           </div>
-//           <OptionsDataComponent stockSymbol={searchQuery} optionType="Call" />
-//         </div>
-//       )}
-//       {activeCard === "putOption" && (
-//         <div className="card">
-//           <button
-//             className="btn btn-secondary"
-//             onClick={() => setActiveCard("home")}
-//           >
-//             Back to Home
-//           </button>
-//           <div className="card-title">
-//             Put Option Data for {searchQuery || "Enter a symbol"}
-//           </div>
-//           <OptionsDataComponent stockSymbol={searchQuery} optionType="Put" />
-//         </div>
-//       )}
-//       {activeCard === "combinedOptions" && (
-//         <div className="card">
-//           <button
-//             className="btn btn-secondary"
-//             onClick={() => setActiveCard("home")}
-//           >
-//             Back to Home
-//           </button>
-//           <div className="card-title">
-//             Combined Option Data for {searchQuery || "Enter a symbol"}
-//           </div>
-//           <CombinedOptionsDataComponent stockSymbol={searchQuery} />
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
 
 export default App;
