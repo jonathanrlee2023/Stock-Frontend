@@ -51,7 +51,7 @@ const App: React.FC = () => {
       "0"
     )}${typeLetter}${strikeStr}`;
   }
-  const postData = async () => {
+  const postData = async (action: string) => {
     const data = {
       id: formatOptionSymbol(
         underlyingStock,
@@ -64,7 +64,7 @@ const App: React.FC = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:8080/newTracker", {
+      const response = await fetch(`http://localhost:8080/${action}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -159,9 +159,9 @@ const App: React.FC = () => {
                     onSearchClick={setOptionType}
                   />
                 </div>
-                <div className="d-flex gap-2 mb-6 mx-2">
+                <div className="d-flex gap-2 mx-2">
                   <button
-                    className="btn btn-primary btn-lg"
+                    className="btn btn-success btn-lg"
                     onClick={() => {
                       fetch(
                         `http://localhost:8080/startOptionStream?symbol=${underlyingStock}&price=${strikePrice}&day=${optionDay}&month=${optionMonth}&year=${optionYear}&type=${optionType}`
@@ -173,9 +173,25 @@ const App: React.FC = () => {
                   >
                     SEARCH
                   </button>
-
-                  <button className="btn btn-primary btn-lg" onClick={postData}>
+                  <button
+                    className="btn btn-success btn-lg"
+                    onClick={() => {
+                      {
+                        postData("newTracker");
+                      }
+                    }}
+                  >
                     ADD
+                  </button>
+                  <button
+                    className="btn btn-success btn-lg"
+                    onClick={() => {
+                      {
+                        postData("closeTracker");
+                      }
+                    }}
+                  >
+                    REMOVE
                   </button>
                 </div>
                 <OptionWSComponent

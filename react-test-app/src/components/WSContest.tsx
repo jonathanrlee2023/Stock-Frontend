@@ -60,7 +60,6 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
 
     ws.current.onclose = () => {
       console.log("Websocket connection closed");
-      ws.current = new WebSocket(`ws://localhost:8080/connect?id=${clientId}`);
     };
 
     return () => {
