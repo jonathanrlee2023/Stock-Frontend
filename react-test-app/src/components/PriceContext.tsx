@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-type OptionPoint = {
+export type OptionPoint = {
   mark: number;
   timestamp: number;
   iv: number;

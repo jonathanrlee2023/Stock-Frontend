@@ -13,7 +13,7 @@ import {
 } from "chart.js";
 import { useWS } from "./WSContest"; // adjust import
 import "chartjs-adapter-date-fns";
-import { usePriceStream } from "./PriceContext";
+import { OptionPoint, usePriceStream } from "./PriceContext";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -127,6 +127,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
   );
   const points = optionPoints[expectedSymbol] || [];
   const [amount, setAmount] = useState<number>(1);
+  const [dataPoint, setDataPoint] = useState<keyof OptionPoint>("mark");
 
   const latestPoint = points.length > 0 ? points[points.length - 1] : null;
   const latestMark = latestPoint?.mark ?? 0;
@@ -138,7 +139,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           label: `${stockSymbol} $${strikePrice} ${type} Expiring ${month}/${day}/${year}`,
           data: points.map((p) => ({
             x: new Date(p.timestamp * 1000),
-            y: p.mark,
+            y: p[dataPoint],
           })),
           fill: false,
           borderColor: "rgb(66, 0, 189)",
@@ -155,7 +156,9 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
       legend: { position: "top" as const },
       title: {
         display: true,
-        text: `Price History`,
+        text: `${dataPoint.charAt(0).toUpperCase()}${dataPoint.slice(
+          1
+        )} History`,
       },
     },
     scales: {
@@ -181,22 +184,23 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           justifyContent: "center",
         }}
       >
-        {["iv", "delta", "gamma", "theta", "vega"].map((g) => (
-          <span
+        {["mark", "iv", "delta", "gamma", "theta", "vega"].map((g) => (
+          <button
             key={g}
             style={{
-              background: "#4200bd",
+              background: dataPoint === g ? "#2d007a" : "#4200bd",
               color: "white",
               padding: "4px 8px",
               borderRadius: "8px",
               fontSize: "1rem",
             }}
+            onClick={() => setDataPoint(g as keyof OptionPoint)}
           >
             {g.toUpperCase()}:{" "}
             {latestPoint
               ? latestPoint[g as keyof typeof latestPoint]?.toFixed(4)
               : "N/A"}
-          </span>
+          </button>
         ))}
       </div>
       <div className="mb-2 mx-2">
