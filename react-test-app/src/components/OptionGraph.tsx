@@ -14,6 +14,7 @@ import {
 import { useWS } from "./WSContest"; // adjust import
 import "chartjs-adapter-date-fns";
 import { OptionPoint, usePriceStream } from "./PriceContext";
+import { data } from "react-router-dom";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -147,11 +148,12 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
         },
       ],
     }),
-    [points, stockSymbol, strikePrice, type, month, day, year]
+    [points, stockSymbol, strikePrice, type, month, day, year, dataPoint]
   );
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: { position: "top" as const },
       title: {
@@ -173,7 +175,8 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
 
   return (
     <div>
-      <div style={{ padding: "20px" }}>
+      <div style={{ width: "100%", height: "750px" }}>
+        {" "}
         <Line key={stockSymbol} options={options} data={graphData} />
       </div>
       <div
@@ -221,9 +224,10 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
             opacity: latestMark <= 0 ? 0.5 : 1,
             cursor: latestMark <= 0 ? "not-allowed" : "pointer",
           }}
-          onClick={() =>
-            postData("openPosition", expectedSymbol, latestMark, amount)
-          }
+          onClick={() => {
+            postData("openPosition", expectedSymbol, latestMark, amount);
+            addNewTracker(expectedSymbol);
+          }}
           disabled={latestMark <= 0}
         >
           Open Position
@@ -236,7 +240,6 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           }}
           onClick={() => {
             postData("closePosition", expectedSymbol, latestMark, amount);
-            addNewTracker(expectedSymbol);
           }}
           disabled={latestMark <= 0}
         >
