@@ -14,6 +14,7 @@ import {
 import { useWS } from "./WSContest"; // adjust import
 import "chartjs-adapter-date-fns";
 import { usePriceStream } from "./PriceContext";
+import { postData, addNewTracker } from "./OptionGraph";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -33,8 +34,12 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   stockSymbol,
 }) => {
   const { stockPoints } = usePriceStream();
+  const [amount, setAmount] = useState<number>(0);
 
   const points = stockPoints[stockSymbol] || [];
+  const latestPoint = points.length > 0 ? points[points.length - 1] : null;
+
+  const latestMark = latestPoint?.mark ?? 0;
 
   const graphData = React.useMemo(
     () => ({
@@ -76,6 +81,46 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   return (
     <div style={{ padding: "20px" }}>
       <Line key={stockSymbol} options={options} data={graphData} />
+      <div className="mb-2 mx-2">
+        <label>
+          Amount:{" "}
+          <input
+            type="number"
+            value={amount}
+            min={1}
+            onChange={(e) => setAmount(Number(e.target.value))}
+          />
+        </label>
+      </div>
+      <div className="d-flex gap-2 mb-2 mx-2">
+        <button
+          className="btn btn-secondary"
+          style={{
+            opacity: latestMark <= 0 ? 0.5 : 1,
+            cursor: latestMark <= 0 ? "not-allowed" : "pointer",
+          }}
+          onClick={() => {
+            postData("openPosition", stockSymbol, latestMark, amount);
+            addNewTracker(stockSymbol);
+          }}
+          disabled={latestMark <= 0}
+        >
+          Open Position
+        </button>
+        <button
+          className="btn btn-secondary"
+          style={{
+            opacity: latestMark <= 0 ? 0.5 : 1,
+            cursor: latestMark <= 0 ? "not-allowed" : "pointer",
+          }}
+          onClick={() => {
+            postData("closePosition", stockSymbol, latestMark, amount);
+          }}
+          disabled={latestMark <= 0}
+        >
+          Close Position
+        </button>
+      </div>
     </div>
   );
 };

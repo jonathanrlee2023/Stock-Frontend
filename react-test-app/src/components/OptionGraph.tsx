@@ -55,13 +55,13 @@ function formatOptionSymbol(
     "0"
   )}${typeLetter}${strikeStr}`;
 }
-const postData = async (
+export const postData = async (
   openOrClose: string,
-  optionId: string,
+  ID: string,
   price: number,
   amount: number
 ) => {
-  const data = { id: optionId, price, amount };
+  const data = { id: ID, price, amount };
 
   try {
     const response = await fetch(`http://localhost:8080/${openOrClose}`, {
@@ -83,9 +83,9 @@ const postData = async (
   }
 };
 
-const addNewTracker = async (optionId: string) => {
+export const addNewTracker = async (ID: string) => {
   const data = {
-    id: optionId,
+    id: ID,
   };
 
   try {
@@ -126,6 +126,18 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
     type,
     strikePrice
   );
+  const expirationDate = React.useMemo(() => {
+    const yearNum = parseInt(year, 10);
+    const monthNum = parseInt(month, 10) - 1;
+    const dayNum = parseInt(day, 10);
+
+    return new Date(yearNum, monthNum, dayNum, 23, 59, 59);
+  }, [day, month, year]);
+
+  // Check if the expiration date is in the past
+  const now = new Date();
+  const isExpired = expirationDate < now;
+
   const points = optionPoints[expectedSymbol] || [];
   const [amount, setAmount] = useState<number>(1);
   const [dataPoint, setDataPoint] = useState<keyof OptionPoint>("mark");
@@ -228,7 +240,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
             postData("openPosition", expectedSymbol, latestMark, amount);
             addNewTracker(expectedSymbol);
           }}
-          disabled={latestMark <= 0}
+          disabled={latestMark <= 0 || isExpired}
         >
           Open Position
         </button>
@@ -241,7 +253,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           onClick={() => {
             postData("closePosition", expectedSymbol, latestMark, amount);
           }}
-          disabled={latestMark <= 0}
+          disabled={latestMark <= 0 || isExpired}
         >
           Close Position
         </button>

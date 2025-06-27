@@ -85,6 +85,31 @@ const App: React.FC = () => {
       console.error("POST request failed:", error);
     }
   };
+  const expirationDate = React.useMemo(() => {
+    let yearNum = parseInt(optionYear, 10);
+
+    const currentYear = new Date().getFullYear();
+    const currentCentury = Math.floor(currentYear / 100) * 100; // e.g., 2000
+    yearNum += currentCentury;
+    const monthNum = parseInt(optionMonth, 10) - 1;
+    const dayNum = parseInt(optionDay, 10);
+
+    const date = new Date(yearNum, monthNum, dayNum, 23, 59, 59);
+    console.log(date);
+    return isNaN(date.getTime()) ? null : date; // invalid -> null
+  }, [optionDay, optionMonth, optionYear]);
+
+  // Check if the expiration date is in the past
+  const now = new Date();
+
+  const isExpired = expirationDate ? expirationDate < now : true;
+  const fieldMissing =
+    underlyingStock == "" ||
+    optionDay == "" ||
+    optionMonth == "" ||
+    optionYear == "" ||
+    optionType == "" ||
+    strikePrice == "";
 
   return (
     <div className="App">
@@ -173,7 +198,7 @@ const App: React.FC = () => {
                         .then((data) => console.log("Data:", data))
                         .catch((err) => console.error("API error:", err));
                     }}
-                    disabled={underlyingStock == ""}
+                    disabled={fieldMissing || isExpired}
                   >
                     SEARCH
                   </button>
@@ -184,7 +209,7 @@ const App: React.FC = () => {
                         postData("newTracker", "Option");
                       }
                     }}
-                    disabled={underlyingStock == ""}
+                    disabled={fieldMissing || isExpired}
                   >
                     ADD
                   </button>
@@ -195,10 +220,33 @@ const App: React.FC = () => {
                         postData("closeTracker", "Option");
                       }
                     }}
-                    disabled={underlyingStock == ""}
+                    disabled={fieldMissing || isExpired}
                   >
                     REMOVE
                   </button>
+                  {isExpired && (
+                    <div
+                      style={{
+                        color: "red",
+                        fontWeight: "bold",
+                        marginTop: "10px",
+                      }}
+                    >
+                      The option expiration date has passed. Actions are
+                      disabled.
+                    </div>
+                  )}
+                  {fieldMissing && (
+                    <div
+                      style={{
+                        color: "orange",
+                        fontWeight: "bold",
+                        marginTop: "10px",
+                      }}
+                    >
+                      Please fill in all fields before proceeding.
+                    </div>
+                  )}
                 </div>
                 <OptionWSComponent
                   stockSymbol={underlyingStock}
