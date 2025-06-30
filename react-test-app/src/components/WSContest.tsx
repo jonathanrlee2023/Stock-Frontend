@@ -11,6 +11,8 @@ import { usePriceStream } from "./PriceContext";
 interface WSContextValue {
   sendMessage: (msg: any) => void;
   lastMessage: any | null;
+  ids: string[];
+  setIds: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 const WSContext = createContext<WSContextValue | undefined>(undefined);
@@ -22,6 +24,8 @@ interface Props {
 export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
   const ws = useRef<WebSocket | null>(null);
   const [lastMessage, setLastMessage] = useState<any>(null);
+  const [ids, setIds] = useState<string[]>([]);
+
   const { updateStockPoint, updateOptionPoint } = usePriceStream();
 
   useEffect(() => {
@@ -35,8 +39,11 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
       const parsed = JSON.parse(event.data);
       console.log("Received message:", parsed);
 
-      const { symbol, mark, timestamp, iv, delta, gamma, theta, vega } = parsed;
-      if (
+      const { symbol, mark, timestamp, iv, delta, gamma, theta, vega, idList } =
+        parsed;
+      if (idList !== undefined) {
+        setIds(idList);
+      } else if (
         symbol &&
         delta !== undefined &&
         gamma !== undefined &&
@@ -74,7 +81,7 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
   };
 
   return (
-    <WSContext.Provider value={{ sendMessage, lastMessage }}>
+    <WSContext.Provider value={{ sendMessage, lastMessage, ids, setIds }}>
       {children}
     </WSContext.Provider>
   );

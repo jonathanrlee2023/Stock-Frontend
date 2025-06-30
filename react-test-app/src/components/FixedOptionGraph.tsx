@@ -26,35 +26,10 @@ ChartJS.register(
   Legend
 );
 
-interface OptionWSProps {
-  stockSymbol: string;
-  day: string;
-  month: string;
-  year: string;
-  strikePrice: string;
-  type: string;
+interface FixedOptionWSProps {
+  optionID: string;
 }
 
-function formatOptionSymbol(
-  stock: string,
-  day: string,
-  month: string,
-  year: string,
-  type: string,
-  strike: string
-): string {
-  const yy = year.length === 4 ? year.slice(2) : year; // Convert YYYY to YY if needed
-  const typeLetter = type.toUpperCase().startsWith("C") ? "C" : "P";
-
-  // Convert strike price string to number, then format
-  const strikeNum = parseFloat(strike);
-  const strikeStr = (strikeNum * 1000).toFixed(0).padStart(8, "0");
-
-  return `${stock.toUpperCase()}_${yy}${month.padStart(2, "0")}${day.padStart(
-    2,
-    "0"
-  )}${typeLetter}${strikeStr}`;
-}
 export const postData = async (
   openOrClose: string,
   ID: string,
@@ -108,50 +83,64 @@ export const addNewTracker = async (ID: string) => {
   }
 };
 
-export const OptionWSComponent: React.FC<OptionWSProps> = ({
-  stockSymbol,
-  day,
-  month,
-  year,
-  strikePrice,
-  type,
+const parseOptionId = (optionID: string) => {
+  const [underlying, rest] = optionID.split("_");
+  if (!rest || rest.length < 8) {
+    throw new Error("Invalid option ID format");
+  }
+
+  const dateStr = rest.slice(0, 6);
+  const type = rest.charAt(6);
+  const strikeStr = rest.slice(7);
+
+  const year = parseInt(dateStr.slice(0, 2), 10) + 2000;
+  const month = parseInt(dateStr.slice(2, 4), 10);
+  const day = parseInt(dateStr.slice(4, 6), 10);
+  const expiration = new Date(year, month - 1, day);
+
+  const strike = parseInt(strikeStr, 10) / 1000;
+
+  return {
+    underlying,
+    expiration,
+    type,
+    strike,
+  };
+};
+
+export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
+  optionID,
 }) => {
   const { optionPoints } = usePriceStream();
 
-  const expectedSymbol = formatOptionSymbol(
-    stockSymbol,
-    day,
-    month,
-    year,
-    type,
-    strikePrice
+  // Parse optionID once per render
+  const { underlying, expiration, type, strike } = React.useMemo(
+    () => parseOptionId(optionID),
+    [optionID]
   );
-  const { setIds } = useWS();
-  const expirationDate = React.useMemo(() => {
-    let yearNum = parseInt(year, 10);
 
-    const currentYear = new Date().getFullYear();
-    const currentCentury = Math.floor(currentYear / 100) * 100; // e.g., 2000
-    yearNum += currentCentury;
-    const monthNum = parseInt(month, 10) - 1;
-    const dayNum = parseInt(day, 10);
-
-    return new Date(yearNum, monthNum, dayNum, 23, 59, 59);
-  }, [day, month, year]);
-
-  // Check if the expiration date is in the past
   const now = new Date();
-  const isExpired = expirationDate < now;
+  const isExpired = expiration < now;
 
-  const points = optionPoints[expectedSymbol] || [];
+  const points = optionPoints[optionID] || [];
   const [amount, setAmount] = useState<number>(1);
   const [dataPoint, setDataPoint] = useState<keyof OptionPoint>("mark");
-
   const latestPoint = points.length > 0 ? points[points.length - 1] : null;
   const latestMark = latestPoint?.mark ?? 0;
 
+  // For the graph label
+  const stockSymbol = underlying;
+  const strikePrice = strike;
+  const month = expiration.getMonth() + 1;
+  const day = expiration.getDate();
+  const year = expiration.getFullYear();
+
+  // (rest of your code...)
+
   const graphData = React.useMemo(() => {
-    const minutePoints = new Map<number, OptionPoint>(); // key: floored minute, value: StockPoint
+    // Your logic here, unchanged
+
+    const minutePoints = new Map<number, OptionPoint>();
 
     for (const p of points) {
       const minuteKey = Math.floor((p.timestamp - 15) / 60);
@@ -176,17 +165,14 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
       ).getTime();
 
       if (pointMinute < currentMinute) {
-        // Past minutes: store latest point for each completed minute
         minutePoints.set(minuteKey, p);
       } else if (pointMinute === currentMinute) {
-        // Current minute: always overwrite with latest point for live movement
         minutePoints.set(minuteKey, p);
       }
-      // Future points ignored (if clock sync issues send future data).
     }
 
     const filteredPoints = Array.from(minutePoints.entries())
-      .sort((a, b) => a[0] - b[0]) // sort by minute order
+      .sort((a, b) => a[0] - b[0])
       .map(([_, point]) => point);
 
     return {
@@ -279,14 +265,8 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
             cursor: latestMark <= 0 ? "not-allowed" : "pointer",
           }}
           onClick={() => {
-            postData("openPosition", expectedSymbol, latestMark, amount);
-            addNewTracker(expectedSymbol);
-            setIds((prev) => {
-              if (!prev.includes(expectedSymbol)) {
-                return [...prev, expectedSymbol];
-              }
-              return prev;
-            });
+            postData("openPosition", optionID, latestMark, amount);
+            addNewTracker(optionID);
           }}
           disabled={latestMark <= 0 || isExpired}
         >
@@ -299,8 +279,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
             cursor: latestMark <= 0 ? "not-allowed" : "pointer",
           }}
           onClick={() => {
-            postData("closePosition", expectedSymbol, latestMark, amount);
-            setIds((prev) => prev.filter((id) => id !== expectedSymbol));
+            postData("closePosition", optionID, latestMark, amount);
           }}
           disabled={latestMark <= 0 || isExpired}
         >

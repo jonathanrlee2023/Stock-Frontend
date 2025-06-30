@@ -10,7 +10,7 @@ export type OptionPoint = {
   vega: number;
 };
 
-type StockPoint = {
+export type StockPoint = {
   mark: number;
   timestamp: number;
 };

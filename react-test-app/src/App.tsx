@@ -14,6 +14,8 @@ import { PriceStreamProvider } from "./components/PriceContext";
 import { ButtonsProvider } from "./components/ButtonContext";
 import OptionsSearchBar from "./components/OptionsSearchBar";
 import { BalanceWSComponent } from "./components/Balance";
+import { FixedOptionWSComponent } from "./components/FixedOptionGraph";
+import { IdButtons } from "./components/OpenPositions";
 
 const App: React.FC = () => {
   const [activeStock, setActiveStock] = useState<string>(""); // Persistent state for search query
@@ -24,6 +26,8 @@ const App: React.FC = () => {
   const [optionYear, setOptionYear] = useState<string>("");
   const [strikePrice, setStrikePrice] = useState<string>("");
   const [optionType, setOptionType] = useState<string>("");
+  const [ids, setIds] = useState<string[]>([]);
+  const [fixedID, setFixedID] = useState<string>("");
   const startStockStream = (symbol: string) => {
     setActiveStock(symbol);
     fetch(`http://localhost:8080/startStockStream?symbol=${symbol}`)
@@ -119,6 +123,10 @@ const App: React.FC = () => {
             {activeCard === "home" && (
               <>
                 <BalanceWSComponent />
+                <IdButtons
+                  setActiveCard={setActiveCard}
+                  setActiveID={setFixedID}
+                />
                 <div className="d-flex justify-content-center mt-0">
                   <button
                     className="btn btn-primary btn-lg mb-3 mx-2"
@@ -298,6 +306,28 @@ const App: React.FC = () => {
                     REMOVE
                   </button>
                 </div>
+              </div>
+            )}
+            {activeCard == "fixedStock" && (
+              <div className="card">
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setActiveCard("home")}
+                >
+                  Back to Home
+                </button>
+                <TodayStockWSComponent stockSymbol={fixedID} />
+              </div>
+            )}
+            {activeCard == "fixedOption" && (
+              <div className="card">
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setActiveCard("home")}
+                >
+                  Back to Home
+                </button>
+                <FixedOptionWSComponent optionID={fixedID} />
               </div>
             )}
           </WSProvider>
