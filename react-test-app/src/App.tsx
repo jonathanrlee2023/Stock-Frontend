@@ -123,6 +123,16 @@ const App: React.FC = () => {
             {activeCard === "home" && (
               <>
                 <BalanceWSComponent />
+                <div
+                  style={{
+                    fontSize: "24px",
+                    fontWeight: "bold",
+                    marginBottom: "10px",
+                    marginLeft: "10px",
+                  }}
+                >
+                  Open Positions
+                </div>
                 <IdButtons
                   setActiveCard={setActiveCard}
                   setActiveID={setFixedID}

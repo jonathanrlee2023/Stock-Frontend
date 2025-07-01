@@ -112,6 +112,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
   optionID,
 }) => {
   const { optionPoints } = usePriceStream();
+  const { setIds } = useWS();
 
   // Parse optionID once per render
   const { underlying, expiration, type, strike } = React.useMemo(
@@ -267,6 +268,10 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
           onClick={() => {
             postData("openPosition", optionID, latestMark, amount);
             addNewTracker(optionID);
+            setIds((prev) => ({
+              ...prev,
+              [optionID]: (prev[optionID] ?? 0) + amount,
+            }));
           }}
           disabled={latestMark <= 0 || isExpired}
         >
@@ -280,6 +285,19 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
           }}
           onClick={() => {
             postData("closePosition", optionID, latestMark, amount);
+            setIds((prev) => {
+              const updated = { ...prev };
+              const currentAmount = updated[optionID] ?? 0;
+              const newAmount = currentAmount - amount;
+
+              if (newAmount <= 0) {
+                delete updated[optionID];
+              } else {
+                updated[optionID] = newAmount;
+              }
+
+              return updated;
+            });
           }}
           disabled={latestMark <= 0 || isExpired}
         >

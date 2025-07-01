@@ -281,12 +281,10 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           onClick={() => {
             postData("openPosition", expectedSymbol, latestMark, amount);
             addNewTracker(expectedSymbol);
-            setIds((prev) => {
-              if (!prev.includes(expectedSymbol)) {
-                return [...prev, expectedSymbol];
-              }
-              return prev;
-            });
+            setIds((prev) => ({
+              ...prev,
+              [expectedSymbol]: (prev[expectedSymbol] ?? 0) + amount,
+            }));
           }}
           disabled={latestMark <= 0 || isExpired}
         >
@@ -300,7 +298,19 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           }}
           onClick={() => {
             postData("closePosition", expectedSymbol, latestMark, amount);
-            setIds((prev) => prev.filter((id) => id !== expectedSymbol));
+            setIds((prev) => {
+              const updated = { ...prev };
+              const currentAmount = updated[expectedSymbol] ?? 0;
+              const newAmount = currentAmount - amount;
+
+              if (newAmount <= 0) {
+                delete updated[expectedSymbol];
+              } else {
+                updated[expectedSymbol] = newAmount;
+              }
+
+              return updated;
+            });
           }}
           disabled={latestMark <= 0 || isExpired}
         >

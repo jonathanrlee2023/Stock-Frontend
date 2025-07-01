@@ -139,12 +139,10 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
           onClick={() => {
             postData("openPosition", stockSymbol, latestMark, amount);
             addNewTracker(stockSymbol);
-            setIds((prev) => {
-              if (!prev.includes(stockSymbol)) {
-                return [...prev, stockSymbol];
-              }
-              return prev;
-            });
+            setIds((prev) => ({
+              ...prev,
+              [stockSymbol]: (prev[stockSymbol] ?? 0) + amount,
+            }));
           }}
           disabled={latestMark <= 0}
         >
@@ -158,7 +156,19 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
           }}
           onClick={() => {
             postData("closePosition", stockSymbol, latestMark, amount);
-            setIds((prev) => prev.filter((id) => id !== stockSymbol));
+            setIds((prev) => {
+              const updated = { ...prev };
+              const currentAmount = updated[stockSymbol] ?? 0;
+              const newAmount = currentAmount - amount;
+
+              if (newAmount <= 0) {
+                delete updated[stockSymbol];
+              } else {
+                updated[stockSymbol] = newAmount;
+              }
+
+              return updated;
+            });
           }}
           disabled={latestMark <= 0}
         >

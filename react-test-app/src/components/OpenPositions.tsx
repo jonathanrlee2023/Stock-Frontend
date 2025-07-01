@@ -11,7 +11,7 @@ export const IdButtons: React.FC<IdButtonsProps> = ({
   setActiveCard,
 }) => {
   const { ids, setIds } = useWS();
-  const previousIdsRef = useRef<string[]>([]);
+  const previousIdsRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
     previousIdsRef.current = ids; // just track the latest ids
@@ -28,9 +28,9 @@ export const IdButtons: React.FC<IdButtonsProps> = ({
 
   return (
     <div className="d-flex gap-2 mb-2 mx-2">
-      {ids.map((id) => (
+      {Object.entries(ids).map(([id, amount]) => (
         <button
-          key={id}
+          key={id + " Amount: " + amount}
           onClick={() => handleButtonClick(id)}
           style={{
             padding: "8px 12px",
@@ -41,7 +41,7 @@ export const IdButtons: React.FC<IdButtonsProps> = ({
             color: "white",
           }}
         >
-          {id}
+          {id} ({amount})
         </button>
       ))}
     </div>

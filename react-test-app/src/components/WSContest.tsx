@@ -11,8 +11,8 @@ import { usePriceStream } from "./PriceContext";
 interface WSContextValue {
   sendMessage: (msg: any) => void;
   lastMessage: any | null;
-  ids: string[];
-  setIds: React.Dispatch<React.SetStateAction<string[]>>;
+  ids: Record<string, number>;
+  setIds: React.Dispatch<React.SetStateAction<Record<string, number>>>;
 }
 
 const WSContext = createContext<WSContextValue | undefined>(undefined);
@@ -24,7 +24,7 @@ interface Props {
 export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
   const ws = useRef<WebSocket | null>(null);
   const [lastMessage, setLastMessage] = useState<any>(null);
-  const [ids, setIds] = useState<string[]>([]);
+  const [ids, setIds] = useState<Record<string, number>>({});
 
   const { updateStockPoint, updateOptionPoint } = usePriceStream();
 
