@@ -27,6 +27,7 @@ ChartJS.register(
 
 export const BalanceWSComponent: React.FC = ({}) => {
   const { stockPoints } = usePriceStream();
+  const { previousBalance } = useWS();
 
   const points = stockPoints["balance"] || [];
   const latestBalance = points.length > 0 ? points[points.length - 1].mark : 0;
@@ -70,6 +71,16 @@ export const BalanceWSComponent: React.FC = ({}) => {
       .sort((a, b) => a[0] - b[0]) // sort by minute order
       .map(([_, point]) => point);
 
+    const xValues = filteredPoints.map((p) => new Date(p.timestamp * 1000));
+    const minX = xValues[0] ?? new Date();
+    const maxX = xValues[xValues.length - 1] ?? new Date();
+
+    const lastPoint = filteredPoints[filteredPoints.length - 1];
+    const balanceLineColor =
+      lastPoint && lastPoint.mark < previousBalance
+        ? "rgba(200, 0, 0, 0.8)"
+        : "rgba(0, 150, 0, 0.8)";
+
     return {
       datasets: [
         {
@@ -79,12 +90,23 @@ export const BalanceWSComponent: React.FC = ({}) => {
             y: p.mark,
           })),
           fill: false,
-          borderColor: "rgb(66, 0, 189)",
+          borderColor: balanceLineColor,
           tension: 0,
+        },
+        {
+          label: "Previous Balance",
+          data: [
+            { x: minX, y: previousBalance },
+            { x: maxX, y: previousBalance },
+          ],
+          borderColor: "rgba(200, 0, 0, 0.8)",
+          borderWidth: 1,
+          pointRadius: 0,
+          borderDash: [5, 5],
         },
       ],
     };
-  }, [points]);
+  }, [points, previousBalance]);
 
   const options = {
     responsive: true,
@@ -104,12 +126,22 @@ export const BalanceWSComponent: React.FC = ({}) => {
     },
   };
 
+  const balanceColor =
+    latestBalance < previousBalance
+      ? "rgba(200, 0, 0, 0.8)"
+      : "rgba(0, 150, 0, 0.8)";
+
+  let change = latestBalance - previousBalance;
+
   return (
     <div style={{ padding: "20px" }}>
       <div
         style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "10px" }}
       >
-        Balance: ${latestBalance.toFixed(2)}
+        Balance:{" "}
+        <span style={{ color: balanceColor }}>
+          ${latestBalance.toFixed(2)} ({change.toFixed(2)}){" "}
+        </span>
       </div>
       <Line options={options} data={graphData} />
     </div>
