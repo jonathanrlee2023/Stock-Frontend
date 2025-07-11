@@ -182,7 +182,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
           label: `${stockSymbol} $${strikePrice} ${type} Expiring ${month}/${day}/${year}`,
           data: filteredPoints.map((p) => ({
             x: new Date(p.timestamp * 1000),
-            y: p.mark,
+            y: p[dataPoint],
           })),
           fill: false,
           borderColor: "rgb(66, 0, 189)",
