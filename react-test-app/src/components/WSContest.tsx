@@ -13,6 +13,8 @@ interface WSContextValue {
   lastMessage: any | null;
   ids: Record<string, number>;
   setIds: React.Dispatch<React.SetStateAction<Record<string, number>>>;
+  trackers: string[];
+  setTrackers: React.Dispatch<React.SetStateAction<string[]>>;
   previousBalance: number;
 }
 
@@ -26,6 +28,7 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
   const ws = useRef<WebSocket | null>(null);
   const [lastMessage, setLastMessage] = useState<any>(null);
   const [ids, setIds] = useState<Record<string, number>>({});
+  const [trackers, setTrackers] = useState<string[]>([]);
   const [previousBalance, setPreviousBalance] = useState<number>(0);
 
   const { updateStockPoint, updateOptionPoint } = usePriceStream();
@@ -51,10 +54,16 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
         theta,
         vega,
         prevBalance,
-        idList,
+        openIdList,
+        trackerIdList,
       } = parsed;
-      if (idList !== undefined && prevBalance !== undefined) {
-        setIds(idList);
+      if (
+        openIdList !== undefined &&
+        prevBalance !== undefined &&
+        trackerIdList !== undefined
+      ) {
+        setIds(openIdList);
+        setTrackers(trackerIdList);
         setPreviousBalance(prevBalance);
       } else if (
         symbol &&
@@ -100,6 +109,8 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
         lastMessage,
         ids,
         setIds,
+        trackers,
+        setTrackers,
         previousBalance,
       }}
     >

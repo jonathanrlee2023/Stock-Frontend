@@ -83,31 +83,6 @@ export const postData = async (
   }
 };
 
-export const addNewTracker = async (ID: string) => {
-  const data = {
-    id: ID,
-  };
-
-  try {
-    const response = await fetch("http://localhost:8080/newTracker", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const result = await response.text();
-    console.log("Server response:", result);
-  } catch (error) {
-    console.error("POST request failed:", error);
-  }
-};
-
 export const OptionWSComponent: React.FC<OptionWSProps> = ({
   stockSymbol,
   day,
@@ -116,6 +91,37 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
   strikePrice,
   type,
 }) => {
+  const ModifyTracker = async (action: string) => {
+    let data: { id: string } = { id: "" };
+
+    data.id = formatOptionSymbol(
+      stockSymbol,
+      day,
+      month,
+      year,
+      type,
+      strikePrice
+    );
+
+    try {
+      const response = await fetch(`http://localhost:8080/${action}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const result = await response.text();
+      console.log("Server response:", result);
+    } catch (error) {
+      console.error("POST request failed:", error);
+    }
+  };
   const { optionPoints } = usePriceStream();
 
   const expectedSymbol = formatOptionSymbol(
@@ -126,7 +132,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
     type,
     strikePrice
   );
-  const { setIds } = useWS();
+  const { setIds, setTrackers } = useWS();
   const expirationDate = React.useMemo(() => {
     let yearNum = parseInt(year, 10);
 
@@ -138,6 +144,14 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
 
     return new Date(yearNum, monthNum, dayNum, 23, 59, 59);
   }, [day, month, year]);
+
+  const fieldMissing =
+    stockSymbol == "" ||
+    day == "" ||
+    month == "" ||
+    year == "" ||
+    type == "" ||
+    strikePrice == "";
 
   // Check if the expiration date is in the past
   const now = new Date();
@@ -229,6 +243,70 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
 
   return (
     <div>
+      <button
+        className="btn btn-success btn-lg"
+        onClick={() => {
+          {
+            ModifyTracker("newTracker");
+            const symbol = formatOptionSymbol(
+              stockSymbol,
+              day,
+              month,
+              year,
+              type,
+              strikePrice
+            );
+            setTrackers((prev) =>
+              prev.includes(symbol) ? prev : [...prev, symbol]
+            );
+          }
+        }}
+        disabled={fieldMissing || isExpired}
+      >
+        ADD
+      </button>
+      <button
+        className="btn btn-success btn-lg"
+        onClick={() => {
+          {
+            ModifyTracker("closeTracker");
+            const symbol = formatOptionSymbol(
+              stockSymbol,
+              day,
+              month,
+              year,
+              type,
+              strikePrice
+            );
+            setTrackers((prev) => prev.filter((item) => item !== symbol));
+          }
+        }}
+        disabled={fieldMissing || isExpired}
+      >
+        REMOVE
+      </button>
+      {isExpired && (
+        <div
+          style={{
+            color: "red",
+            fontWeight: "bold",
+            marginTop: "10px",
+          }}
+        >
+          The option expiration date has passed. Actions are disabled.
+        </div>
+      )}
+      {fieldMissing && (
+        <div
+          style={{
+            color: "orange",
+            fontWeight: "bold",
+            marginTop: "10px",
+          }}
+        >
+          Please fill in all fields before proceeding.
+        </div>
+      )}
       <div style={{ width: "100%", height: "750px" }}>
         {" "}
         <Line key={stockSymbol} options={options} data={graphData} />
@@ -280,7 +358,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           }}
           onClick={() => {
             postData("openPosition", expectedSymbol, latestMark, amount);
-            addNewTracker(expectedSymbol);
+            ModifyTracker("newTracker");
             setIds((prev) => ({
               ...prev,
               [expectedSymbol]: (prev[expectedSymbol] ?? 0) + amount,

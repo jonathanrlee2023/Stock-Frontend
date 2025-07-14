@@ -16,6 +16,8 @@ import OptionsSearchBar from "./components/OptionsSearchBar";
 import { BalanceWSComponent } from "./components/Balance";
 import { FixedOptionWSComponent } from "./components/FixedOptionGraph";
 import { IdButtons } from "./components/OpenPositions";
+import { TrackerButtons } from "./components/Trackers";
+import { useWS } from "./components/WSContest";
 
 const App: React.FC = () => {
   const [activeStock, setActiveStock] = useState<string>(""); // Persistent state for search query
@@ -26,7 +28,6 @@ const App: React.FC = () => {
   const [optionYear, setOptionYear] = useState<string>("");
   const [strikePrice, setStrikePrice] = useState<string>("");
   const [optionType, setOptionType] = useState<string>("");
-  const [ids, setIds] = useState<string[]>([]);
   const [fixedID, setFixedID] = useState<string>("");
   const startStockStream = (symbol: string) => {
     setActiveStock(symbol);
@@ -55,65 +56,6 @@ const App: React.FC = () => {
       "0"
     )}${typeLetter}${strikeStr}`;
   }
-  const postData = async (action: string, type: string) => {
-    let data: { id: string } = { id: "" };
-    if (type == "Stock") {
-      data.id = activeStock;
-    } else if (type == "Option") {
-      data.id = formatOptionSymbol(
-        underlyingStock,
-        optionDay,
-        optionMonth,
-        optionYear,
-        optionType,
-        strikePrice
-      );
-    }
-
-    try {
-      const response = await fetch(`http://localhost:8080/${action}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const result = await response.text();
-      console.log("Server response:", result);
-    } catch (error) {
-      console.error("POST request failed:", error);
-    }
-  };
-  const expirationDate = React.useMemo(() => {
-    let yearNum = parseInt(optionYear, 10);
-
-    const currentYear = new Date().getFullYear();
-    const currentCentury = Math.floor(currentYear / 100) * 100; // e.g., 2000
-    yearNum += currentCentury;
-    const monthNum = parseInt(optionMonth, 10) - 1;
-    const dayNum = parseInt(optionDay, 10);
-
-    const date = new Date(yearNum, monthNum, dayNum, 23, 59, 59);
-    console.log(date);
-    return isNaN(date.getTime()) ? null : date; // invalid -> null
-  }, [optionDay, optionMonth, optionYear]);
-
-  // Check if the expiration date is in the past
-  const now = new Date();
-
-  const isExpired = expirationDate ? expirationDate < now : true;
-  const fieldMissing =
-    underlyingStock == "" ||
-    optionDay == "" ||
-    optionMonth == "" ||
-    optionYear == "" ||
-    optionType == "" ||
-    strikePrice == "";
 
   return (
     <div className="App">
@@ -134,6 +76,10 @@ const App: React.FC = () => {
                   Open Positions
                 </div>
                 <IdButtons
+                  setActiveCard={setActiveCard}
+                  setActiveID={setFixedID}
+                />
+                <TrackerButtons
                   setActiveCard={setActiveCard}
                   setActiveID={setFixedID}
                 />
@@ -216,55 +162,9 @@ const App: React.FC = () => {
                         .then((data) => console.log("Data:", data))
                         .catch((err) => console.error("API error:", err));
                     }}
-                    disabled={fieldMissing || isExpired}
                   >
                     SEARCH
                   </button>
-                  <button
-                    className="btn btn-success btn-lg"
-                    onClick={() => {
-                      {
-                        postData("newTracker", "Option");
-                      }
-                    }}
-                    disabled={fieldMissing || isExpired}
-                  >
-                    ADD
-                  </button>
-                  <button
-                    className="btn btn-success btn-lg"
-                    onClick={() => {
-                      {
-                        postData("closeTracker", "Option");
-                      }
-                    }}
-                    disabled={fieldMissing || isExpired}
-                  >
-                    REMOVE
-                  </button>
-                  {isExpired && (
-                    <div
-                      style={{
-                        color: "red",
-                        fontWeight: "bold",
-                        marginTop: "10px",
-                      }}
-                    >
-                      The option expiration date has passed. Actions are
-                      disabled.
-                    </div>
-                  )}
-                  {fieldMissing && (
-                    <div
-                      style={{
-                        color: "orange",
-                        fontWeight: "bold",
-                        marginTop: "10px",
-                      }}
-                    >
-                      Please fill in all fields before proceeding.
-                    </div>
-                  )}
                 </div>
                 <OptionWSComponent
                   stockSymbol={underlyingStock}
@@ -292,30 +192,6 @@ const App: React.FC = () => {
                   onSearchClick={startStockStream}
                 />
                 <TodayStockWSComponent stockSymbol={activeStock} />
-                <div className="d-flex gap-2 mx-2 mb-2">
-                  <button
-                    className="btn btn-success btn-lg"
-                    onClick={() => {
-                      {
-                        postData("newTracker", "Stock");
-                      }
-                    }}
-                    disabled={activeStock == ""}
-                  >
-                    ADD
-                  </button>
-                  <button
-                    className="btn btn-success btn-lg"
-                    onClick={() => {
-                      {
-                        postData("closeTracker", "Stock");
-                      }
-                    }}
-                    disabled={activeStock == ""}
-                  >
-                    REMOVE
-                  </button>
-                </div>
               </div>
             )}
             {activeCard == "fixedStock" && (

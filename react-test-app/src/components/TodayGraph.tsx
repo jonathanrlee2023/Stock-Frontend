@@ -14,7 +14,7 @@ import {
 import { useWS } from "./WSContest"; // adjust import
 import "chartjs-adapter-date-fns";
 import { StockPoint, usePriceStream } from "./PriceContext";
-import { postData, addNewTracker } from "./OptionGraph";
+import { postData } from "./OptionGraph";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -33,9 +33,32 @@ interface TodayStockWSProps {
 export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   stockSymbol,
 }) => {
+  const ModifyTracker = async (action: string) => {
+    let data: { id: string } = { id: "" };
+    data.id = stockSymbol;
+
+    try {
+      const response = await fetch(`http://localhost:8080/${action}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const result = await response.text();
+      console.log("Server response:", result);
+    } catch (error) {
+      console.error("POST request failed:", error);
+    }
+  };
   const { stockPoints } = usePriceStream();
   const [amount, setAmount] = useState<number>(0);
-  const { setIds } = useWS();
+  const { setIds, setTrackers } = useWS();
   const points = stockPoints[stockSymbol] || [];
   const latestPoint = points.length > 0 ? points[points.length - 1] : null;
 
@@ -117,6 +140,36 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
 
   return (
     <div style={{ padding: "20px" }}>
+      <div className="d-flex gap-2 mx-2 mb-2">
+        <button
+          className="btn btn-success btn-lg"
+          onClick={() => {
+            {
+              ModifyTracker("newTracker");
+              setTrackers((prev) =>
+                prev.includes(stockSymbol) ? prev : [...prev, stockSymbol]
+              );
+            }
+          }}
+          disabled={stockSymbol == ""}
+        >
+          ADD
+        </button>
+        <button
+          className="btn btn-success btn-lg"
+          onClick={() => {
+            {
+              ModifyTracker("closeTracker");
+              setTrackers((prev) =>
+                prev.filter((item) => item !== stockSymbol)
+              );
+            }
+          }}
+          disabled={stockSymbol == ""}
+        >
+          REMOVE
+        </button>
+      </div>
       <Line key={stockSymbol} options={options} data={graphData} />
       <div className="mb-2 mx-2">
         <label>
@@ -138,7 +191,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
           }}
           onClick={() => {
             postData("openPosition", stockSymbol, latestMark, amount);
-            addNewTracker(stockSymbol);
+            ModifyTracker("newTracker");
             setIds((prev) => ({
               ...prev,
               [stockSymbol]: (prev[stockSymbol] ?? 0) + amount,
