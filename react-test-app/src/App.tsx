@@ -79,6 +79,16 @@ const App: React.FC = () => {
                   setActiveCard={setActiveCard}
                   setActiveID={setFixedID}
                 />
+                <div
+                  style={{
+                    fontSize: "24px",
+                    fontWeight: "bold",
+                    marginBottom: "10px",
+                    marginLeft: "10px",
+                  }}
+                >
+                  Tracking
+                </div>
                 <TrackerButtons
                   setActiveCard={setActiveCard}
                   setActiveID={setFixedID}

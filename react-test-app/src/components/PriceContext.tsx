@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 export type OptionPoint = {
+  symbol: string;
   mark: number;
   timestamp: number;
   iv: number;
@@ -11,6 +12,7 @@ export type OptionPoint = {
 };
 
 export type StockPoint = {
+  symbol: string;
   mark: number;
   timestamp: number;
 };

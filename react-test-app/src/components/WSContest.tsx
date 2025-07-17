@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { usePriceStream } from "./PriceContext";
+import { usePriceStream, OptionPoint, StockPoint } from "./PriceContext";
 
 interface WSContextValue {
   sendMessage: (msg: any) => void;
@@ -17,8 +17,8 @@ interface WSContextValue {
   setTrackers: React.Dispatch<React.SetStateAction<string[]>>;
   previousBalance: number;
 }
-
 const WSContext = createContext<WSContextValue | undefined>(undefined);
+
 interface Props {
   children: ReactNode;
   clientId: string;
@@ -42,55 +42,70 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
 
     ws.current.onmessage = (event) => {
       const parsed = JSON.parse(event.data);
-      console.log("Received message:", parsed);
+      setLastMessage(parsed);
 
-      const {
-        symbol,
-        mark,
-        timestamp,
-        iv,
-        delta,
-        gamma,
-        theta,
-        vega,
-        prevBalance,
-        openIdList,
-        trackerIdList,
-      } = parsed;
+      // 1) Initialization object
       if (
-        openIdList !== undefined &&
-        prevBalance !== undefined &&
-        trackerIdList !== undefined
+        parsed.openIdList !== undefined &&
+        parsed.trackerIdList !== undefined &&
+        parsed.prevBalance !== undefined
       ) {
-        setIds(openIdList);
-        setTrackers(trackerIdList);
-        setPreviousBalance(prevBalance);
-      } else if (
-        symbol &&
-        delta !== undefined &&
-        gamma !== undefined &&
-        theta !== undefined &&
-        vega !== undefined &&
-        iv !== undefined
-      ) {
-        updateOptionPoint(symbol, {
-          mark,
-          timestamp,
-          iv,
-          delta,
-          gamma,
-          theta,
-          vega,
-        });
-      } else {
-        updateStockPoint(symbol, { mark, timestamp });
+        setIds(parsed.openIdList);
+        setTrackers(parsed.trackerIdList);
+        setPreviousBalance(parsed.prevBalance);
+        return;
       }
+
+      // 2) Batch array of OptionPoint or StockPoint
+      if (Array.isArray(parsed)) {
+        const first = parsed[0] as any;
+        if (first?.iv !== undefined) {
+          (parsed as OptionPoint[]).forEach((opt) =>
+            updateOptionPoint(opt.symbol, {
+              symbol: opt.symbol,
+              mark: opt.mark,
+              timestamp: opt.timestamp,
+              iv: opt.iv,
+              delta: opt.delta,
+              gamma: opt.gamma,
+              theta: opt.theta,
+              vega: opt.vega,
+            })
+          );
+          return;
+        } else {
+          (parsed as StockPoint[]).forEach((stk) =>
+            updateStockPoint(stk.symbol, {
+              symbol: stk.symbol,
+              mark: stk.mark,
+              timestamp: stk.timestamp,
+            })
+          );
+          return;
+        }
+      }
+
+      // 3) Single object (e.g. balance or lone stock point)
+      if (parsed.symbol) {
+        console.log("called");
+        updateStockPoint(parsed.symbol, {
+          symbol: parsed.symbol,
+          mark: parsed.mark,
+          timestamp: parsed.timestamp,
+        });
+
+        return;
+      }
+
+      // 4) Truly unexpected
+      console.warn("Unhandled WS message:", parsed);
     };
 
     ws.current.onclose = () => {
       console.log("Websocket connection closed");
     };
 
+    // Cleanup on unmount or clientId change
     return () => {
       ws.current?.close();
     };
