@@ -83,6 +83,19 @@ export const postData = async (
   }
 };
 
+// 1. Derive a type of only the non‐symbol keys
+export type OptionMetric = Exclude<keyof OptionPoint, "symbol">;
+
+// 2. Build a literal list of exactly those metrics
+const METRICS: OptionMetric[] = [
+  "mark",
+  "iv",
+  "delta",
+  "gamma",
+  "theta",
+  "vega",
+];
+
 export const OptionWSComponent: React.FC<OptionWSProps> = ({
   stockSymbol,
   day,
@@ -159,7 +172,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
 
   const points = optionPoints[expectedSymbol] || [];
   const [amount, setAmount] = useState<number>(1);
-  const [dataPoint, setDataPoint] = useState<keyof OptionPoint>("mark");
+  const [dataPoint, setDataPoint] = useState<OptionMetric>("mark");
 
   const latestPoint = points.length > 0 ? points[points.length - 1] : null;
   const latestMark = latestPoint?.mark ?? 0;
@@ -209,7 +222,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           label: `${stockSymbol} $${strikePrice} ${type} Expiring ${month}/${day}/${year}`,
           data: filteredPoints.map((p) => ({
             x: new Date(p.timestamp * 1000),
-            y: p.mark,
+            y: p[dataPoint as keyof typeof p] as number,
           })),
           fill: false,
           borderColor: "rgb(66, 0, 189)",
@@ -319,7 +332,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           justifyContent: "center",
         }}
       >
-        {["mark", "iv", "delta", "gamma", "theta", "vega"].map((g) => (
+        {METRICS.map((g) => (
           <button
             key={g}
             style={{
@@ -329,12 +342,9 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
               borderRadius: "8px",
               fontSize: "1rem",
             }}
-            onClick={() => setDataPoint(g as keyof OptionPoint)}
+            onClick={() => setDataPoint(g)}
           >
-            {g.toUpperCase()}:{" "}
-            {latestPoint
-              ? latestPoint[g as keyof typeof latestPoint]?.toFixed(4)
-              : "N/A"}
+            {g.toUpperCase()}: {latestPoint ? latestPoint[g].toFixed(4) : "N/A"}
           </button>
         ))}
       </div>

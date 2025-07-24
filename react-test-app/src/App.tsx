@@ -161,7 +161,7 @@ const App: React.FC = () => {
                     onSearchClick={setOptionType}
                   />
                 </div>
-                <div className="d-flex gap-2 mx-2">
+                <div className="d-flex gap-2 mx-2 mb-2">
                   <button
                     className="btn btn-success btn-lg"
                     onClick={() => {
