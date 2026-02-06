@@ -50,8 +50,8 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
         parsed.trackerIdList !== undefined &&
         parsed.prevBalance !== undefined
       ) {
-        setIds(parsed.openIdList);
-        setTrackers(parsed.trackerIdList);
+        setIds(parsed.openIdList ?? {});
+        setTrackers(parsed.trackerIdList ?? []);
         setPreviousBalance(parsed.prevBalance);
         return;
       }

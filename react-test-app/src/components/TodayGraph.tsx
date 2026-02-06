@@ -150,7 +150,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
         overflow: "hidden",
       }}
     >
-      <div className="d-flex gap-2 mx-2 mb-2" style={{ flex: "0 0 auto" }}>
+      <div className="d-flex gap-2 mx-2 mt-2" style={{ flex: "0 0 auto" }}>
         <button
           className="btn btn-success btn-lg"
           onClick={() => {
