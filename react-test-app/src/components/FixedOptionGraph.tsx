@@ -24,7 +24,7 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 );
 
 interface FixedOptionWSProps {
@@ -35,7 +35,7 @@ export const postData = async (
   openOrClose: string,
   ID: string,
   price: number,
-  amount: number
+  amount: number,
 ) => {
   const data = { id: ID, price, amount };
 
@@ -110,12 +110,12 @@ const parseOptionId = (optionID: string) => {
 };
 
 const METRICS: OptionMetric[] = [
-  "mark",
-  "iv",
-  "delta",
-  "gamma",
-  "theta",
-  "vega",
+  "Mark",
+  "IV",
+  "Delta",
+  "Gamma",
+  "Theta",
+  "Vega",
 ];
 
 export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
@@ -127,7 +127,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
   // Parse optionID once per render
   const { underlying, expiration, type, strike } = React.useMemo(
     () => parseOptionId(optionID),
-    [optionID]
+    [optionID],
   );
 
   const now = new Date();
@@ -135,9 +135,9 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
 
   const points = optionPoints[optionID] || [];
   const [amount, setAmount] = useState<number>(1);
-  const [dataPoint, setDataPoint] = useState<OptionMetric>("mark");
+  const [dataPoint, setDataPoint] = useState<OptionMetric>("Mark");
   const latestPoint = points.length > 0 ? points[points.length - 1] : null;
-  const latestMark = latestPoint?.mark ?? 0;
+  const latestMark = latestPoint?.Mark ?? 0;
 
   // For the graph label
   const stockSymbol = underlying;
@@ -164,7 +164,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
         pointTime.getMonth(),
         pointTime.getDate(),
         pointTime.getHours(),
-        pointTime.getMinutes()
+        pointTime.getMinutes(),
       ).getTime();
 
       const currentMinute = new Date(
@@ -172,7 +172,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
         now.getMonth(),
         now.getDate(),
         now.getHours(),
-        now.getMinutes()
+        now.getMinutes(),
       ).getTime();
 
       if (pointMinute < currentMinute) {
@@ -210,7 +210,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
       title: {
         display: true,
         text: `${dataPoint.charAt(0).toUpperCase()}${dataPoint.slice(
-          1
+          1,
         )} History`,
       },
     },
@@ -225,113 +225,139 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
   };
 
   return (
-    <div>
-      <div style={{ width: "100%", height: "750px" }}>
-        {" "}
-        <Line key={stockSymbol} options={options} data={graphData} />
-      </div>
-      <div
-        style={{
-          display: "flex",
-          gap: "10px",
-          flexWrap: "wrap",
-          justifyContent: "center",
-        }}
-      >
-        {METRICS.map((g) => (
+    <div
+      style={{
+        padding: "0px", // Remove or minimize padding
+        height: "100%",
+        width: "100%", // Force full width
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
+      <div className="d-flex gap-2 mx-2 mb-2" style={{ flex: "0 0 auto" }}>
+        <div
+          style={{
+            flex: "1 1 auto", // This allows the chart to grow/shrink to fit
+            width: "100%",
+            minHeight: "0",
+            position: "relative",
+          }}
+        >
+          <Line key={stockSymbol} options={options} data={graphData} />
+        </div>
+        <div
+          style={{
+            display: "flex",
+            gap: "10px",
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          {METRICS.map((g) => {
+            // 1. Get the raw value from the point
+            const val = latestPoint
+              ? latestPoint[g as keyof OptionPoint]
+              : null;
+
+            return (
+              <button
+                key={g}
+                style={{
+                  background: dataPoint === g ? "#2d007a" : "#4200bd",
+                  color: "white",
+                  padding: "4px 8px",
+                  borderRadius: "8px",
+                  fontSize: "1rem",
+                }}
+                onClick={() => setDataPoint(g)}
+              >
+                {/* 2. Narrow the type: only call toFixed if it's actually a number */}
+                {g.toUpperCase()}:{" "}
+                {typeof val === "number" ? val.toFixed(4) : "N/A"}
+              </button>
+            );
+          })}
+        </div>
+        <div className="mb-2 mx-2">
+          <label>
+            Amount:{" "}
+            <input
+              type="number"
+              value={amount}
+              min={1}
+              onChange={(e) => setAmount(Number(e.target.value))}
+            />
+          </label>
+        </div>
+        <div className="d-flex gap-2 mb-2 mx-2">
           <button
-            key={g}
+            className="btn btn-secondary"
             style={{
-              background: dataPoint === g ? "#2d007a" : "#4200bd",
-              color: "white",
-              padding: "4px 8px",
-              borderRadius: "8px",
-              fontSize: "1rem",
+              opacity: latestMark <= 0 ? 0.5 : 1,
+              cursor: latestMark <= 0 ? "not-allowed" : "pointer",
             }}
-            onClick={() => setDataPoint(g)}
+            onClick={() => {
+              postData("openPosition", optionID, latestMark, amount);
+              addNewTracker(optionID);
+              setIds((prev) => ({
+                ...prev,
+                [optionID]: (prev[optionID] ?? 0) + amount,
+              }));
+            }}
+            disabled={latestMark <= 0 || isExpired}
           >
-            {g.toUpperCase()}: {latestPoint ? latestPoint[g].toFixed(4) : "N/A"}
+            Open Position
           </button>
-        ))}
-      </div>
-      <div className="mb-2 mx-2">
-        <label>
-          Amount:{" "}
-          <input
-            type="number"
-            value={amount}
-            min={1}
-            onChange={(e) => setAmount(Number(e.target.value))}
-          />
-        </label>
-      </div>
-      <div className="d-flex gap-2 mb-2 mx-2">
-        <button
-          className="btn btn-secondary"
-          style={{
-            opacity: latestMark <= 0 ? 0.5 : 1,
-            cursor: latestMark <= 0 ? "not-allowed" : "pointer",
-          }}
-          onClick={() => {
-            postData("openPosition", optionID, latestMark, amount);
-            addNewTracker(optionID);
-            setIds((prev) => ({
-              ...prev,
-              [optionID]: (prev[optionID] ?? 0) + amount,
-            }));
-          }}
-          disabled={latestMark <= 0 || isExpired}
-        >
-          Open Position
-        </button>
-        <button
-          className="btn btn-secondary"
-          style={{
-            opacity: latestMark <= 0 ? 0.5 : 1,
-            cursor: latestMark <= 0 ? "not-allowed" : "pointer",
-          }}
-          onClick={() => {
-            postData("closePosition", optionID, latestMark, amount);
-            setIds((prev) => {
-              const updated = { ...prev };
-              const currentAmount = updated[optionID] ?? 0;
-              const newAmount = currentAmount - amount;
-
-              if (newAmount <= 0) {
-                delete updated[optionID];
-              } else {
-                updated[optionID] = newAmount;
-              }
-
-              return updated;
-            });
-          }}
-          disabled={latestMark <= 0 || isExpired}
-        >
-          Close Position
-        </button>
-        {isExpired && (
-          <div
+          <button
+            className="btn btn-secondary"
             style={{
-              color: "red",
-              fontWeight: "bold",
-              marginTop: "10px",
+              opacity: latestMark <= 0 ? 0.5 : 1,
+              cursor: latestMark <= 0 ? "not-allowed" : "pointer",
             }}
-          >
-            The option expiration date has passed. Actions are disabled.
-          </div>
-        )}
-        {latestMark <= 0 && (
-          <div
-            style={{
-              color: "orange",
-              fontWeight: "bold",
-              marginTop: "10px",
+            onClick={() => {
+              postData("closePosition", optionID, latestMark, amount);
+              setIds((prev) => {
+                const updated = { ...prev };
+                const currentAmount = updated[optionID] ?? 0;
+                const newAmount = currentAmount - amount;
+
+                if (newAmount <= 0) {
+                  delete updated[optionID];
+                } else {
+                  updated[optionID] = newAmount;
+                }
+
+                return updated;
+              });
             }}
+            disabled={latestMark <= 0 || isExpired}
           >
-            No Mark
-          </div>
-        )}
+            Close Position
+          </button>
+          {isExpired && (
+            <div
+              style={{
+                color: "red",
+                fontWeight: "bold",
+                marginTop: "10px",
+              }}
+            >
+              The option expiration date has passed. Actions are disabled.
+            </div>
+          )}
+          {latestMark <= 0 && (
+            <div
+              style={{
+                color: "orange",
+                fontWeight: "bold",
+                marginTop: "10px",
+              }}
+            >
+              No Mark
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

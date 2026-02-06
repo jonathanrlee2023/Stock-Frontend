@@ -23,7 +23,7 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 );
 
 interface OptionWSProps {
@@ -41,7 +41,7 @@ function formatOptionSymbol(
   month: string,
   year: string,
   type: string,
-  strike: string
+  strike: string,
 ): string {
   const yy = year.length === 4 ? year.slice(2) : year; // Convert YYYY to YY if needed
   const typeLetter = type.toUpperCase().startsWith("C") ? "C" : "P";
@@ -52,14 +52,14 @@ function formatOptionSymbol(
 
   return `${stock.toUpperCase()}_${yy}${month.padStart(2, "0")}${day.padStart(
     2,
-    "0"
+    "0",
   )}${typeLetter}${strikeStr}`;
 }
 export const postData = async (
   openOrClose: string,
   ID: string,
   price: number,
-  amount: number
+  amount: number,
 ) => {
   const data = { id: ID, price, amount };
 
@@ -88,12 +88,12 @@ export type OptionMetric = Exclude<keyof OptionPoint, "symbol">;
 
 // 2. Build a literal list of exactly those metrics
 const METRICS: OptionMetric[] = [
-  "mark",
-  "iv",
-  "delta",
-  "gamma",
-  "theta",
-  "vega",
+  "Mark",
+  "IV",
+  "Delta",
+  "Gamma",
+  "Theta",
+  "Vega",
 ];
 
 export const OptionWSComponent: React.FC<OptionWSProps> = ({
@@ -113,7 +113,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
       month,
       year,
       type,
-      strikePrice
+      strikePrice,
     );
 
     try {
@@ -143,7 +143,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
     month,
     year,
     type,
-    strikePrice
+    strikePrice,
   );
   const { setIds, setTrackers } = useWS();
   const expirationDate = React.useMemo(() => {
@@ -172,10 +172,10 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
 
   const points = optionPoints[expectedSymbol] || [];
   const [amount, setAmount] = useState<number>(1);
-  const [dataPoint, setDataPoint] = useState<OptionMetric>("mark");
+  const [dataPoint, setDataPoint] = useState<OptionMetric>("Mark");
 
   const latestPoint = points.length > 0 ? points[points.length - 1] : null;
-  const latestMark = latestPoint?.mark ?? 0;
+  const latestMark = latestPoint?.Mark ?? 0;
 
   const graphData = React.useMemo(() => {
     const minutePoints = new Map<number, OptionPoint>(); // key: floored minute, value: StockPoint
@@ -191,7 +191,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
         pointTime.getMonth(),
         pointTime.getDate(),
         pointTime.getHours(),
-        pointTime.getMinutes()
+        pointTime.getMinutes(),
       ).getTime();
 
       const currentMinute = new Date(
@@ -199,7 +199,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
         now.getMonth(),
         now.getDate(),
         now.getHours(),
-        now.getMinutes()
+        now.getMinutes(),
       ).getTime();
 
       if (pointMinute < currentMinute) {
@@ -240,7 +240,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
       title: {
         display: true,
         text: `${dataPoint.charAt(0).toUpperCase()}${dataPoint.slice(
-          1
+          1,
         )} History`,
       },
     },
@@ -255,49 +255,61 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
   };
 
   return (
-    <div>
-      <button
-        className="btn btn-success btn-lg"
-        onClick={() => {
-          {
-            ModifyTracker("newTracker");
-            const symbol = formatOptionSymbol(
-              stockSymbol,
-              day,
-              month,
-              year,
-              type,
-              strikePrice
-            );
-            setTrackers((prev) =>
-              prev.includes(symbol) ? prev : [...prev, symbol]
-            );
-          }
-        }}
-        disabled={fieldMissing || isExpired}
-      >
-        ADD
-      </button>
-      <button
-        className="btn btn-success btn-lg"
-        onClick={() => {
-          {
-            ModifyTracker("closeTracker");
-            const symbol = formatOptionSymbol(
-              stockSymbol,
-              day,
-              month,
-              year,
-              type,
-              strikePrice
-            );
-            setTrackers((prev) => prev.filter((item) => item !== symbol));
-          }
-        }}
-        disabled={fieldMissing || isExpired}
-      >
-        REMOVE
-      </button>
+    <div
+      style={{
+        padding: "0px", // Remove or minimize padding
+        height: "100%",
+        width: "100%", // Force full width
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
+      <div className="d-flex gap-2 mx-2 mb-2" style={{ flex: "0 0 auto" }}>
+        <button
+          className="btn btn-success btn-lg"
+          onClick={() => {
+            {
+              ModifyTracker("newTracker");
+              const symbol = formatOptionSymbol(
+                stockSymbol,
+                day,
+                month,
+                year,
+                type,
+                strikePrice,
+              );
+              setTrackers((prev) =>
+                prev.includes(symbol) ? prev : [...prev, symbol],
+              );
+            }
+          }}
+          disabled={fieldMissing || isExpired}
+        >
+          ADD
+        </button>
+        <button
+          className="btn btn-success btn-lg"
+          onClick={() => {
+            {
+              ModifyTracker("closeTracker");
+              const symbol = formatOptionSymbol(
+                stockSymbol,
+                day,
+                month,
+                year,
+                type,
+                strikePrice,
+              );
+              setTrackers((prev) => prev.filter((item) => item !== symbol));
+            }
+          }}
+          disabled={fieldMissing || isExpired}
+        >
+          REMOVE
+        </button>
+      </div>
+
       {isExpired && (
         <div
           style={{
@@ -320,8 +332,14 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           Please fill in all fields before proceeding.
         </div>
       )}
-      <div style={{ width: "100%", height: "750px" }}>
-        {" "}
+      <div
+        style={{
+          flex: "1 1 auto",
+          width: "100%",
+          minHeight: "0",
+          position: "relative",
+        }}
+      >
         <Line key={stockSymbol} options={options} data={graphData} />
       </div>
       <div
@@ -332,21 +350,26 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           justifyContent: "center",
         }}
       >
-        {METRICS.map((g) => (
-          <button
-            key={g}
-            style={{
-              background: dataPoint === g ? "#2d007a" : "#4200bd",
-              color: "white",
-              padding: "4px 8px",
-              borderRadius: "8px",
-              fontSize: "1rem",
-            }}
-            onClick={() => setDataPoint(g)}
-          >
-            {g.toUpperCase()}: {latestPoint ? latestPoint[g].toFixed(4) : "N/A"}
-          </button>
-        ))}
+        {METRICS.map((g) => {
+          const val = latestPoint ? latestPoint[g as keyof OptionPoint] : null;
+
+          return (
+            <button
+              key={g}
+              style={{
+                background: dataPoint === g ? "#2d007a" : "#4200bd",
+                color: "white",
+                padding: "4px 8px",
+                borderRadius: "8px",
+                fontSize: "1rem",
+              }}
+              onClick={() => setDataPoint(g)}
+            >
+              {g.toUpperCase()}:{" "}
+              {typeof val === "number" ? val.toFixed(4) : "N/A"}
+            </button>
+          );
+        })}
       </div>
       <div className="mb-2 mx-2">
         <label>

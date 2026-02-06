@@ -19,31 +19,34 @@ export const IdButtons: React.FC<IdButtonsProps> = ({
 
   const handleButtonClick = (id: string) => {
     setActiveID(id);
-    if (id.length > 6) {
-      setActiveCard("fixedOption");
-    } else {
-      setActiveCard("fixedStock");
-    }
+    setActiveCard(id.length > 6 ? "fixedOption" : "fixedStock");
   };
 
   return (
     <div className="d-flex gap-2 mb-2 mx-2">
-      {Object.entries(ids).map(([id, amount]) => (
-        <button
-          key={id + " Amount: " + amount}
-          onClick={() => handleButtonClick(id)}
-          style={{
-            padding: "8px 12px",
-            borderRadius: "6px",
-            border: "none",
-            cursor: "pointer",
-            backgroundColor: "#4200bd",
-            color: "white",
-          }}
-        >
-          {id} ({amount})
-        </button>
-      ))}
+      {Object.keys(ids).length === 0 ? (
+        // 2. Return the fallback UI
+        <div style={{ color: "#666", padding: "8px", fontStyle: "italic" }}>
+          No open Positions
+        </div>
+      ) : (
+        Object.entries(ids).map(([id, amount]) => (
+          <button
+            key={id} // Best to use just 'id' as the key
+            onClick={() => handleButtonClick(id)}
+            style={{
+              padding: "8px 12px",
+              borderRadius: "6px",
+              border: "none",
+              cursor: "pointer",
+              backgroundColor: "#4200bd",
+              color: "white",
+            }}
+          >
+            {id} ({amount})
+          </button>
+        ))
+      )}
     </div>
   );
 };

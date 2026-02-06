@@ -42,7 +42,7 @@ const App: React.FC = () => {
     month: string,
     year: string,
     type: string,
-    strike: string
+    strike: string,
   ): string {
     const yy = year.length === 4 ? year.slice(2) : year; // Convert YYYY to YY if needed
     const typeLetter = type.toUpperCase().startsWith("C") ? "C" : "P";
@@ -53,182 +53,211 @@ const App: React.FC = () => {
 
     return `${stock.toUpperCase()}_${yy}${month.padStart(2, "0")}${day.padStart(
       2,
-      "0"
+      "0",
     )}${typeLetter}${strikeStr}`;
   }
 
   return (
-    <div className="App">
-      <ButtonsProvider>
-        <PriceStreamProvider>
-          <WSProvider clientId="STOCK_CLIENT">
-            {activeCard === "home" && (
-              <>
-                <BalanceWSComponent />
-                <div
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "bold",
-                    marginBottom: "10px",
-                    marginLeft: "10px",
-                  }}
-                >
-                  Open Positions
-                </div>
-                <IdButtons
-                  setActiveCard={setActiveCard}
-                  setActiveID={setFixedID}
-                />
-                <div
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "bold",
-                    marginBottom: "10px",
-                    marginLeft: "10px",
-                  }}
-                >
-                  Tracking
-                </div>
-                <TrackerButtons
-                  setActiveCard={setActiveCard}
-                  setActiveID={setFixedID}
-                />
-                <div className="d-flex justify-content-center mt-0">
-                  <button
-                    className="btn btn-primary btn-lg mb-3 mx-2"
-                    onClick={() => setActiveCard("stock")}
-                  >
-                    Stocks
-                  </button>
-                  <button
-                    className="btn btn-primary btn-lg mb-3 mx-2"
-                    onClick={() => setActiveCard("options")}
-                  >
-                    Options
-                  </button>
-                </div>
-              </>
-            )}
-            {activeCard === "options" && (
-              <div className="card">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setActiveCard("home")}
-                >
-                  Back to Home
-                </button>
-                <div className="d-flex flex-wrap gap-2 mb-3">
-                  <OptionsSearchBar
-                    setSearchQuery={setUnderlyingStock}
-                    searchQuery={underlyingStock}
-                    inputMessage="Enter Stock Symbol..."
-                    onEnter={setUnderlyingStock}
-                    onSearchClick={setUnderlyingStock}
-                  />
-                  <OptionsSearchBar
-                    setSearchQuery={setStrikePrice}
-                    searchQuery={strikePrice}
-                    inputMessage="Enter Strike Price..."
-                    onEnter={setStrikePrice}
-                    onSearchClick={setStrikePrice}
-                  />
-                  <OptionsSearchBar
-                    setSearchQuery={setOptionDay}
-                    searchQuery={optionDay}
-                    inputMessage="Enter Expiration Day..."
-                    onEnter={setOptionDay}
-                    onSearchClick={setOptionDay}
-                  />
-                  <OptionsSearchBar
-                    setSearchQuery={setOptionMonth}
-                    searchQuery={optionMonth}
-                    inputMessage="Enter Expiration Month..."
-                    onEnter={setOptionMonth}
-                    onSearchClick={setOptionMonth}
-                  />
-                  <OptionsSearchBar
-                    setSearchQuery={setOptionYear}
-                    searchQuery={optionYear}
-                    inputMessage="Enter Expiration Year..."
-                    onEnter={setOptionYear}
-                    onSearchClick={setOptionYear}
-                  />
-                  <OptionsSearchBar
-                    setSearchQuery={setOptionType}
-                    searchQuery={optionType}
-                    inputMessage="Enter Option Type..."
-                    onEnter={setOptionType}
-                    onSearchClick={setOptionType}
-                  />
-                </div>
-                <div className="d-flex gap-2 mx-2 mb-2">
-                  <button
-                    className="btn btn-success btn-lg"
-                    onClick={() => {
-                      fetch(
-                        `http://localhost:8080/startOptionStream?symbol=${underlyingStock}&price=${strikePrice}&day=${optionDay}&month=${optionMonth}&year=${optionYear}&type=${optionType}`
-                      )
-                        .then((res) => res.text())
-                        .then((data) => console.log("Data:", data))
-                        .catch((err) => console.error("API error:", err));
+    <div
+      className="container-fluid p-0"
+      style={{ backgroundColor: "#121212", minHeight: "100vh" }}
+    >
+      <div
+        className="card"
+        style={{
+          width: "100%",
+          height: "98vh",
+          margin: "0",
+          borderRadius: "0",
+          border: "none",
+          overflow: "hidden", // Prevents the card itself from growing a scrollbar
+        }}
+      >
+        <ButtonsProvider>
+          <PriceStreamProvider>
+            <WSProvider clientId="STOCK_CLIENT">
+              <div
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                }}
+              >
+                {activeCard === "home" && (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      height: "98vh", // Use 90% of tab height to leave room for card borders
+                      justifyContent: "space-between",
                     }}
                   >
-                    SEARCH
-                  </button>
-                </div>
-                <OptionWSComponent
-                  stockSymbol={underlyingStock}
-                  strikePrice={strikePrice}
-                  year={optionYear}
-                  month={optionMonth}
-                  day={optionDay}
-                  type={optionType}
-                />
+                    <>
+                      <BalanceWSComponent />
+                      <div
+                        style={{
+                          fontSize: "20px",
+                          fontWeight: "bold",
+                          margin: "10px 0 5px 10px",
+                          zIndex: 2, // Ensures it stays above any absolute-positioned chart elements
+                        }}
+                      >
+                        Open Positions
+                      </div>
+                      <IdButtons
+                        setActiveCard={setActiveCard}
+                        setActiveID={setFixedID}
+                      />
+
+                      <div className="d-flex justify-content-center mt-2">
+                        <button
+                          className="btn btn-primary btn-lg mb-3 mx-2"
+                          onClick={() => setActiveCard("stock")}
+                        >
+                          Stocks
+                        </button>
+                        <button
+                          className="btn btn-primary btn-lg mb-3 mx-2"
+                          onClick={() => setActiveCard("options")}
+                        >
+                          Options
+                        </button>
+                      </div>
+                    </>
+                  </div>
+                )}
+                {activeCard === "options" && (
+                  <div
+                    className="card"
+                    style={{ height: "95vh", border: "none" }}
+                  >
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => setActiveCard("home")}
+                    >
+                      Back to Home
+                    </button>
+                    <div className="d-flex flex-wrap gap-2 mb-3">
+                      <OptionsSearchBar
+                        setSearchQuery={setUnderlyingStock}
+                        searchQuery={underlyingStock}
+                        inputMessage="Enter Stock Symbol..."
+                        onEnter={setUnderlyingStock}
+                        onSearchClick={setUnderlyingStock}
+                      />
+                      <OptionsSearchBar
+                        setSearchQuery={setStrikePrice}
+                        searchQuery={strikePrice}
+                        inputMessage="Enter Strike Price..."
+                        onEnter={setStrikePrice}
+                        onSearchClick={setStrikePrice}
+                      />
+                      <OptionsSearchBar
+                        setSearchQuery={setOptionDay}
+                        searchQuery={optionDay}
+                        inputMessage="Enter Expiration Day..."
+                        onEnter={setOptionDay}
+                        onSearchClick={setOptionDay}
+                      />
+                      <OptionsSearchBar
+                        setSearchQuery={setOptionMonth}
+                        searchQuery={optionMonth}
+                        inputMessage="Enter Expiration Month..."
+                        onEnter={setOptionMonth}
+                        onSearchClick={setOptionMonth}
+                      />
+                      <OptionsSearchBar
+                        setSearchQuery={setOptionYear}
+                        searchQuery={optionYear}
+                        inputMessage="Enter Expiration Year..."
+                        onEnter={setOptionYear}
+                        onSearchClick={setOptionYear}
+                      />
+                      <OptionsSearchBar
+                        setSearchQuery={setOptionType}
+                        searchQuery={optionType}
+                        inputMessage="Enter Option Type..."
+                        onEnter={setOptionType}
+                        onSearchClick={setOptionType}
+                      />
+                    </div>
+                    <div className="d-flex gap-2 mx-2 mb-2">
+                      <button
+                        className="btn btn-success btn-lg"
+                        onClick={() => {
+                          fetch(
+                            `http://localhost:8080/startOptionStream?symbol=${underlyingStock}&price=${strikePrice}&day=${optionDay}&month=${optionMonth}&year=${optionYear}&type=${optionType}`,
+                          )
+                            .then((res) => res.text())
+                            .then((data) => console.log("Data:", data))
+                            .catch((err) => console.error("API error:", err));
+                        }}
+                      >
+                        SEARCH
+                      </button>
+                    </div>
+                    <OptionWSComponent
+                      stockSymbol={underlyingStock}
+                      strikePrice={strikePrice}
+                      year={optionYear}
+                      month={optionMonth}
+                      day={optionDay}
+                      type={optionType}
+                    />
+                  </div>
+                )}
+                {activeCard == "stock" && (
+                  <div
+                    className="card"
+                    style={{ height: "95vh", border: "none" }}
+                  >
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => setActiveCard("home")}
+                    >
+                      Back to Home
+                    </button>
+                    <SearchBar
+                      setSearchQuery={setActiveStock}
+                      searchQuery={activeStock}
+                      inputMessage="Enter Stock Symbol..."
+                      onEnter={startStockStream}
+                      onSearchClick={startStockStream}
+                    />
+                    <TodayStockWSComponent stockSymbol={activeStock} />
+                  </div>
+                )}
+                {activeCard == "fixedStock" && (
+                  <div
+                    className="card"
+                    style={{ height: "95vh", border: "none" }}
+                  >
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => setActiveCard("home")}
+                    >
+                      Back to Home
+                    </button>
+                    <TodayStockWSComponent stockSymbol={fixedID} />
+                  </div>
+                )}
+                {activeCard == "fixedOption" && (
+                  <div className="card">
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => setActiveCard("home")}
+                    >
+                      Back to Home
+                    </button>
+                    <FixedOptionWSComponent optionID={fixedID} />
+                  </div>
+                )}
               </div>
-            )}
-            {activeCard == "stock" && (
-              <div className="card">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setActiveCard("home")}
-                >
-                  Back to Home
-                </button>
-                <SearchBar
-                  setSearchQuery={setActiveStock}
-                  searchQuery={activeStock}
-                  inputMessage="Enter Stock Symbol..."
-                  onEnter={startStockStream}
-                  onSearchClick={startStockStream}
-                />
-                <TodayStockWSComponent stockSymbol={activeStock} />
-              </div>
-            )}
-            {activeCard == "fixedStock" && (
-              <div className="card">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setActiveCard("home")}
-                >
-                  Back to Home
-                </button>
-                <TodayStockWSComponent stockSymbol={fixedID} />
-              </div>
-            )}
-            {activeCard == "fixedOption" && (
-              <div className="card">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setActiveCard("home")}
-                >
-                  Back to Home
-                </button>
-                <FixedOptionWSComponent optionID={fixedID} />
-              </div>
-            )}
-          </WSProvider>
-        </PriceStreamProvider>
-      </ButtonsProvider>
+            </WSProvider>
+          </PriceStreamProvider>
+        </ButtonsProvider>
+      </div>
     </div>
   );
 };

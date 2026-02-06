@@ -23,7 +23,7 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 );
 
 interface TodayStockWSProps {
@@ -62,7 +62,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   const points = stockPoints[stockSymbol] || [];
   const latestPoint = points.length > 0 ? points[points.length - 1] : null;
 
-  const latestMark = latestPoint?.mark ?? 0;
+  const latestMark = latestPoint?.Mark ?? 0;
 
   const graphData = React.useMemo(() => {
     const minutePoints = new Map<number, StockPoint>(); // key: floored minute, value: StockPoint
@@ -78,7 +78,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
         pointTime.getMonth(),
         pointTime.getDate(),
         pointTime.getHours(),
-        pointTime.getMinutes()
+        pointTime.getMinutes(),
       ).getTime();
 
       const currentMinute = new Date(
@@ -86,7 +86,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
         now.getMonth(),
         now.getDate(),
         now.getHours(),
-        now.getMinutes()
+        now.getMinutes(),
       ).getTime();
 
       if (pointMinute < currentMinute) {
@@ -109,7 +109,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
           label: `${stockSymbol}`,
           data: filteredPoints.map((p) => ({
             x: new Date(p.timestamp * 1000),
-            y: p.mark,
+            y: p.Mark,
           })),
           fill: false,
           borderColor: "rgb(66, 0, 189)",
@@ -121,6 +121,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: { position: "top" as const },
       title: {
@@ -139,15 +140,24 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <div className="d-flex gap-2 mx-2 mb-2">
+    <div
+      style={{
+        padding: "0px", // Remove or minimize padding
+        height: "100%",
+        width: "100%", // Force full width
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
+      <div className="d-flex gap-2 mx-2 mb-2" style={{ flex: "0 0 auto" }}>
         <button
           className="btn btn-success btn-lg"
           onClick={() => {
             {
               ModifyTracker("newTracker");
               setTrackers((prev) =>
-                prev.includes(stockSymbol) ? prev : [...prev, stockSymbol]
+                prev.includes(stockSymbol) ? prev : [...prev, stockSymbol],
               );
             }
           }}
@@ -161,7 +171,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
             {
               ModifyTracker("closeTracker");
               setTrackers((prev) =>
-                prev.filter((item) => item !== stockSymbol)
+                prev.filter((item) => item !== stockSymbol),
               );
             }
           }}
@@ -170,7 +180,16 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
           REMOVE
         </button>
       </div>
-      <Line key={stockSymbol} options={options} data={graphData} />
+      <div
+        style={{
+          flex: "1 1 auto", // This allows the chart to grow/shrink to fit
+          width: "100%",
+          minHeight: "0",
+          position: "relative",
+        }}
+      >
+        <Line key={stockSymbol} options={options} data={graphData} />
+      </div>
       <div className="mb-2 mx-2">
         <label>
           Amount:{" "}

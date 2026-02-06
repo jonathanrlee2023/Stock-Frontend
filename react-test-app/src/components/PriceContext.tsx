@@ -1,19 +1,19 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 export type OptionPoint = {
-  symbol: string;
-  mark: number;
-  timestamp: number;
-  iv: number;
-  delta: number;
-  gamma: number;
-  theta: number;
-  vega: number;
+  Symbol: string; // Capitalized in JSON
+  Mark: number; // Capitalized in JSON
+  timestamp: number; // Lowercase in JSON
+  IV: number; // Double-check Go tags for these
+  Delta: number;
+  Gamma: number;
+  Theta: number;
+  Vega: number;
 };
 
 export type StockPoint = {
-  symbol: string;
-  mark: number;
+  Symbol: string;
+  Mark: number; // Changed from 'Mark' to 'Mark'
   timestamp: number;
 };
 
@@ -25,7 +25,7 @@ type PriceStreamContextValue = {
 };
 
 const PriceStreamContext = createContext<PriceStreamContextValue | undefined>(
-  undefined
+  undefined,
 );
 
 export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -35,7 +35,7 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
     Record<string, OptionPoint[]>
   >({});
   const [stockPoints, setStockPoints] = useState<Record<string, StockPoint[]>>(
-    {}
+    {},
   );
 
   const updateOptionPoint = (symbol: string, point: OptionPoint) => {

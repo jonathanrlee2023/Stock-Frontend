@@ -18,7 +18,7 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 );
 
 export type CombinedOptions = {
@@ -56,7 +56,7 @@ export const CombinedOptionsDataComponent: React.FC<StockStatisticsProps> = ({
               "APCA-API-SECRET-KEY": "wbY3o9CLbWDNdaGzaBXHjmLMiO1cbFLkl7sUz6VU",
               Accept: "application/json",
             },
-          }
+          },
         );
 
         if (!optionsResponse.ok)
@@ -82,12 +82,12 @@ export const CombinedOptionsDataComponent: React.FC<StockStatisticsProps> = ({
   const sortedOptions = optionsData?.symbol
     ? [...optionsData.symbol].sort(
         (a, b) =>
-          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
       )
     : [];
 
   const labels = sortedOptions.map((option) =>
-    new Date(option.timestamp).toLocaleString()
+    new Date(option.timestamp).toLocaleString(),
   );
   const dataValues = sortedOptions.map((option) => option.price);
 
@@ -106,6 +106,7 @@ export const CombinedOptionsDataComponent: React.FC<StockStatisticsProps> = ({
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: { position: "top" as const },
       title: {
@@ -116,7 +117,14 @@ export const CombinedOptionsDataComponent: React.FC<StockStatisticsProps> = ({
   };
 
   return (
-    <div className="card" style={{ padding: "20px" }}>
+    <div
+      style={{
+        flex: "1 1 auto", // This allows the chart to grow/shrink to fit
+        width: "100%",
+        minHeight: "0",
+        position: "relative",
+      }}
+    >
       <Line options={options} data={graphData} />
     </div>
   );

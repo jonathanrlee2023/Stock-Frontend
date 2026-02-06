@@ -22,7 +22,7 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 );
 
 export const BalanceWSComponent: React.FC = ({}) => {
@@ -30,7 +30,7 @@ export const BalanceWSComponent: React.FC = ({}) => {
   const { previousBalance } = useWS();
 
   const points = stockPoints["balance"] || [];
-  const latestBalance = points.length > 0 ? points[points.length - 1].mark : 0;
+  const latestBalance = points.length > 0 ? points[points.length - 1].Mark : 0;
 
   const graphData = React.useMemo(() => {
     const minutePoints = new Map<number, StockPoint>(); // key: floored minute, value: StockPoint
@@ -46,7 +46,7 @@ export const BalanceWSComponent: React.FC = ({}) => {
         pointTime.getMonth(),
         pointTime.getDate(),
         pointTime.getHours(),
-        pointTime.getMinutes()
+        pointTime.getMinutes(),
       ).getTime();
 
       const currentMinute = new Date(
@@ -54,7 +54,7 @@ export const BalanceWSComponent: React.FC = ({}) => {
         now.getMonth(),
         now.getDate(),
         now.getHours(),
-        now.getMinutes()
+        now.getMinutes(),
       ).getTime();
 
       if (pointMinute < currentMinute) {
@@ -77,7 +77,7 @@ export const BalanceWSComponent: React.FC = ({}) => {
 
     const lastPoint = filteredPoints[filteredPoints.length - 1];
     const balanceLineColor =
-      lastPoint && lastPoint.mark < previousBalance
+      lastPoint && lastPoint.Mark < previousBalance
         ? "rgba(200, 0, 0, 0.8)"
         : "rgba(0, 150, 0, 0.8)";
 
@@ -87,7 +87,7 @@ export const BalanceWSComponent: React.FC = ({}) => {
           label: `Balance`,
           data: filteredPoints.map((p) => ({
             x: new Date(p.timestamp * 1000),
-            y: p.mark,
+            y: p.Mark,
           })),
           fill: false,
           borderColor: balanceLineColor,
@@ -110,18 +110,22 @@ export const BalanceWSComponent: React.FC = ({}) => {
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false, // Keep this false to obey the parent div height
     plugins: {
-      legend: { position: "top" as const },
-      title: {
-        display: false,
-      },
+      legend: { display: false }, // Saves ~40px of vertical space
+      title: { display: false }, // Header text handles this now
+    },
+    layout: {
+      padding: { top: 10, bottom: 0 },
     },
     scales: {
       x: {
         type: "time" as const,
-        time: {
-          tooltipFormat: "HH:mm:ss",
-        },
+        time: { tooltipFormat: "HH:mm:ss" },
+        ticks: { maxTicksLimit: 6, fontSize: 10 },
+      },
+      y: {
+        ticks: { fontSize: 10, callback: (value: any) => `$${value}` },
       },
     },
   };
@@ -134,16 +138,31 @@ export const BalanceWSComponent: React.FC = ({}) => {
   let change = latestBalance - previousBalance;
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div style={{ padding: "20px", height: "70vh" }}>
       <div
-        style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "10px" }}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: "5px",
+        }}
       >
-        Balance:{" "}
-        <span style={{ color: balanceColor }}>
-          ${latestBalance.toFixed(2)} ({change.toFixed(2)}){" "}
-        </span>
+        <div style={{ fontSize: "1.2rem", fontWeight: "bold" }}>
+          Balance:{" "}
+          <span style={{ color: balanceColor }}>
+            ${latestBalance.toFixed(2)}
+          </span>
+        </div>
+        <div
+          style={{ color: balanceColor, fontSize: "14px", fontWeight: "bold" }}
+        >
+          ({change >= 0 ? "+" : ""}
+          {change.toFixed(2)})
+        </div>
       </div>
-      <Line options={options} data={graphData} />
+      {/* This wrapper controls the chart's actual screen real estate */}
+      <div style={{ height: "calc(100%)", position: "relative" }}>
+        <Line options={options} data={graphData} />
+      </div>
     </div>
   );
 };

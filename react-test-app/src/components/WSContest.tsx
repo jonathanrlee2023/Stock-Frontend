@@ -56,30 +56,39 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
         return;
       }
 
+      if (parsed.Symbol === "balance") {
+        updateStockPoint(parsed.Symbol, {
+          Symbol: parsed.Symbol,
+          Mark: parsed.Mark,
+          timestamp: parsed.timestamp,
+        });
+        return;
+      }
+
       // 2) Batch array of OptionPoint or StockPoint
       if (Array.isArray(parsed)) {
         const first = parsed[0] as any;
         if (first?.iv !== undefined) {
           (parsed as OptionPoint[]).forEach((opt) =>
-            updateOptionPoint(opt.symbol, {
-              symbol: opt.symbol,
-              mark: opt.mark,
+            updateOptionPoint(opt.Symbol, {
+              Symbol: opt.Symbol,
+              Mark: opt.Mark,
               timestamp: opt.timestamp,
-              iv: opt.iv,
-              delta: opt.delta,
-              gamma: opt.gamma,
-              theta: opt.theta,
-              vega: opt.vega,
-            })
+              IV: opt.IV,
+              Delta: opt.Delta,
+              Gamma: opt.Gamma,
+              Theta: opt.Theta,
+              Vega: opt.Vega,
+            }),
           );
           return;
         } else {
           (parsed as StockPoint[]).forEach((stk) =>
-            updateStockPoint(stk.symbol, {
-              symbol: stk.symbol,
-              mark: stk.mark,
+            updateStockPoint(stk.Symbol, {
+              Symbol: stk.Symbol,
+              Mark: stk.Mark,
               timestamp: stk.timestamp,
-            })
+            }),
           );
           return;
         }
@@ -89,8 +98,8 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
       if (parsed.symbol) {
         console.log("called");
         updateStockPoint(parsed.symbol, {
-          symbol: parsed.symbol,
-          mark: parsed.mark,
+          Symbol: parsed.symbol,
+          Mark: parsed.Mark,
           timestamp: parsed.timestamp,
         });
 
