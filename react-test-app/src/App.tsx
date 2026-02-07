@@ -182,21 +182,6 @@ const App: React.FC = () => {
                         onSearchClick={setOptionType}
                       />
                     </div>
-                    <div className="d-flex gap-2 mx-2 mb-2">
-                      <button
-                        className="btn btn-success btn-lg"
-                        onClick={() => {
-                          fetch(
-                            `http://localhost:8080/startOptionStream?symbol=${underlyingStock}&price=${strikePrice}&day=${optionDay}&month=${optionMonth}&year=${optionYear}&type=${optionType}`,
-                          )
-                            .then((res) => res.text())
-                            .then((data) => console.log("Data:", data))
-                            .catch((err) => console.error("API error:", err));
-                        }}
-                      >
-                        SEARCH
-                      </button>
-                    </div>
                     <OptionWSComponent
                       stockSymbol={underlyingStock}
                       strikePrice={strikePrice}

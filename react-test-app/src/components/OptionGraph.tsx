@@ -265,9 +265,23 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
         overflow: "hidden",
       }}
     >
-      <div className="d-flex gap-2 mx-2 mb-2" style={{ flex: "0 0 auto" }}>
+      <div className="d-flex gap-2 mx-3 mb-2" style={{ flex: "0 0 auto" }}>
         <button
           className="btn btn-success btn-lg"
+          onClick={() => {
+            fetch(
+              `http://localhost:8080/startOptionStream?symbol=${stockSymbol}&price=${strikePrice}&day=${day}&month=${month}&year=${year}&type=${type}`,
+            )
+              .then((res) => res.text())
+              .then((data) => console.log("Data:", data))
+              .catch((err) => console.error("API error:", err));
+          }}
+          disabled={fieldMissing || isExpired}
+        >
+          SEARCH
+        </button>
+        <button
+          className="btn btn-success btn-lg ms-auto"
           onClick={() => {
             {
               ModifyTracker("newTracker");
@@ -323,6 +337,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
       )}
       {fieldMissing && (
         <div
+          className="d-flex gap-2 mx-2 mb-2"
           style={{
             color: "orange",
             fontWeight: "bold",
@@ -377,7 +392,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           <input
             type="number"
             value={amount}
-            min={1}
+            min={0}
             onChange={(e) => setAmount(Number(e.target.value))}
           />
         </label>
