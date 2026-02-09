@@ -13,15 +13,45 @@ export type OptionPoint = {
 
 export type StockPoint = {
   Symbol: string;
-  Mark: number; // Changed from 'Mark' to 'Mark'
+  Mark: number;
+  BidPrice: number;
+  AskPrice: number;
+  LastPrice: number;
   timestamp: number;
+};
+
+export type CompanyStats = {
+  Symbol: string;
+  MarketCap: number;
+  PEG: number | null;
+  Sloan: number | null;
+  ROIC: number | null;
+  HistGrowth: number | null;
+  ForecastedGrowth: number | null;
+  TrailingPEG: number | null;
+  ForwardPEG: number | null;
+  IntrinsicPrice: number | null;
+  DividendPrice: number | null;
+  PriceAtReport: number | null;
+  WACC: number | null;
+  FCFF: number | null;
+  FCF: number | null;
+  NWC: number | null;
+  PriceTarget: number | null;
+  StrongBuy: number | null;
+  Buy: number | null;
+  Hold: number | null;
+  Sell: number | null;
+  StrongSell: number | null;
 };
 
 type PriceStreamContextValue = {
   optionPoints: Record<string, OptionPoint[]>;
   stockPoints: Record<string, StockPoint[]>;
+  companyStats: Record<string, CompanyStats>;
   updateOptionPoint: (symbol: string, point: OptionPoint) => void;
   updateStockPoint: (symbol: string, point: StockPoint) => void;
+  updateCompanyStats: (symbol: string, stats: CompanyStats) => void;
 };
 
 const PriceStreamContext = createContext<PriceStreamContextValue | undefined>(
@@ -37,6 +67,9 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
   const [stockPoints, setStockPoints] = useState<Record<string, StockPoint[]>>(
     {},
   );
+  const [companyStats, setCompanyStats] = useState<
+    Record<string, CompanyStats>
+  >({});
 
   const updateOptionPoint = (symbol: string, point: OptionPoint) => {
     setOptionPoints((prev) => {
@@ -58,13 +91,22 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   };
 
+  const updateCompanyStats = (symbol: string, stats: CompanyStats) => {
+    setCompanyStats((prev) => ({
+      ...prev,
+      [symbol]: stats,
+    }));
+  };
+
   return (
     <PriceStreamContext.Provider
       value={{
         optionPoints,
         stockPoints,
+        companyStats,
         updateOptionPoint,
         updateStockPoint,
+        updateCompanyStats,
       }}
     >
       {children}

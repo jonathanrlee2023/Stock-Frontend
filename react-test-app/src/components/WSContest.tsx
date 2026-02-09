@@ -6,7 +6,12 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { usePriceStream, OptionPoint, StockPoint } from "./PriceContext";
+import {
+  usePriceStream,
+  OptionPoint,
+  StockPoint,
+  CompanyStats,
+} from "./PriceContext";
 
 interface WSContextValue {
   sendMessage: (msg: any) => void;
@@ -31,7 +36,8 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
   const [trackers, setTrackers] = useState<string[]>([]);
   const [previousBalance, setPreviousBalance] = useState<number>(0);
 
-  const { updateStockPoint, updateOptionPoint } = usePriceStream();
+  const { updateStockPoint, updateOptionPoint, updateCompanyStats } =
+    usePriceStream();
 
   useEffect(() => {
     ws.current = new WebSocket(`ws://localhost:8080/connect?id=${clientId}`);
@@ -60,8 +66,16 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
         updateStockPoint(parsed.Symbol, {
           Symbol: parsed.Symbol,
           Mark: parsed.Mark,
+          BidPrice: 0,
+          AskPrice: 0,
+          LastPrice: 0,
           timestamp: parsed.timestamp,
         });
+        return;
+      }
+
+      if (parsed.MarketCap !== undefined) {
+        updateCompanyStats(parsed.Symbol, parsed as CompanyStats);
         return;
       }
 
@@ -86,6 +100,9 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
           (parsed as StockPoint[]).forEach((stk) =>
             updateStockPoint(stk.Symbol, {
               Symbol: stk.Symbol,
+              BidPrice: stk.BidPrice,
+              AskPrice: stk.AskPrice,
+              LastPrice: stk.LastPrice,
               Mark: stk.Mark,
               timestamp: stk.timestamp,
             }),
@@ -100,6 +117,9 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
         updateStockPoint(parsed.symbol, {
           Symbol: parsed.symbol,
           Mark: parsed.Mark,
+          BidPrice: parsed.BidPrice,
+          AskPrice: parsed.AskPrice,
+          LastPrice: parsed.LastPrice,
           timestamp: parsed.timestamp,
         });
 
