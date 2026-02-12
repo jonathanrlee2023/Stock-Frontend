@@ -11,6 +11,7 @@ import {
   OptionPoint,
   StockPoint,
   CompanyStats,
+  HistoricalStockPoint,
 } from "./PriceContext";
 
 interface WSContextValue {
@@ -36,8 +37,12 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
   const [trackers, setTrackers] = useState<string[]>([]);
   const [previousBalance, setPreviousBalance] = useState<number>(0);
 
-  const { updateStockPoint, updateOptionPoint, updateCompanyStats } =
-    usePriceStream();
+  const {
+    updateStockPoint,
+    updateOptionPoint,
+    updateCompanyStats,
+    updateHistoricalStockPoint,
+  } = usePriceStream();
 
   useEffect(() => {
     ws.current = new WebSocket(`ws://localhost:8080/connect?id=${clientId}`);
@@ -76,6 +81,10 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
 
       if (parsed.MarketCap !== undefined) {
         updateCompanyStats(parsed.Symbol, parsed as CompanyStats);
+        updateHistoricalStockPoint(
+          parsed.Symbol,
+          parsed.PriceHistory as HistoricalStockPoint[],
+        );
         return;
       }
 

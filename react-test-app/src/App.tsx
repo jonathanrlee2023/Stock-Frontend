@@ -1,23 +1,15 @@
 import React, { act, useState } from "react";
-import { StockStatisticsComponent } from "./components/StockStatistics";
-import { EarningsDateComponent } from "./components/EarningsData";
 import { OptionWSComponent } from "./components/OptionGraph";
-import { EarningsVolatilityComponent } from "./components/EarningsVolatility";
-import { EconomicDataComponent } from "./components/EconomicData";
 import { TodayStockWSComponent } from "./components/TodayGraph";
-import { CombinedOptionsDataComponent } from "./components/CombinedOptions";
 import { WSProvider } from "./components/WSContest";
 import SearchBar from "./components/SearchBar";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { setuid } from "process";
 import { PriceStreamProvider } from "./components/PriceContext";
 import { ButtonsProvider } from "./components/ButtonContext";
 import OptionsSearchBar from "./components/OptionsSearchBar";
 import { BalanceWSComponent } from "./components/Balance";
 import { FixedOptionWSComponent } from "./components/FixedOptionGraph";
 import { IdButtons } from "./components/OpenPositions";
-import { TrackerButtons } from "./components/Trackers";
-import { useWS } from "./components/WSContest";
 
 const App: React.FC = () => {
   const [activeStock, setActiveStock] = useState<string>(""); // Persistent state for search query

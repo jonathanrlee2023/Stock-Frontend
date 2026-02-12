@@ -13,7 +13,12 @@ import {
 } from "chart.js";
 import { useWS } from "./WSContest"; // adjust import
 import "chartjs-adapter-date-fns";
-import { StockPoint, usePriceStream } from "./PriceContext";
+import {
+  StockPoint,
+  HistoricalStockPoint,
+  CompanyStats,
+  usePriceStream,
+} from "./PriceContext";
 import { postData } from "./OptionGraph";
 ChartJS.register(
   CategoryScale,
@@ -29,6 +34,8 @@ ChartJS.register(
 interface TodayStockWSProps {
   stockSymbol: string;
 }
+
+type Timeframe = "Live" | "1W" | "1M" | "3M" | "1Y" | "3Y" | "All";
 
 export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   stockSymbol,
@@ -56,7 +63,8 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
       console.error("POST request failed:", error);
     }
   };
-  const { stockPoints } = usePriceStream();
+  const [timeframe, setTimeframe] = useState<Timeframe>("Live");
+  const { stockPoints, historicalStockPoints, companyStats } = usePriceStream();
   const [amount, setAmount] = useState<number>(0);
   const { setIds, setTrackers } = useWS();
   const points = stockPoints[stockSymbol] || [];
@@ -65,79 +73,125 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   const latestMark = latestPoint?.Mark ?? 0;
 
   const graphData = React.useMemo(() => {
-    const minutePoints = new Map<number, StockPoint>(); // key: floored minute, value: StockPoint
+    // 1. Select the Source
+    const isLive = timeframe === "Live";
+    const liveArr = stockPoints[stockSymbol] || [];
+    const histArr = historicalStockPoints[stockSymbol] || [];
 
-    for (const p of points) {
-      const minuteKey = Math.floor((p.timestamp - 15) / 60);
+    // 2. Use optional chaining for length and properties
+    const latestMark =
+      liveArr.length > 0 ? liveArr[liveArr.length - 1]?.Mark : 0;
+    const prevClose =
+      histArr.length > 0 ? histArr[histArr.length - 1]?.close : 0;
 
-      const pointTime = new Date(p.timestamp * 1000);
-      const now = new Date();
+    console.log("Latest Mark:", latestMark);
+    console.log("Previous Close:", prevClose);
+    console.log(histArr.length > 0 ? histArr[0] : "No data");
+    console.log(liveArr.length > 0 ? histArr[histArr.length - 1] : "No data");
 
-      const pointMinute = new Date(
-        pointTime.getFullYear(),
-        pointTime.getMonth(),
-        pointTime.getDate(),
-        pointTime.getHours(),
-        pointTime.getMinutes(),
-      ).getTime();
+    const rawData = isLive
+      ? ((stockPoints[stockSymbol] || []) as StockPoint[])
+      : ((historicalStockPoints[stockSymbol] || []) as HistoricalStockPoint[]);
 
-      const currentMinute = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate(),
-        now.getHours(),
-        now.getMinutes(),
-      ).getTime();
-
-      if (pointMinute < currentMinute) {
-        // Past minutes: store latest point for each completed minute
-        minutePoints.set(minuteKey, p);
-      } else if (pointMinute === currentMinute) {
-        // Current minute: always overwrite with latest point for live movement
-        minutePoints.set(minuteKey, p);
-      }
-      // Future points ignored (if clock sync issues send future data).
+    let filtered: any[] = rawData;
+    // 2. Filter by Timeframe (if not Live or All)
+    if (!isLive && timeframe !== "All") {
+      const nowInSeconds = Math.floor(Date.now());
+      const day = 86400000;
+      const cutoffs: Record<string, number> = {
+        "1W": day * 7,
+        "1M": day * 30,
+        "3M": day * 90,
+        "1Y": day * 365,
+        "3Y": day * 1095,
+      };
+      const minTimestamp = nowInSeconds - (cutoffs[timeframe] || 0);
+      filtered = rawData.filter((p) => p.timestamp >= minTimestamp);
     }
 
-    const filteredPoints = Array.from(minutePoints.entries())
-      .sort((a, b) => a[0] - b[0]) // sort by minute order
-      .map(([_, point]) => point);
+    if (timeframe === "All") {
+      // p is the element, i is the index
+      filtered = filtered.filter((_, i) => i % 5 === 0);
+    }
+
+    const upOrDown = (latestMark ?? 0) >= (prevClose ?? 0);
+
+    // 3. Process for Display
+    // If Live, we use your minute-flooring logic to keep the graph clean
+    let displayPoints = filtered;
+    if (isLive) {
+      const minutePoints = new Map<number, any>();
+      for (const p of filtered) {
+        const minuteKey = Math.floor(p.timestamp / 60);
+        minutePoints.set(minuteKey, p);
+      }
+      displayPoints = Array.from(minutePoints.values()).sort(
+        (a, b) => a.timestamp - b.timestamp,
+      );
+    }
 
     return {
       datasets: [
         {
-          label: `${stockSymbol}`,
-          data: filteredPoints.map((p) => ({
-            x: new Date(p.timestamp * 1000),
-            y: p.Mark,
+          label: `${stockSymbol} ${timeframe}`,
+          data: displayPoints.map((p: any) => ({
+            x: new Date(p.timestamp),
+            y: isLive ? p.Mark : p.close,
           })),
           fill: false,
-          borderColor: "rgb(66, 0, 189)",
-          tension: 0,
+          borderColor: isLive
+            ? upOrDown
+              ? "#22c55e"
+              : "#ef4444" // Green if up, Red if down
+            : "#4200bd", // Neutral Blue/Purple for History
+          tension: isLive ? 0 : 0.1, // Smooth lines look better on long history
+          pointRadius: isLive ? 3 : 0, // Hide points on long history for performance
         },
       ],
     };
-  }, [points, stockSymbol]);
+  }, [stockPoints, historicalStockPoints, stockSymbol, timeframe]);
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { position: "top" as const },
-      title: {
-        display: true,
-        text: `Price History`,
-      },
-    },
-    scales: {
-      x: {
-        type: "time" as const,
-        time: {
-          tooltipFormat: "HH:mm:ss",
+  const options = React.useMemo(() => {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, position: "top" as const },
+        title: {
+          display: true,
+          text: `${stockSymbol} - ${timeframe}`,
         },
       },
-    },
-  };
+      scales: {
+        x: {
+          type: "time" as const, // Must be 'as const' for TypeScript
+          time: {
+            // Dynamic units based on timeframe
+            unit: timeframe === "Live" ? ("minute" as const) : ("day" as const),
+            tooltipFormat: "MMM dd, yyyy HH:mm",
+            displayFormats: {
+              minute: "HH:mm",
+              hour: "HH:mm",
+              day: "MMM d, yyyy", // 4-digit year fix
+              month: "MMM yyyy", // 4-digit year fix
+              year: "yyyy",
+            },
+          },
+          ticks: {
+            autoSkip: true,
+            maxRotation: 0,
+          },
+        },
+        y: {
+          type: "linear" as const,
+          beginAtZero: false,
+          ticks: {
+            callback: (value: any) => `$${value}`,
+          },
+        },
+      },
+    };
+  }, [stockSymbol, timeframe]);
 
   return (
     <div
@@ -188,7 +242,39 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
           position: "relative",
         }}
       >
-        <Line key={stockSymbol} options={options} data={graphData} />
+        <Line
+          key={`${stockSymbol}-${timeframe}`}
+          options={options}
+          data={graphData}
+        />{" "}
+      </div>
+      <div className="d-flex flex-wrap gap-2 justify-content-center my-3">
+        {(["Live", "1W", "1M", "3M", "1Y", "3Y", "All"] as const).map((tf) => {
+          // Logic for the "All" button label to show the earliest date
+          const history = historicalStockPoints[stockSymbol] || [];
+          const buttonLabel =
+            tf === "All" && history.length > 0
+              ? new Date(history[0].timestamp || 0).toLocaleDateString(
+                  undefined,
+                  { year: "numeric", month: "short", day: "numeric" },
+                )
+              : tf;
+
+          return (
+            <button
+              key={tf}
+              type="button"
+              className={`btn btn-sm ${timeframe === tf ? "btn-primary" : "btn-outline-secondary"}`}
+              onClick={() => setTimeframe(tf)} // This triggers the useMemo recalculation
+              style={{
+                minWidth: "50px",
+                fontWeight: timeframe === tf ? "bold" : "normal",
+              }}
+            >
+              {buttonLabel}
+            </button>
+          );
+        })}
       </div>
       <div className="mb-2 mx-2">
         <label>

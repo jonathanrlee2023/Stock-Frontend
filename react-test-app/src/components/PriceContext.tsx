@@ -20,6 +20,15 @@ export type StockPoint = {
   timestamp: number;
 };
 
+export type HistoricalStockPoint = {
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+  timestamp: number;
+};
+
 export type CompanyStats = {
   Symbol: string;
   MarketCap: number;
@@ -43,15 +52,21 @@ export type CompanyStats = {
   Hold: number | null;
   Sell: number | null;
   StrongSell: number | null;
+  PriceHistory: HistoricalStockPoint[] | null;
 };
 
 type PriceStreamContextValue = {
   optionPoints: Record<string, OptionPoint[]>;
   stockPoints: Record<string, StockPoint[]>;
   companyStats: Record<string, CompanyStats>;
+  historicalStockPoints: Record<string, HistoricalStockPoint[]>;
   updateOptionPoint: (symbol: string, point: OptionPoint) => void;
   updateStockPoint: (symbol: string, point: StockPoint) => void;
   updateCompanyStats: (symbol: string, stats: CompanyStats) => void;
+  updateHistoricalStockPoint: (
+    symbol: string,
+    point: HistoricalStockPoint[],
+  ) => void;
 };
 
 const PriceStreamContext = createContext<PriceStreamContextValue | undefined>(
@@ -69,6 +84,9 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
   );
   const [companyStats, setCompanyStats] = useState<
     Record<string, CompanyStats>
+  >({});
+  const [historicalStockPoints, setHistoricalStockPoints] = useState<
+    Record<string, HistoricalStockPoint[]>
   >({});
 
   const updateOptionPoint = (symbol: string, point: OptionPoint) => {
@@ -98,15 +116,34 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
     }));
   };
 
+  const updateHistoricalStockPoint = (
+    symbol: string,
+    newPoints: HistoricalStockPoint[],
+  ) => {
+    setHistoricalStockPoints((prev) => {
+      const prevPoints = prev[symbol] || [];
+      if (prevPoints.length > 0) {
+        return prev;
+      }
+      const combined = [...prevPoints, ...newPoints];
+      return {
+        ...prev,
+        [symbol]: combined,
+      };
+    });
+  };
+
   return (
     <PriceStreamContext.Provider
       value={{
         optionPoints,
         stockPoints,
         companyStats,
+        historicalStockPoints,
         updateOptionPoint,
         updateStockPoint,
         updateCompanyStats,
+        updateHistoricalStockPoint,
       }}
     >
       {children}
