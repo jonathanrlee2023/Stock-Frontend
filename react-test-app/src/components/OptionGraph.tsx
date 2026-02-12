@@ -104,6 +104,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
   strikePrice,
   type,
 }) => {
+  const { startOptionStream } = usePriceStream();
   const ModifyTracker = async (action: string) => {
     let data: { id: string } = { id: "" };
 
@@ -269,12 +270,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
         <button
           className="btn btn-success btn-lg"
           onClick={() => {
-            fetch(
-              `http://localhost:8080/startOptionStream?symbol=${stockSymbol}&price=${strikePrice}&day=${day}&month=${month}&year=${year}&type=${type}`,
-            )
-              .then((res) => res.text())
-              .then((data) => console.log("Data:", data))
-              .catch((err) => console.error("API error:", err));
+            startOptionStream(stockSymbol, day, month, year, type, strikePrice);
           }}
           disabled={fieldMissing || isExpired}
         >
