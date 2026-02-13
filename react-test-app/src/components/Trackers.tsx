@@ -32,14 +32,7 @@ export const TrackerButtons: React.FC<TrackerButtonsProps> = ({
         <button
           key={tracker}
           onClick={() => handleButtonClick(tracker)}
-          style={{
-            padding: "8px 12px",
-            borderRadius: "6px",
-            border: "none",
-            cursor: "pointer",
-            backgroundColor: "#4200bd",
-            color: "white",
-          }}
+          className="btn-sleek"
         >
           {tracker}
         </button>

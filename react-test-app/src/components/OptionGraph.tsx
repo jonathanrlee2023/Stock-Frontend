@@ -271,7 +271,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
         <button
           className="btn-sleek btn-lg"
           onClick={() => {
-            startOptionStream(stockSymbol, day, month, year, type, strikePrice);
+            startOptionStream(stockSymbol, strikePrice, day, month, year, type);
           }}
           disabled={fieldMissing || isExpired}
         >
