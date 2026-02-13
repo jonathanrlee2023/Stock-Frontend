@@ -5,7 +5,10 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     background-color: #000000;
     color: #ffffff;
-    border: 1px solid #333;
+    background: rgba(18, 18, 18, 0.7) !important;
+    backdrop-filter: blur(10px); /* This creates the frosted glass effect */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
   }
 
   body {
@@ -33,36 +36,132 @@
     background-color: #f2f2f2;
     text-align: left;
   }
+  
+  .btn-sleek {
+    /* 1. Shape and Size */
+    display: inline-block !important;
+    height: 45px !important;
+    padding: 0 30px !important;
+    border-radius: 99px !important; /* Use 99px for a guaranteed perfect pill shape */
+    
+    /* 2. Colors and Background */
+    background: linear-gradient(135deg, #7e7cf3 0%, #6a68e0 100%) !important;
+    color: #ffffff !important;
+    
+    /* 3. Border and Reset (CRITICAL) */
+    border: 0px solid transparent !important; /* Force border to 0 */
+    outline: none !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    overflow: hidden !important; /* Ensures gradient doesn't leak past corners */
+    
+    /* 4. Effects */
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 0 15px rgba(126, 124, 243, 0.4) !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    vertical-align: middle !important;
+  }
 
-  button {
-    border: 1px solid #000000; /* Border style */
-    border-radius: 16px; /* Slightly rounded edges */
-    padding: 16px; /* Adjust padding for a rectangular look */
-    margin: 50px; /* Space between buttons */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-    background-color: #7e7cf3; /* White background */
-    cursor: pointer; /* Pointer cursor on hover */
-    font-size: 24px; /* Font size for readability */
-    transition: all 0.2s ease; /* Smooth hover effect */
+  .btn-sleek:hover {
+      box-shadow: 0 0 25px rgba(126, 124, 243, 0.7) !important;
+      transform: translateY(-2px) !important;
+  }
+
+  .btn-sleek:active {
+    transform: translateY(0px) !important;
+  }
+
+  .btn-sleek:disabled {
+    /* 1. Remove the vibrant colors */
+    background: #444444 !important; /* Flat dark gray */
+    color: #888888 !important;    /* Faded text */
+    
+    /* 2. Remove the glow effect */
+    box-shadow: none !important;
+    
+    /* 3. Change the cursor */
+    cursor: not-allowed !important;
+    
+    /* 4. Stop the hover lift effect */
+    transform: none !important;
+    
+    /* 5. Optional: make it slightly see-through */
+    opacity: 0.6 !important;
+  }
+
+  .btn-sleek-red {
+    /* Red gradient to match the sleek style */
+    background: linear-gradient(135deg, #ff4d4d 0%, #cc0000 100%) !important;
+    /* Red glow instead of purple */
+    box-shadow: 0 0 15px rgba(255, 77, 77, 0.4) !important;
+  }
+
+  .btn-sleek-red:hover {
+      box-shadow: 0 0 25px rgba(255, 77, 77, 0.7) !important;
+  }
+
+  .btn-sleek-green {
+    /* Red gradient to match the sleek style */
+    background: linear-gradient(135deg, #16bd00 0%, #00cc11 100%) !important;
+    /* Red glow instead of purple */
+    box-shadow: 0 0 15px rgba(0, 172, 14, 0.4) !important;
+  }
+
+  .btn-sleek-green:hover {
+      box-shadow: 0 0 25px rgba(5, 163, 0, 0.7) !important;
+  }
+
+  .search-bar {
+    background-color: #1a1a1a !important;
+    border: 1px solid #333 !important;
+    border-radius: 24px !important;
+    padding-left: 45px !important;
+    color: white !important;
+    height: 45px !important;
+    width: 100% !important;
+    outline: none !important;
+  }
+
+  .input-small {
+    width: 150px !important;
+    min-width: 50px !important;
+    display: inline-block !important;
   }
   
-  button:hover {
-    background-color: #f0f0f0; /* Light grey background on hover */
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Slightly larger shadow */
+  input[type=number]::-webkit-inner-spin-button, 
+  input[type=number]::-webkit-outer-spin-button { 
+    opacity: 1; /* Makes them always visible */
+    height: 25px; /* Adjusts their size */
+    width: 30px;
   }
-  
-  button:focus {
-    outline: none; /* Remove default focus outline */
-    border-color: #007bff; /* Highlight border on focus */
-    box-shadow: 0 0 4px rgba(0, 123, 255, 0.8); /* Blue glow on focus */
-  }
-  
   .grid-container {
     display: grid; /* Enable grid layout */
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Dynamic columns */
     gap: 4px; 
     justify-items: center; 
     margin: 20px 0; 
+  }
+  @keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.4; }
+    100% { opacity: 1; }
+  }
+
+  .is-pending {
+    animation: pulse 1.5s infinite ease-in-out;
+    color: #7e7cf3;
+  }
+
+  .form-control::placeholder {
+    color: white !important;
+    opacity: 1; /* Firefox makes placeholders transparent by default, this fixes it */
+  }
+
+  /* Optional: If you want it a little bit dim so it doesn't look like typed text */
+  .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.7) !important; 
   }
 
   h1 {

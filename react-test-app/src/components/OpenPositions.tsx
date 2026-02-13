@@ -56,17 +56,17 @@ export const IdButtons: React.FC<IdButtonsProps> = ({
       ) : (
         Object.entries(ids).map(([id, amount]) => (
           <button
-            className="btn btn-primary btn-lg mb-3 mx-2"
+            className="btn-sleek mb-3 mx-2"
             key={id} // Best to use just 'id' as the key
             onClick={() => handleButtonClick(id)}
-            // style={{
-            //   padding: "8px 12px",
-            //   borderRadius: "6px",
-            //   border: "none",
-            //   cursor: "pointer",
-            //   backgroundColor: "#4200bd",
-            //   color: "white",
-            // }}
+            style={{
+              padding: "8px 12px",
+              borderRadius: "6px",
+              border: "none",
+              cursor: "pointer",
+              backgroundColor: "#4200bd",
+              color: "white",
+            }}
           >
             {id} ({amount})
           </button>

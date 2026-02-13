@@ -88,6 +88,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
     console.log("Previous Close:", prevClose);
     console.log(histArr.length > 0 ? histArr[0] : "No data");
     console.log(liveArr.length > 0 ? histArr[histArr.length - 1] : "No data");
+    console.log(companyStats);
 
     const rawData = isLive
       ? ((stockPoints[stockSymbol] || []) as StockPoint[])
@@ -206,7 +207,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
     >
       <div className="d-flex gap-2 mx-2 mt-2" style={{ flex: "0 0 auto" }}>
         <button
-          className="btn btn-success btn-lg"
+          className="btn-sleek"
           onClick={() => {
             {
               ModifyTracker("newTracker");
@@ -220,7 +221,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
           ADD
         </button>
         <button
-          className="btn btn-success btn-lg"
+          className="btn-sleek"
           onClick={() => {
             {
               ModifyTracker("closeTracker");
@@ -280,16 +281,22 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
         <label>
           Amount:{" "}
           <input
+            className="search-bar input-small"
             type="number"
             value={amount}
-            min={1}
+            min={0}
             onChange={(e) => setAmount(Number(e.target.value))}
+            style={{
+              paddingLeft: "5px" /* Overrides the 45px padding */,
+              paddingRight: "25px" /* Pulls the arrows closer to the edge */,
+              textAlign: "center" /* Centers the number between the edges */,
+            }}
           />
         </label>
       </div>
       <div className="d-flex gap-2 mb-2 mx-2">
         <button
-          className="btn btn-secondary"
+          className="btn-sleek btn-sleek-green"
           style={{
             opacity: latestMark <= 0 ? 0.5 : 1,
             cursor: latestMark <= 0 ? "not-allowed" : "pointer",
@@ -307,7 +314,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
           Open Position
         </button>
         <button
-          className="btn btn-secondary"
+          className="btn-sleek btn-sleek-red"
           style={{
             opacity: latestMark <= 0 ? 0.5 : 1,
             cursor: latestMark <= 0 ? "not-allowed" : "pointer",

@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { on } from "process";
 import { useButtons } from "./ButtonContext";
+import { usePriceStream } from "./PriceContext";
+import "../../App.css";
 
 interface SearchBarProps {
   setSearchQuery: (query: string) => void; // Function to update search query
@@ -20,6 +22,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 }) => {
   const [inputValue, setInputValue] = useState<string>(searchQuery); // Local state to keep input value
   const { buttons, setButtons } = useButtons();
+  const { pendingRequests, startStockStream } = usePriceStream();
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       setSearchQuery(inputValue);
@@ -46,30 +49,60 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   return (
     <>
-      <div className="d-flex mb-2 mt-2 mx-2">
-        <input
-          type="text"
-          className="form-control"
-          placeholder={inputMessage}
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
+      {/* Main Search Row */}
+      <div className="d-flex justify-content-center align-items-center mb-4 mt-2 px-2">
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+            maxWidth: "500px", // Reduced this so the button stays close
+          }}
+        >
+          <input
+            className="search-bar"
+            style={{
+              backgroundColor: "#1a1a1a",
+              border: "1px solid #333",
+              borderRadius: "24px",
+              paddingLeft: "45px",
+              color: "white",
+              height: "45px", // Match button height
+            }}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Search symbol..."
+          />
+          <span
+            style={{
+              position: "absolute",
+              left: "15px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              opacity: 0.5,
+            }}
+          >
+            🔍
+          </span>
+        </div>
+
         <button
-          className="btn btn-primary"
+          className="btn-sleek ms-2" // ms-2 adds a small gap
           type="button"
           onClick={handleSearchClick}
+          disabled={pendingRequests.has(inputValue.toUpperCase())}
         >
-          Search
+          {pendingRequests.has(inputValue.toUpperCase()) ? "..." : "Search"}
         </button>
       </div>
 
-      <div>
+      {/* Recent Buttons Section */}
+      <div className="d-flex flex-wrap justify-content-center px-4">
         {buttons.map((btnLabel) => (
           <button
+            className="btn-sleek me-2 mb-2"
             key={btnLabel}
             type="button"
-            className="btn btn-success me-2 mb-2 mx-2"
             onClick={() => handleButtonClick(btnLabel)}
           >
             {btnLabel}

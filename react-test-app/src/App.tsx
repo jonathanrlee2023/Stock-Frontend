@@ -11,6 +11,7 @@ import { BalanceWSComponent } from "./components/Balance";
 import { FixedOptionWSComponent } from "./components/FixedOptionGraph";
 import { IdButtons } from "./components/OpenPositions";
 import { usePriceStream } from "./components/PriceContext";
+import "../App.css";
 
 const App: React.FC = () => {
   const [activeStock, setActiveStock] = useState<string>(""); // Persistent state for search query
@@ -78,13 +79,13 @@ const App: React.FC = () => {
 
                 <div className="d-flex justify-content-center mt-2">
                   <button
-                    className="btn btn-primary btn-lg mb-3 mx-2"
+                    className="btn-sleek mb-3 mx-2"
                     onClick={() => setActiveCard("stock")}
                   >
                     Stocks
                   </button>
                   <button
-                    className="btn btn-primary btn-lg mb-3 mx-2"
+                    className="btn-sleek mb-3 mx-2"
                     onClick={() => setActiveCard("options")}
                   >
                     Options
