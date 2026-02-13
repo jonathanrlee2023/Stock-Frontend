@@ -200,8 +200,7 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
       );
 
       // 1. Guard: Don't fetch if we have data OR if a request is already flying
-      if (historicalStockPoints[cleanSymbol] || pendingRequests.has(optionID))
-        return;
+      if (pendingRequests.has(optionID)) return;
 
       // 2. Mark as pending
       setPendingRequests((prev) => new Set(prev).add(optionID));
@@ -213,7 +212,7 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         const baseUrl = "http://localhost:8080";
         const response = await fetch(
-          `${baseUrl}startOptionStream?symbol=${stockSymbol}&price=${strikePrice}&day=${day}&month=${month}&year=${year}&type=${type}`,
+          `${baseUrl}/startOptionStream?symbol=${stockSymbol}&price=${strikePrice}&day=${day}&month=${month}&year=${year}&type=${type}`,
           {
             signal: controller.signal,
           },
@@ -233,12 +232,12 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
         // 4. Remove from pending regardless of outcome
         setPendingRequests((prev) => {
           const next = new Set(prev);
-          next.delete(cleanSymbol);
+          next.delete(optionID);
           return next;
         });
       }
     },
-    [historicalStockPoints, pendingRequests],
+    [optionPoints, pendingRequests],
   );
 
   const updateOptionPoint = (symbol: string, point: OptionPoint) => {

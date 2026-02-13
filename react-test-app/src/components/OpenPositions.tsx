@@ -11,7 +11,7 @@ export const IdButtons: React.FC<IdButtonsProps> = ({
   setActiveID,
   setActiveCard,
 }) => {
-  const { ids, setIds } = useWS();
+  const { ids } = useWS();
   const previousIdsRef = useRef<Record<string, number>>({});
   const { historicalStockPoints } = usePriceStream();
   const [pendingRequests, setPendingRequests] = useState<Set<string>>(

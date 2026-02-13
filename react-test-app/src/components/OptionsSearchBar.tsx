@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { on } from "process";
-
 interface OptionsSearchBarProps {
   setSearchQuery: (query: string) => void; // Function to update search query
   searchQuery: string; // Prop to hold the current search query
@@ -18,6 +16,7 @@ const OptionsSearchBar: React.FC<OptionsSearchBarProps> = ({
   onSearchClick,
 }) => {
   const [inputValue, setInputValue] = useState<string>(searchQuery); // Local state to keep input value
+
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       setSearchQuery(inputValue);

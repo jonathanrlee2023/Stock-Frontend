@@ -263,13 +263,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
             return (
               <button
                 key={g}
-                style={{
-                  background: dataPoint === g ? "#2d007a" : "#4200bd",
-                  color: "white",
-                  padding: "4px 8px",
-                  borderRadius: "8px",
-                  fontSize: "1rem",
-                }}
+                className={`btn btn-sm ${dataPoint === g ? "btn-primary" : "btn-outline-secondary"}`}
                 onClick={() => setDataPoint(g)}
               >
                 {/* 2. Narrow the type: only call toFixed if it's actually a number */}
@@ -283,23 +277,29 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
           <label>
             Amount:{" "}
             <input
+              className="search-bar input-small"
               type="number"
               value={amount}
-              min={1}
+              min={0}
               onChange={(e) => setAmount(Number(e.target.value))}
+              style={{
+                paddingLeft: "5px" /* Overrides the 45px padding */,
+                paddingRight: "25px" /* Pulls the arrows closer to the edge */,
+                textAlign: "center" /* Centers the number between the edges */,
+              }}
             />
           </label>
         </div>
         <div className="d-flex gap-2 mb-2 mx-2">
           <button
-            className="btn btn-secondary"
+            className="btn-sleek btn-sleek-green"
             style={{
               opacity: latestMark <= 0 ? 0.5 : 1,
               cursor: latestMark <= 0 ? "not-allowed" : "pointer",
+              color: latestMark <= 0 ? "gray" : "green",
             }}
             onClick={() => {
               postData("openPosition", optionID, latestMark, amount);
-              addNewTracker(optionID);
               setIds((prev) => ({
                 ...prev,
                 [optionID]: (prev[optionID] ?? 0) + amount,
@@ -310,10 +310,11 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
             Open Position
           </button>
           <button
-            className="btn btn-secondary"
+            className="btn-sleek btn-sleek-red"
             style={{
               opacity: latestMark <= 0 ? 0.5 : 1,
               cursor: latestMark <= 0 ? "not-allowed" : "pointer",
+              color: latestMark <= 0 ? "gray" : "red",
             }}
             onClick={() => {
               postData("closePosition", optionID, latestMark, amount);

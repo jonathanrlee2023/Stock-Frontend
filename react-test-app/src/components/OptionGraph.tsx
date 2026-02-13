@@ -104,7 +104,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
   strikePrice,
   type,
 }) => {
-  const { startOptionStream } = usePriceStream();
+  const { pendingRequests, optionPoints, startOptionStream } = usePriceStream();
   const ModifyTracker = async (action: string) => {
     let data: { id: string } = { id: "" };
 
@@ -136,7 +136,6 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
       console.error("POST request failed:", error);
     }
   };
-  const { optionPoints } = usePriceStream();
 
   const expectedSymbol = formatOptionSymbol(
     stockSymbol,
@@ -147,6 +146,8 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
     strikePrice,
   );
   const { setIds, setTrackers } = useWS();
+  const isPending = pendingRequests.has(expectedSymbol);
+
   const expirationDate = React.useMemo(() => {
     let yearNum = parseInt(year, 10);
 
@@ -274,7 +275,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           }}
           disabled={fieldMissing || isExpired}
         >
-          SEARCH 🔍
+          {isPending ? "SEARCHING..." : "SEARCH 🔍"}
         </button>
         <button
           className="btn-sleek ms-auto mt-1"
@@ -367,13 +368,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           return (
             <button
               key={g}
-              style={{
-                background: dataPoint === g ? "#2d007a" : "#4200bd",
-                color: "white",
-                padding: "4px 8px",
-                borderRadius: "8px",
-                fontSize: "1rem",
-              }}
+              className={`btn btn-sm ${dataPoint === g ? "btn-primary" : "btn-outline-secondary"}`}
               onClick={() => setDataPoint(g)}
             >
               {g.toUpperCase()}:{" "}

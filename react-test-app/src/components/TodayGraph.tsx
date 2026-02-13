@@ -71,7 +71,8 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   const latestPoint = points.length > 0 ? points[points.length - 1] : null;
 
   const latestMark = latestPoint?.Mark ?? 0;
-
+  const [showStats, setShowStats] = useState(false);
+  const stats = companyStats[stockSymbol]; // Get stats for current symbol
   const graphData = React.useMemo(() => {
     // 1. Select the Source
     const isLive = timeframe === "Live";
@@ -151,6 +152,19 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
       ],
     };
   }, [stockPoints, historicalStockPoints, stockSymbol, timeframe]);
+  const StatRow = ({ label, value }: { label: string; value: any }) => (
+    <div className="d-flex flex-column">
+      <span
+        style={{ color: "#888", fontSize: "12px", textTransform: "uppercase" }}
+      >
+        {label}
+      </span>
+      <span style={{ color: "white", fontWeight: "bold" }}>
+        {value || "N/A"}
+      </span>
+    </div>
+  );
+  console.log(showStats);
 
   const options = React.useMemo(() => {
     return {
@@ -163,6 +177,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
           text: `${stockSymbol} - ${timeframe}`,
         },
       },
+      resizeDelay: 50,
       scales: {
         x: {
           type: "time" as const, // Must be 'as const' for TypeScript
@@ -197,85 +212,234 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   return (
     <div
       style={{
-        padding: "0px", // Remove or minimize padding
-        height: "100%",
-        width: "100%", // Force full width
+        padding: "0px",
+        height: "100%", // Parent must have a fixed height (like 100% or 600px)
         display: "flex",
         flexDirection: "column",
-        overflow: "hidden",
+        overflow: "hidden", // Prevents the whole app from scrolling
       }}
     >
-      <div className="d-flex gap-2 mx-2 mt-2" style={{ flex: "0 0 auto" }}>
-        <button
-          className="btn-sleek"
-          onClick={() => {
-            {
-              ModifyTracker("newTracker");
-              setTrackers((prev) =>
-                prev.includes(stockSymbol) ? prev : [...prev, stockSymbol],
-              );
-            }
-          }}
-          disabled={stockSymbol == ""}
-        >
-          ADD
-        </button>
-        <button
-          className="btn-sleek"
-          onClick={() => {
-            {
-              ModifyTracker("closeTracker");
-              setTrackers((prev) =>
-                prev.filter((item) => item !== stockSymbol),
-              );
-            }
-          }}
-          disabled={stockSymbol == ""}
-        >
-          REMOVE
-        </button>
-      </div>
       <div
         style={{
-          flex: "1 1 auto", // This allows the chart to grow/shrink to fit
-          width: "100%",
+          flex: showStats ? "0 0 0%" : "1 1 0%",
           minHeight: "0",
-          position: "relative",
+          height: showStats ? "0px" : "auto",
+          overflow: "hidden",
+          opacity: showStats ? 0 : 1,
+          visibility: showStats ? "hidden" : "visible",
+          transition: "flex 0.5s ease, opacity 0.5s ease",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        <Line
-          key={`${stockSymbol}-${timeframe}`}
-          options={options}
-          data={graphData}
-        />{" "}
-      </div>
-      <div className="d-flex flex-wrap gap-2 justify-content-center my-3">
-        {(["Live", "1W", "1M", "3M", "1Y", "3Y", "All"] as const).map((tf) => {
-          // Logic for the "All" button label to show the earliest date
-          const history = historicalStockPoints[stockSymbol] || [];
-          const buttonLabel =
-            tf === "All" && history.length > 0
-              ? new Date(history[0].timestamp || 0).toLocaleDateString(
-                  undefined,
-                  { year: "numeric", month: "short", day: "numeric" },
-                )
-              : tf;
+        <div
+          style={{
+            flex: "1 1 auto", // Takes up the majority of the space
+            minHeight: "0", // Allows the chart to shrink so it doesn't push buttons out
+            position: "relative",
+          }}
+        >
+          <Line
+            key={`${stockSymbol}-${timeframe}`}
+            options={options}
+            data={graphData}
+          />{" "}
+        </div>
+        <div
+          className="d-flex flex-wrap gap-2 justify-content-center my-3"
+          style={{
+            flex: "0 0 auto", // "Don't grow, don't shrink, just be your natural size"
+            paddingBottom: "10px",
+            zIndex: 10, // Ensure they aren't covered by a canvas overlap
+          }}
+        >
+          {" "}
+          {(["Live", "1W", "1M", "3M", "1Y", "3Y", "All"] as const).map(
+            (tf) => {
+              // Logic for the "All" button label to show the earliest date
+              const history = historicalStockPoints[stockSymbol] || [];
+              const buttonLabel =
+                tf === "All" && history.length > 0
+                  ? new Date(history[0].timestamp || 0).toLocaleDateString(
+                      undefined,
+                      { year: "numeric", month: "short", day: "numeric" },
+                    )
+                  : tf;
 
-          return (
-            <button
-              key={tf}
-              type="button"
-              className={`btn btn-sm ${timeframe === tf ? "btn-primary" : "btn-outline-secondary"}`}
-              onClick={() => setTimeframe(tf)} // This triggers the useMemo recalculation
-              style={{
-                minWidth: "50px",
-                fontWeight: timeframe === tf ? "bold" : "normal",
-              }}
-            >
-              {buttonLabel}
-            </button>
-          );
-        })}
+              return (
+                <button
+                  key={tf}
+                  type="button"
+                  className={`btn btn-sm ${timeframe === tf ? "btn-primary" : "btn-outline-secondary"}`}
+                  onClick={() => setTimeframe(tf)} // This triggers the useMemo recalculation
+                  style={{
+                    minWidth: "50px",
+                    fontWeight: timeframe === tf ? "bold" : "normal",
+                  }}
+                >
+                  {buttonLabel}
+                </button>
+              );
+            },
+          )}
+        </div>
+      </div>
+
+      {/* Collapsible Stats Section */}
+      <div
+        className="mx-2 mb-2"
+        style={{
+          flex: showStats ? "1 1 0%" : "0 0 auto",
+          minHeight: "0", // Allows it to be contained
+          border: "1px solid #333",
+          borderRadius: "8px",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          transition: "flex 0.5s ease",
+        }}
+      >
+        <button
+          className="btn-sleek-dark w-100 d-flex justify-content-between align-items-center"
+          onClick={() => setShowStats(!showStats)}
+          style={{
+            padding: "10px 15px",
+            background: "#1a1a1a",
+            color: "white",
+          }}
+        >
+          <span style={{ fontWeight: 600 }}>Company Overview</span>
+          <span>{showStats ? "▲" : "▼"}</span>
+        </button>
+
+        {showStats && (
+          <div
+            style={{
+              padding: "15px",
+              background: "#111",
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "10px",
+              overflowY: "auto",
+            }}
+          >
+            {stats ? (
+              <>
+                <StatRow
+                  label="Market Cap"
+                  value={
+                    stats.MarketCap != null
+                      ? `$${stats.MarketCap.toLocaleString()}`
+                      : "N/A"
+                  }
+                />
+                <StatRow
+                  label="Intrinsic Value"
+                  value={
+                    stats.IntrinsicPrice != null
+                      ? `$${stats.IntrinsicPrice.toFixed(2).toLocaleString()}`
+                      : "N/A"
+                  }
+                />
+                <StatRow
+                  label="Dividend Price"
+                  value={
+                    stats.DividendPrice != null
+                      ? `$${stats.DividendPrice.toFixed(2).toLocaleString()}`
+                      : "N/A"
+                  }
+                />
+                <StatRow
+                  label="Price at Report"
+                  value={
+                    stats.PriceAtReport != null
+                      ? `$${stats.PriceAtReport.toFixed(2).toLocaleString()}`
+                      : "N/A"
+                  }
+                />
+                <StatRow
+                  label="Return on Invested Capital"
+                  value={
+                    stats.ROIC != null
+                      ? `${(stats.ROIC * 100).toFixed(2)}%`
+                      : "N/A"
+                  }
+                />
+                <StatRow
+                  label="Historical Growth Rate"
+                  value={
+                    stats.HistGrowth != null
+                      ? `${(stats.HistGrowth * 100).toFixed(2)}%`
+                      : "N/A"
+                  }
+                />
+                <StatRow
+                  label="Forecasted Growth Rate"
+                  value={
+                    stats.ForecastedGrowth != null
+                      ? `${(stats.ForecastedGrowth * 100).toFixed(2)}%`
+                      : "N/A"
+                  }
+                />
+                <StatRow label="PEG Ratio" value={`${stats.PEG}`} />
+                <StatRow label="Sloan Ratio" value={`${stats.Sloan}`} />
+                <StatRow
+                  label="WACC"
+                  value={
+                    stats.WACC != null ? `${stats.WACC.toFixed(2)}%` : "N/A"
+                  }
+                />
+                <StatRow
+                  label="FCFF"
+                  value={
+                    stats.FCFF != null
+                      ? `$${stats.FCFF.toLocaleString()} M`
+                      : "N/A"
+                  }
+                />
+                <StatRow
+                  label="FCF"
+                  value={
+                    stats.FCF != null
+                      ? `$${stats.FCF.toLocaleString()} M`
+                      : "N/A"
+                  }
+                />
+                <StatRow
+                  label="NWC"
+                  value={
+                    stats.NWC != null
+                      ? `$${stats.NWC.toLocaleString()} M`
+                      : "N/A"
+                  }
+                />
+                <StatRow
+                  label="Analyst Price Target"
+                  value={
+                    stats.PriceTarget != null
+                      ? `$${stats.PriceTarget.toFixed(2).toLocaleString()}`
+                      : "N/A"
+                  }
+                />
+                <StatRow label="Strong Buy" value={`${stats.StrongBuy}`} />
+                <StatRow label="Buy" value={`${stats.Buy}`} />
+                <StatRow label="Hold" value={`${stats.Hold}`} />
+                <StatRow label="Sell" value={`${stats.Sell}`} />
+                <StatRow label="Strong Sell" value={`${stats.StrongSell}`} />
+              </>
+            ) : (
+              <div
+                style={{
+                  gridColumn: "span 2",
+                  textAlign: "center",
+                  color: "#666",
+                }}
+              >
+                No statistics available for {stockSymbol}
+              </div>
+            )}
+          </div>
+        )}
       </div>
       <div className="mb-2 mx-2">
         <label>
@@ -294,51 +458,79 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
           />
         </label>
       </div>
-      <div className="d-flex gap-2 mb-2 mx-2">
-        <button
-          className="btn-sleek btn-sleek-green"
-          style={{
-            opacity: latestMark <= 0 ? 0.5 : 1,
-            cursor: latestMark <= 0 ? "not-allowed" : "pointer",
-          }}
-          onClick={() => {
-            postData("openPosition", stockSymbol, latestMark, amount);
-            ModifyTracker("newTracker");
-            setIds((prev) => ({
-              ...prev,
-              [stockSymbol]: (prev[stockSymbol] ?? 0) + amount,
-            }));
-          }}
-          disabled={latestMark <= 0}
-        >
-          Open Position
-        </button>
-        <button
-          className="btn-sleek btn-sleek-red"
-          style={{
-            opacity: latestMark <= 0 ? 0.5 : 1,
-            cursor: latestMark <= 0 ? "not-allowed" : "pointer",
-          }}
-          onClick={() => {
-            postData("closePosition", stockSymbol, latestMark, amount);
-            setIds((prev) => {
-              const updated = { ...prev };
-              const currentAmount = updated[stockSymbol] ?? 0;
-              const newAmount = currentAmount - amount;
+      {/* Container for everything at the bottom */}
+      <div className="d-flex justify-content-between align-items-center mb-2 mx-2">
+        {/* Left Side: Position Actions */}
+        <div className="d-flex gap-2">
+          <button
+            className="btn-sleek btn-sleek-green"
+            style={{
+              opacity: latestMark <= 0 ? 0.5 : 1,
+              cursor: latestMark <= 0 ? "not-allowed" : "pointer",
+            }}
+            onClick={() => {
+              postData("openPosition", stockSymbol, latestMark, amount);
+              ModifyTracker("newTracker");
+              setIds((prev) => ({
+                ...prev,
+                [stockSymbol]: (prev[stockSymbol] ?? 0) + amount,
+              }));
+            }}
+            disabled={latestMark <= 0}
+          >
+            Open Position
+          </button>
 
-              if (newAmount <= 0) {
-                delete updated[stockSymbol];
-              } else {
-                updated[stockSymbol] = newAmount;
-              }
+          <button
+            className="btn-sleek btn-sleek-red"
+            style={{
+              opacity: latestMark <= 0 ? 0.5 : 1,
+              cursor: latestMark <= 0 ? "not-allowed" : "pointer",
+            }}
+            onClick={() => {
+              postData("closePosition", stockSymbol, latestMark, amount);
+              setIds((prev) => {
+                const updated = { ...prev };
+                const currentAmount = updated[stockSymbol] ?? 0;
+                const newAmount = currentAmount - amount;
+                if (newAmount <= 0) delete updated[stockSymbol];
+                else updated[stockSymbol] = newAmount;
+                return updated;
+              });
+            }}
+            disabled={latestMark <= 0}
+          >
+            Close Position
+          </button>
+        </div>
 
-              return updated;
-            });
-          }}
-          disabled={latestMark <= 0}
-        >
-          Close Position
-        </button>
+        {/* Right Side: Tracker Actions */}
+        <div className="d-flex gap-2">
+          <button
+            className="btn-sleek"
+            onClick={() => {
+              ModifyTracker("newTracker");
+              setTrackers((prev) =>
+                prev.includes(stockSymbol) ? prev : [...prev, stockSymbol],
+              );
+            }}
+            disabled={stockSymbol === ""}
+          >
+            ADD
+          </button>
+          <button
+            className="btn-sleek"
+            onClick={() => {
+              ModifyTracker("closeTracker");
+              setTrackers((prev) =>
+                prev.filter((item) => item !== stockSymbol),
+              );
+            }}
+            disabled={stockSymbol === ""}
+          >
+            REMOVE
+          </button>
+        </div>
       </div>
     </div>
   );
