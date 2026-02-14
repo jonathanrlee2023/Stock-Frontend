@@ -315,13 +315,8 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
         }}
       >
         <button
-          className="btn-sleek-dark w-100 d-flex justify-content-between align-items-center"
+          className="btn-sleek btn-sleek-dark w-100 d-flex justify-content-between align-items-center"
           onClick={() => setShowStats(!showStats)}
-          style={{
-            padding: "10px 15px",
-            background: "#1a1a1a",
-            color: "white",
-          }}
         >
           <span style={{ fontWeight: 600 }}>Company Overview</span>
           <span>{showStats ? "▲" : "▼"}</span>
