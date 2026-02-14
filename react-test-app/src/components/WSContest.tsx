@@ -80,11 +80,13 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
       }
 
       if (parsed.MarketCap !== undefined) {
+        console.log(parsed);
         updateCompanyStats(parsed.Symbol, parsed as CompanyStats);
         updateHistoricalStockPoint(
           parsed.Symbol,
           parsed.PriceHistory as HistoricalStockPoint[],
         );
+        updateStockPoint(parsed.Symbol, parsed.Quote as StockPoint);
         return;
       }
 

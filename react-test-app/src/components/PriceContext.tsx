@@ -59,6 +59,7 @@ export type CompanyStats = {
   Sell: number | null;
   StrongSell: number | null;
   PriceHistory: HistoricalStockPoint[] | null;
+  Quote: StockPoint | null;
 };
 
 type PriceStreamContextValue = {
@@ -245,7 +246,7 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
       const prevPoints = prev[symbol] || [];
       return {
         ...prev,
-        [symbol]: [...prevPoints.slice(-99), point],
+        [symbol]: [...prevPoints.slice(-1920), point],
       };
     });
   };
@@ -255,7 +256,7 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
       const prevPoints = prev[symbol] || [];
       return {
         ...prev,
-        [symbol]: [...prevPoints.slice(-99), point],
+        [symbol]: [...prevPoints.slice(-1920), point],
       };
     });
   };

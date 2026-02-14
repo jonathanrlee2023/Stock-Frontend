@@ -123,10 +123,24 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
     let displayPoints = filtered;
     if (isLive) {
       const minutePoints = new Map<number, any>();
+      let lastTimestamp = 0;
+
       for (const p of filtered) {
-        const minuteKey = Math.floor(p.timestamp / 60);
-        minutePoints.set(minuteKey, p);
+        const timeSinceLastPoint = p.timestamp - lastTimestamp;
+        console.log(p.timestamp, lastTimestamp, timeSinceLastPoint);
+
+        if (timeSinceLastPoint > 60) {
+          minutePoints.set(p.timestamp, {
+            ...p,
+            timestamp: p.timestamp * 1000,
+          });
+        } else {
+          const minuteKey = Math.floor(p.timestamp / 60);
+          minutePoints.set(minuteKey, { ...p, timestamp: p.timestamp * 1000 });
+        }
+        lastTimestamp = p.timestamp;
       }
+
       displayPoints = Array.from(minutePoints.values()).sort(
         (a, b) => a.timestamp - b.timestamp,
       );
@@ -184,6 +198,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
           time: {
             // Dynamic units based on timeframe
             unit: timeframe === "Live" ? ("minute" as const) : ("day" as const),
+            timezone: "America/Chicago",
             tooltipFormat: "MMM dd, yyyy HH:mm",
             displayFormats: {
               minute: "HH:mm",

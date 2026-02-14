@@ -121,7 +121,7 @@ export const BalanceWSComponent: React.FC = ({}) => {
     scales: {
       x: {
         type: "time" as const,
-        time: { tooltipFormat: "HH:mm:ss" },
+        time: { tooltipFormat: "HH:mm:ss", timezone: "America/Chicago" },
         ticks: { maxTicksLimit: 6, fontSize: 10 },
       },
       y: {
@@ -138,7 +138,7 @@ export const BalanceWSComponent: React.FC = ({}) => {
   let change = latestBalance - previousBalance;
 
   return (
-    <div style={{ padding: "20px", height: "70vh" }}>
+    <div style={{ padding: "20px", height: "85vh" }}>
       <div
         style={{
           display: "flex",

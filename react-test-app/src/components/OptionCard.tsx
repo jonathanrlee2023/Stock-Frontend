@@ -38,42 +38,42 @@ export const OptionCard: React.FC<OptionCardProps> = ({ setActiveCard }) => {
         <OptionsSearchBar
           setSearchQuery={setUnderlyingStock}
           searchQuery={underlyingStock}
-          inputMessage="Enter Stock Symbol..."
+          inputMessage="Underlying Stock..."
           onEnter={setUnderlyingStock}
           onSearchClick={setUnderlyingStock}
         />
         <OptionsSearchBar
           setSearchQuery={setStrikePrice}
           searchQuery={strikePrice}
-          inputMessage="Enter Strike Price..."
+          inputMessage="Strike Price..."
           onEnter={setStrikePrice}
           onSearchClick={setStrikePrice}
         />
         <OptionsSearchBar
           setSearchQuery={setOptionDay}
           searchQuery={optionDay}
-          inputMessage="Enter Expiration Day..."
+          inputMessage="Expiration Day..."
           onEnter={setOptionDay}
           onSearchClick={setOptionDay}
         />
         <OptionsSearchBar
           setSearchQuery={setOptionMonth}
           searchQuery={optionMonth}
-          inputMessage="Enter Expiration Month..."
+          inputMessage="Expiration Month..."
           onEnter={setOptionMonth}
           onSearchClick={setOptionMonth}
         />
         <OptionsSearchBar
           setSearchQuery={setOptionYear}
           searchQuery={optionYear}
-          inputMessage="Enter Expiration Year..."
+          inputMessage="Expiration Year..."
           onEnter={setOptionYear}
           onSearchClick={setOptionYear}
         />
         <OptionsSearchBar
           setSearchQuery={setOptionType}
           searchQuery={optionType}
-          inputMessage="Enter Option Type..."
+          inputMessage="Option Type..."
           onEnter={setOptionType}
           onSearchClick={setOptionType}
         />

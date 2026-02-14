@@ -15,39 +15,79 @@ export const HomePage: React.FC<HomePageProps> = ({
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "98vh", // Use 90% of tab height to leave room for card borders
-        justifyContent: "space-between",
+        height: "98vh",
+        gap: "10px",
       }}
     >
-      <>
-        <BalanceWSComponent />
+      {/* Main content area with graph and positions side by side */}
+      <div
+        style={{
+          display: "flex",
+          flex: 1,
+          gap: "16px",
+          overflow: "hidden",
+          padding: "0 10px",
+        }}
+      >
+        {/* Left side - Graph/Main content area */}
         <div
           style={{
-            fontSize: "20px",
-            fontWeight: "bold",
-            margin: "10px 0 5px 10px",
-            zIndex: 2, // Ensures it stays above any absolute-positioned chart elements
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            minWidth: 0,
           }}
         >
-          Open Positions
+          <div className=""></div>
+          <BalanceWSComponent />
+          <div className="d-flex justify-content-center mb-10 mt-5">
+            <button
+              className="btn-sleek mx-2"
+              onClick={() => setActiveCard("stock")}
+            >
+              Stocks
+            </button>
+            <button
+              className="btn-sleek mx-2"
+              onClick={() => setActiveCard("options")}
+            >
+              Options
+            </button>
+          </div>
         </div>
-        <IdButtons setActiveCard={setActiveCard} setActiveID={setFixedID} />
 
-        <div className="d-flex justify-content-center mt-2">
-          <button
-            className="btn-sleek mb-3 mx-2"
-            onClick={() => setActiveCard("stock")}
+        {/* Right side - Open Positions */}
+        <div
+          style={{
+            width: "280px",
+            display: "flex",
+            flexDirection: "column",
+            flexShrink: 0,
+          }}
+        >
+          <div
+            style={{
+              fontSize: "20px",
+              fontWeight: "bold",
+              marginBottom: "12px",
+              padding: "0 16px",
+            }}
           >
-            Stocks
-          </button>
-          <button
-            className="btn-sleek mb-3 mx-2"
-            onClick={() => setActiveCard("options")}
+            Open Positions
+          </div>
+          <div
+            style={{
+              flex: 1,
+              overflow: "auto",
+              border: "1px solid #ffffff",
+              borderRadius: "8px",
+              padding: "12px 0",
+            }}
           >
-            Options
-          </button>
+            <IdButtons setActiveCard={setActiveCard} setActiveID={setFixedID} />
+          </div>
         </div>
-      </>
+      </div>
     </div>
   );
 };

@@ -251,6 +251,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
         type: "time" as const,
         time: {
           tooltipFormat: "HH:mm:ss",
+          timezone: "America/Chicago",
         },
       },
     },
