@@ -58,13 +58,13 @@ export type CompanyStats = {
   Hold: number | null;
   Sell: number | null;
   StrongSell: number | null;
-  PriceHistory: HistoricalStockPoint[] | null;
-  Quote: StockPoint | null;
 };
 
 export type OptionExpiration = {
   Call: string[];
   Put: string[];
+  PriceHistory: HistoricalStockPoint[];
+  Quote: StockPoint;
 };
 
 type PriceStreamContextValue = {

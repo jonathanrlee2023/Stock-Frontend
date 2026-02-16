@@ -84,11 +84,6 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
       if (parsed.MarketCap !== undefined) {
         console.log(parsed);
         updateCompanyStats(parsed.Symbol, parsed as CompanyStats);
-        updateHistoricalStockPoint(
-          parsed.Symbol,
-          parsed.PriceHistory as HistoricalStockPoint[],
-        );
-        updateStockPoint(parsed.Symbol, parsed.Quote as StockPoint);
         return;
       }
 
@@ -96,7 +91,14 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
         updateOptionExpirations(parsed.Symbol, {
           Call: parsed.Call,
           Put: parsed.Put,
+          Quote: parsed.Quote,
+          PriceHistory: parsed.PriceHistory,
         });
+        updateHistoricalStockPoint(
+          parsed.Symbol,
+          parsed.PriceHistory as HistoricalStockPoint[],
+        );
+        updateStockPoint(parsed.Symbol, parsed.Quote as StockPoint);
       }
 
       // 2) Batch array of OptionPoint or StockPoint

@@ -19,7 +19,6 @@ interface OptionParts {
 }
 
 export const ParseOptionId = (optionId: string): OptionParts | null => {
-  console.log(optionId);
   const cleanId = optionId.trim();
   const regex = /^([A-Z]+)\s*(\d{2})(\d{2})(\d{2})([CP])(\d+)$/;
   const match = cleanId.match(regex);
