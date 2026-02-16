@@ -2,9 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import { useWS } from "./WSContest";
 import { usePriceStream } from "./PriceContext";
 
-interface IdButtonsProps {
+interface IdCardProps {
   setActiveID: (query: string) => void;
   setActiveCard: (query: string) => void;
+  defaultMessage: string;
 }
 interface OptionParts {
   ticker: string;
@@ -19,6 +20,8 @@ export const ParseOptionId = (optionId: string): OptionParts | null => {
   // Standard option format: TICKER + YYMMDD + C/P + Strike
   // Example: AAPL250117C00150000 = AAPL, 25, 01, 17, C, 00150000
 
+  const cleanId = optionId.trim();
+
   // Check if it's long enough to be an option (at least ticker + 6 date + 1 type + strike)
   if (optionId.length < 15) {
     return null;
@@ -26,8 +29,8 @@ export const ParseOptionId = (optionId: string): OptionParts | null => {
 
   // Find where the date part starts (after the ticker, before the 6-digit date)
   // The date is always YYMMDD (6 digits) followed by C or P
-  const regex = /^([A-Z]+)(\d{2})(\d{2})(\d{2})([CP])(.+)$/;
-  const match = optionId.match(regex);
+  const regex = /^([A-Z\s]+)(\d{2})(\d{2})(\d{2})([CP])(\d+)$/;
+  const match = cleanId.match(regex);
 
   if (!match) {
     return null;
@@ -43,9 +46,10 @@ export const ParseOptionId = (optionId: string): OptionParts | null => {
   };
 };
 
-export const IdButtons: React.FC<IdButtonsProps> = ({
+export const IdCards: React.FC<IdCardProps> = ({
   setActiveID,
   setActiveCard,
+  defaultMessage,
 }) => {
   const { ids } = useWS();
   const previousIdsRef = useRef<Record<string, number>>({});
@@ -109,7 +113,7 @@ export const IdButtons: React.FC<IdButtonsProps> = ({
             textAlign: "center",
           }}
         >
-          No open positions
+          {defaultMessage}
         </div>
       ) : (
         Object.entries(ids).map(([id, amount]) => (

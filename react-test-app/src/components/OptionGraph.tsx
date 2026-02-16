@@ -298,7 +298,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           }}
           disabled={fieldMissing || isExpired}
         >
-          ADD
+          TRACK
         </button>
         <button
           className="btn-sleek mt-1"
@@ -318,7 +318,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           }}
           disabled={fieldMissing || isExpired}
         >
-          REMOVE
+          UNTRACK
         </button>
       </div>
 

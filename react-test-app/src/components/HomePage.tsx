@@ -1,5 +1,5 @@
 import { BalanceWSComponent } from "./Balance";
-import { IdButtons } from "./OpenPositions";
+import { IdCards } from "./OpenPositions";
 
 interface HomePageProps {
   setActiveCard: (query: string) => void;
@@ -38,7 +38,6 @@ export const HomePage: React.FC<HomePageProps> = ({
             minWidth: 0,
           }}
         >
-          <div className=""></div>
           <BalanceWSComponent />
           <div className="d-flex justify-content-center mb-10 mt-5">
             <button
@@ -84,7 +83,11 @@ export const HomePage: React.FC<HomePageProps> = ({
               padding: "12px 0",
             }}
           >
-            <IdButtons setActiveCard={setActiveCard} setActiveID={setFixedID} />
+            <IdCards
+              setActiveCard={setActiveCard}
+              setActiveID={setFixedID}
+              defaultMessage="No Open Positions"
+            />
           </div>
         </div>
       </div>

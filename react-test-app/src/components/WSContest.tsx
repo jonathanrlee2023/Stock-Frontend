@@ -12,6 +12,7 @@ import {
   StockPoint,
   CompanyStats,
   HistoricalStockPoint,
+  OptionExpiration,
 } from "./PriceContext";
 
 interface WSContextValue {
@@ -42,6 +43,7 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
     updateOptionPoint,
     updateCompanyStats,
     updateHistoricalStockPoint,
+    updateOptionExpirations,
   } = usePriceStream();
 
   useEffect(() => {
@@ -88,6 +90,13 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
         );
         updateStockPoint(parsed.Symbol, parsed.Quote as StockPoint);
         return;
+      }
+
+      if (parsed.Call !== undefined) {
+        updateOptionExpirations(parsed.Symbol, {
+          Call: parsed.Call,
+          Put: parsed.Put,
+        });
       }
 
       // 2) Batch array of OptionPoint or StockPoint

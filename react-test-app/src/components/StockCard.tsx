@@ -2,25 +2,26 @@ import { useState } from "react";
 import SearchBar from "./SearchBar";
 import { TodayStockWSComponent } from "./TodayGraph";
 import { usePriceStream } from "./PriceContext";
+import { OptionExpirationCards } from "./OptionExpirationCards";
 
 interface StockCardProps {
   setActiveCard: (query: string) => void;
+  setFixedID: (query: string) => void;
 }
 
-export const StockCard: React.FC<StockCardProps> = ({ setActiveCard }) => {
+export const StockCard: React.FC<StockCardProps> = ({
+  setActiveCard,
+  setFixedID,
+}) => {
   const [activeStock, setActiveStock] = useState<string>(""); // Persistent state for search query
-  const { startStockStream } = usePriceStream();
+  const { optionExpirations, startStockStream } = usePriceStream();
   return (
     <div
-      className="card bg-dark text-white" // Bootstrap classes for dark mode
       style={{
-        width: "100%",
+        display: "flex",
+        flexDirection: "column",
         height: "98vh",
-        margin: "0",
-        borderRadius: "0",
-        border: "none",
-        backgroundColor: "#000000", // Overriding to true black
-        overflow: "hidden",
+        gap: "10px",
       }}
     >
       <button
@@ -29,14 +30,73 @@ export const StockCard: React.FC<StockCardProps> = ({ setActiveCard }) => {
       >
         Back to Home
       </button>
-      <SearchBar
-        setSearchQuery={setActiveStock}
-        searchQuery={activeStock}
-        inputMessage="Enter Stock Symbol..."
-        onEnter={startStockStream}
-        onSearchClick={startStockStream}
-      />
-      <TodayStockWSComponent stockSymbol={activeStock} />
+      {/* Main content area with graph and positions side by side */}
+      <div
+        style={{
+          display: "flex",
+          flex: 1,
+          gap: "16px",
+          overflow: "hidden",
+          padding: "0 10px",
+        }}
+      >
+        {/* Left side - Graph/Main content area */}
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            minWidth: 0,
+          }}
+        >
+          <SearchBar
+            setSearchQuery={setActiveStock}
+            searchQuery={activeStock}
+            inputMessage="Enter Stock Symbol..."
+            onEnter={startStockStream}
+            onSearchClick={startStockStream}
+          />
+          <TodayStockWSComponent stockSymbol={activeStock} />
+        </div>
+
+        {/* Right side - Open Positions */}
+        <div
+          style={{
+            width: "280px",
+            display: "flex",
+            flexDirection: "column",
+            flexShrink: 0,
+          }}
+        >
+          <div
+            style={{
+              fontSize: "20px",
+              fontWeight: "bold",
+              marginBottom: "12px",
+              padding: "0 16px",
+            }}
+          >
+            Options
+          </div>
+          <div
+            style={{
+              flex: 1,
+              overflow: "auto",
+              border: "1px solid #ffffff",
+              borderRadius: "8px",
+              padding: "12px 0",
+            }}
+          >
+            <OptionExpirationCards
+              setActiveCard={setActiveCard}
+              setActiveID={setFixedID}
+              stock={activeStock}
+              defaultMessage="Loading..."
+              optionExpirations={optionExpirations}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

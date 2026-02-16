@@ -9,7 +9,6 @@ import { ButtonsProvider } from "./components/ButtonContext";
 import OptionsSearchBar from "./components/OptionsSearchBar";
 import { BalanceWSComponent } from "./components/Balance";
 import { FixedOptionWSComponent } from "./components/FixedOptionGraph";
-import { IdButtons } from "./components/OpenPositions";
 import { usePriceStream } from "./components/PriceContext";
 import "../App.css";
 import OptionCard from "./components/OptionCard";
@@ -53,7 +52,9 @@ const App: React.FC = () => {
           {activeCard === "options" && (
             <OptionCard setActiveCard={setActiveCard} />
           )}
-          {activeCard == "stock" && <StockCard setActiveCard={setActiveCard} />}
+          {activeCard == "stock" && (
+            <StockCard setActiveCard={setActiveCard} setFixedID={setFixedID} />
+          )}
           {activeCard == "fixedStock" && (
             <div
               className="card bg-dark text-white" // Bootstrap classes for dark mode

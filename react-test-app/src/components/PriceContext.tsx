@@ -62,12 +62,18 @@ export type CompanyStats = {
   Quote: StockPoint | null;
 };
 
+export type OptionExpiration = {
+  Call: string[];
+  Put: string[];
+};
+
 type PriceStreamContextValue = {
   optionPoints: Record<string, OptionPoint[]>;
   stockPoints: Record<string, StockPoint[]>;
   companyStats: Record<string, CompanyStats>;
   historicalStockPoints: Record<string, HistoricalStockPoint[]>;
   pendingRequests: Set<string>;
+  optionExpirations: Record<string, OptionExpiration>;
   startStockStream: (symbol: string) => Promise<void>;
   startOptionStream: (
     stockSymbol: string,
@@ -83,6 +89,10 @@ type PriceStreamContextValue = {
   updateHistoricalStockPoint: (
     symbol: string,
     point: HistoricalStockPoint[],
+  ) => void;
+  updateOptionExpirations: (
+    symbol: string,
+    expirations: OptionExpiration,
   ) => void;
 };
 
@@ -130,6 +140,10 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
   const [pendingRequests, setPendingRequests] = useState<Set<string>>(
     new Set(),
   );
+
+  const [optionExpirations, setOptionExpirations] = useState<
+    Record<string, OptionExpiration>
+  >({});
 
   const startStockStream = useCallback(
     async (symbol: string) => {
@@ -285,6 +299,16 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   };
 
+  const updateOptionExpirations = (
+    symbol: string,
+    expirations: OptionExpiration,
+  ) => {
+    setOptionExpirations((prev) => ({
+      ...prev,
+      [symbol]: expirations,
+    }));
+  };
+
   return (
     <PriceStreamContext.Provider
       value={{
@@ -293,12 +317,14 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
         companyStats,
         historicalStockPoints,
         pendingRequests,
+        optionExpirations,
         startStockStream,
         startOptionStream,
         updateOptionPoint,
         updateStockPoint,
         updateCompanyStats,
         updateHistoricalStockPoint,
+        updateOptionExpirations,
       }}
     >
       {children}

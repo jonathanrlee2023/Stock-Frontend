@@ -526,7 +526,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
             }}
             disabled={stockSymbol === ""}
           >
-            ADD
+            TRACK
           </button>
           <button
             className="btn-sleek"
@@ -538,7 +538,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
             }}
             disabled={stockSymbol === ""}
           >
-            REMOVE
+            UNTRACK
           </button>
         </div>
       </div>

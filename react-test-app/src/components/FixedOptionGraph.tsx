@@ -85,26 +85,29 @@ export const addNewTracker = async (ID: string) => {
 };
 
 const parseOptionId = (optionID: string) => {
-  const [underlying, rest] = optionID.split("_");
-  if (!rest || rest.length < 8) {
-    throw new Error("Invalid option ID format");
+  // Use a regex that handles both padded spaces and underscores
+  // This version is safe for "NVDA  260218C00182500"
+  const regex = /^([A-Z]+)[_\s]*(\d{2})(\d{2})(\d{2})([CP])(\d+)$/;
+  const match = optionID.trim().match(regex);
+
+  if (!match) {
+    // Instead of throwing, return null to let the component handle the 'Empty' state
+    console.warn("Could not parse option ID:", optionID);
+    return null;
   }
 
-  const dateStr = rest.slice(0, 6);
-  const type = rest.charAt(6);
-  const strikeStr = rest.slice(7);
+  const [_, underlying, yy, mm, dd, type, strikeStr] = match;
 
-  const year = parseInt(dateStr.slice(0, 2), 10) + 2000;
-  const month = parseInt(dateStr.slice(2, 4), 10);
-  const day = parseInt(dateStr.slice(4, 6), 10);
+  const year = parseInt(yy, 10) + 2000;
+  const month = parseInt(mm, 10);
+  const day = parseInt(dd, 10);
   const expiration = new Date(year, month - 1, day);
-
   const strike = parseInt(strikeStr, 10) / 1000;
 
   return {
-    underlying,
+    underlying: underlying.trim(),
     expiration,
-    type,
+    type: type === "C" ? "Call" : "Put",
     strike,
   };
 };
@@ -122,13 +125,19 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
   optionID,
 }) => {
   const { optionPoints } = usePriceStream();
-  const { setIds } = useWS();
+  const { setIds, setTrackers } = useWS();
 
   // Parse optionID once per render
-  const { underlying, expiration, type, strike } = React.useMemo(
-    () => parseOptionId(optionID),
-    [optionID],
-  );
+  const parsedData = React.useMemo(() => parseOptionId(optionID), [optionID]);
+  if (!parsedData) {
+    return (
+      <div className="d-flex justify-content-center align-items-center h-100">
+        <div className="text-muted">Invalid Option Format: {optionID}</div>
+      </div>
+    );
+  }
+
+  const { underlying, expiration, type, strike } = parsedData;
 
   const now = new Date();
   const isExpired = expiration < now;
@@ -224,6 +233,69 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
     },
   };
 
+  const ModifyTracker = async (action: string) => {
+    let data: { id: string } = { id: "" };
+
+    data.id = formatOptionSymbol(
+      stockSymbol,
+      day,
+      month,
+      year,
+      type,
+      strikePrice,
+    );
+
+    try {
+      const response = await fetch(`http://localhost:8080/${action}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const result = await response.text();
+      console.log("Server response:", result);
+    } catch (error) {
+      console.error("POST request failed:", error);
+    }
+  };
+
+  function formatOptionSymbol(
+    stock: string,
+    day: number,
+    month: number,
+    year: number,
+    type: string,
+    strike: number,
+  ): string {
+    // 1. Format Year to YY (e.g., 2026 -> "26")
+    const yearStr = String(year);
+    const yy =
+      yearStr.length === 4 ? yearStr.slice(2) : yearStr.padStart(2, "0");
+
+    // 2. Pad Month and Day (e.g., 2 -> "02")
+    const mm = String(month).padStart(2, "0");
+    const dd = String(day).padStart(2, "0");
+
+    // 3. Format Type (Call/Put -> C/P)
+    const typeLetter = type.toUpperCase().startsWith("C") ? "C" : "P";
+
+    // 4. Format Strike (e.g., 182.5 -> 182500 -> "00182500")
+    const strikeStr = (strike * 1000).toFixed(0).padStart(8, "0");
+
+    // 5. Format Ticker with padding spaces (OCC standard)
+    // The ticker section is 6 characters long.
+    // "NVDA" becomes "NVDA  " (2 spaces)
+    const paddedStock = stock.toUpperCase().padEnd(6, " ");
+
+    return `${paddedStock}${yy}${mm}${dd}${typeLetter}${strikeStr}`;
+  }
+
   return (
     <div
       style={{
@@ -235,61 +307,41 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
         overflow: "hidden",
       }}
     >
-      <div className="d-flex gap-2 mx-2 mb-2" style={{ flex: "0 0 auto" }}>
-        <div
-          style={{
-            flex: "1 1 auto", // This allows the chart to grow/shrink to fit
-            width: "100%",
-            minHeight: "0",
-            position: "relative",
-          }}
-        >
-          <Line key={stockSymbol} options={options} data={graphData} />
-        </div>
-        <div
-          style={{
-            display: "flex",
-            gap: "10px",
-            flexWrap: "wrap",
-            justifyContent: "center",
-          }}
-        >
-          {METRICS.map((g) => {
-            // 1. Get the raw value from the point
-            const val = latestPoint
-              ? latestPoint[g as keyof OptionPoint]
-              : null;
+      <div
+        style={{
+          flex: "1 1 auto",
+          width: "100%",
+          minHeight: "0",
+          position: "relative",
+        }}
+      >
+        <Line key={stockSymbol} options={options} data={graphData} />
+      </div>
+      <div
+        style={{
+          display: "flex",
+          gap: "10px",
+          flexWrap: "wrap",
+          justifyContent: "center",
+        }}
+      >
+        {METRICS.map((g) => {
+          const val = latestPoint ? latestPoint[g as keyof OptionPoint] : null;
 
-            return (
-              <button
-                key={g}
-                className={`btn btn-sm ${dataPoint === g ? "btn-primary" : "btn-outline-secondary"}`}
-                onClick={() => setDataPoint(g)}
-              >
-                {/* 2. Narrow the type: only call toFixed if it's actually a number */}
-                {g.toUpperCase()}:{" "}
-                {typeof val === "number" ? val.toFixed(4) : "N/A"}
-              </button>
-            );
-          })}
-        </div>
-        <div className="mb-2 mx-2">
-          <label>
-            Amount:{" "}
-            <input
-              className="search-bar input-small"
-              type="number"
-              value={amount}
-              min={0}
-              onChange={(e) => setAmount(Number(e.target.value))}
-              style={{
-                paddingLeft: "5px" /* Overrides the 45px padding */,
-                paddingRight: "25px" /* Pulls the arrows closer to the edge */,
-                textAlign: "center" /* Centers the number between the edges */,
-              }}
-            />
-          </label>
-        </div>
+          return (
+            <button
+              key={g}
+              className={`btn btn-sm ${dataPoint === g ? "btn-primary" : "btn-outline-secondary"}`}
+              onClick={() => setDataPoint(g)}
+            >
+              {g.toUpperCase()}:{" "}
+              {typeof val === "number" ? val.toFixed(4) : "N/A"}
+            </button>
+          );
+        })}
+      </div>
+      <div className="d-flex justify-content-between align-items-center mb-2 mx-2">
+        {/* Left Side: Position Actions */}
         <div className="d-flex gap-2 mb-2 mx-2">
           <button
             className="btn-sleek btn-sleek-green"
@@ -300,6 +352,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
             }}
             onClick={() => {
               postData("openPosition", optionID, latestMark, amount);
+              ModifyTracker("newTracker");
               setIds((prev) => ({
                 ...prev,
                 [optionID]: (prev[optionID] ?? 0) + amount,
@@ -359,7 +412,66 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
             </div>
           )}
         </div>
+
+        {/* Right Side: Tracker Actions */}
+        <div className="d-flex gap-2 mx-2 mb-2" style={{ flex: "0 0 auto" }}>
+          <button
+            className="btn-sleek ms-auto mt-1"
+            onClick={() => {
+              {
+                ModifyTracker("newTracker");
+                const symbol = formatOptionSymbol(
+                  stockSymbol,
+                  day,
+                  month,
+                  year,
+                  type,
+                  strikePrice,
+                );
+                setTrackers((prev) =>
+                  prev.includes(symbol) ? prev : [...prev, symbol],
+                );
+              }
+            }}
+            disabled={isExpired || latestMark <= 0}
+          >
+            TRACK
+          </button>
+          <button
+            className="btn-sleek mt-1"
+            onClick={() => {
+              {
+                ModifyTracker("closeTracker");
+                const symbol = formatOptionSymbol(
+                  stockSymbol,
+                  day,
+                  month,
+                  year,
+                  type,
+                  strikePrice,
+                );
+                setTrackers((prev) => prev.filter((item) => item !== symbol));
+              }
+            }}
+            disabled={isExpired || latestMark <= 0}
+          >
+            UNTRACK
+          </button>
+        </div>
+
+        {isExpired && (
+          <div
+            style={{
+              color: "red",
+              fontWeight: "bold",
+              marginTop: "10px",
+            }}
+          >
+            The option expiration date has passed. Actions are disabled.
+          </div>
+        )}
       </div>
+      ;
     </div>
   );
 };
