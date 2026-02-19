@@ -9,6 +9,10 @@ import React, {
 export type OptionPoint = {
   Symbol: string; // Capitalized in JSON
   Mark: number; // Capitalized in JSON
+  HighPrice: number;
+  LastPrice: number;
+  AskPrice: number;
+  BidPrice: number;
   timestamp: number; // Lowercase in JSON
   IV: number; // Double-check Go tags for these
   Delta: number;

@@ -104,18 +104,10 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
       // 2) Batch array of OptionPoint or StockPoint
       if (Array.isArray(parsed)) {
         const first = parsed[0] as any;
-        if (first?.iv !== undefined) {
+        console.log("first", first);
+        if (first?.IV !== undefined) {
           (parsed as OptionPoint[]).forEach((opt) =>
-            updateOptionPoint(opt.Symbol, {
-              Symbol: opt.Symbol,
-              Mark: opt.Mark,
-              timestamp: opt.timestamp,
-              IV: opt.IV,
-              Delta: opt.Delta,
-              Gamma: opt.Gamma,
-              Theta: opt.Theta,
-              Vega: opt.Vega,
-            }),
+            updateOptionPoint(opt.Symbol, opt as OptionPoint),
           );
           return;
         } else {
