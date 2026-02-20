@@ -471,7 +471,6 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
           </div>
         )}
       </div>
-      ;
     </div>
   );
 };
