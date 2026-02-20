@@ -85,12 +85,6 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
     const prevClose =
       histArr.length > 0 ? histArr[histArr.length - 1]?.close : 0;
 
-    console.log("Latest Mark:", latestMark);
-    console.log("Previous Close:", prevClose);
-    console.log(histArr.length > 0 ? histArr[0] : "No data");
-    console.log(liveArr.length > 0 ? histArr[histArr.length - 1] : "No data");
-    console.log(companyStats);
-
     const rawData = isLive
       ? ((stockPoints[stockSymbol] || []) as StockPoint[])
       : ((historicalStockPoints[stockSymbol] || []) as HistoricalStockPoint[]);
@@ -178,7 +172,6 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
       </span>
     </div>
   );
-  console.log(showStats);
 
   const options = React.useMemo(() => {
     return {

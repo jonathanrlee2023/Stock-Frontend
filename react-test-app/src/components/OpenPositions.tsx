@@ -51,7 +51,7 @@ export const IdCards: React.FC<IdCardProps> = ({
   setActiveCard,
   defaultMessage,
 }) => {
-  const { ids } = useWS();
+  const { ids, setPreviousID } = useWS();
   const previousIdsRef = useRef<Record<string, number>>({});
   const { stockPoints, startStockStream, startOptionStream } = usePriceStream();
   useEffect(() => {
@@ -78,6 +78,7 @@ export const IdCards: React.FC<IdCardProps> = ({
       }
     } else {
       startStockStream(id);
+      setPreviousID(id);
       setActiveCard("fixedStock");
     }
 

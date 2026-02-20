@@ -14,6 +14,8 @@ import "../App.css";
 import OptionCard from "./components/OptionCard";
 import HomePage from "./components/HomePage";
 import StockCard from "./components/StockCard";
+import FixedOptionCard from "./components/FixedOptionCard";
+import FixedStockCard from "./components/FixedStockCard";
 
 const App: React.FC = () => {
   const [activeCard, setActiveCard] = useState<string>("home"); // State to track the active screen
@@ -56,48 +58,14 @@ const App: React.FC = () => {
             <StockCard setActiveCard={setActiveCard} setFixedID={setFixedID} />
           )}
           {activeCard == "fixedStock" && (
-            <div
-              className="card bg-dark text-white" // Bootstrap classes for dark mode
-              style={{
-                width: "100%",
-                height: "98vh",
-                margin: "0",
-                borderRadius: "0",
-                border: "none",
-                backgroundColor: "#000000", // Overriding to true black
-                overflow: "hidden",
-              }}
-            >
-              <button
-                className="btn btn-secondary"
-                onClick={() => setActiveCard("home")}
-              >
-                Back to Home
-              </button>
-              <TodayStockWSComponent stockSymbol={fixedID} />
-            </div>
+            <FixedStockCard
+              setActiveCard={setActiveCard}
+              setFixedID={setFixedID}
+              fixedID={fixedID}
+            />
           )}
           {activeCard == "fixedOption" && (
-            <div
-              className="card bg-dark text-white" // Bootstrap classes for dark mode
-              style={{
-                width: "100%",
-                height: "98vh",
-                margin: "0",
-                borderRadius: "0",
-                border: "none",
-                backgroundColor: "#000000", // Overriding to true black
-                overflow: "hidden",
-              }}
-            >
-              <button
-                className="btn btn-secondary"
-                onClick={() => setActiveCard("home")}
-              >
-                Back to Home
-              </button>
-              <FixedOptionWSComponent optionID={fixedID} />
-            </div>
+            <FixedOptionCard setActiveCard={setActiveCard} fixedID={fixedID} />
           )}
         </div>
       </div>

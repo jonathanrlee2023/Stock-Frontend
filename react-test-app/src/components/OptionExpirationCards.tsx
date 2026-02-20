@@ -8,6 +8,7 @@ interface OptionExpirationCardsProps {
   stock: string;
   defaultMessage: string;
   optionExpirations: Record<string, OptionExpiration>;
+  prevCard: string;
 }
 interface OptionParts {
   ticker: string;
@@ -41,8 +42,10 @@ export const OptionExpirationCards: React.FC<OptionExpirationCardsProps> = ({
   stock,
   defaultMessage,
   optionExpirations,
+  prevCard,
 }) => {
   const { optionPoints, startOptionStream } = usePriceStream();
+  const { previousCard, setPreviousCard } = useWS();
   const [filter, setFilter] = useState<"CALL" | "PUT">("CALL");
 
   const handleCardClick = (id: string) => {
@@ -58,6 +61,7 @@ export const OptionExpirationCards: React.FC<OptionExpirationCardsProps> = ({
       );
       setActiveCard("fixedOption");
       setActiveID(id);
+      setPreviousCard(prevCard);
     } else {
       console.error("Failed to parse option ID:", id);
     }

@@ -125,9 +125,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
   optionID,
 }) => {
   const { optionPoints } = usePriceStream();
-  const { setIds, setTrackers } = useWS();
-
-  console.log(optionPoints);
+  const { previousCard, setIds, setTrackers, setPreviousCard } = useWS();
 
   // Parse optionID once per render
   const parsedData = React.useMemo(() => parseOptionId(optionID), [optionID]);

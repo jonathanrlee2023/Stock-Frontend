@@ -4,6 +4,7 @@ import { on } from "process";
 import { useButtons } from "./ButtonContext";
 import { usePriceStream } from "./PriceContext";
 import "../../App.css";
+import { useWS } from "./WSContest";
 
 interface SearchBarProps {
   setSearchQuery: (query: string) => void; // Function to update search query
@@ -11,6 +12,7 @@ interface SearchBarProps {
   inputMessage: string;
   onEnter: (input: string) => void; // NEW
   onSearchClick: (input: string) => void;
+  setPreviousID: (query: string) => void;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
@@ -18,12 +20,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
   searchQuery,
   onEnter,
   onSearchClick,
+  setPreviousID,
 }) => {
   const [inputValue, setInputValue] = useState<string>(searchQuery); // Local state to keep input value
   const [showDropdown, setShowDropdown] = useState(false); // Track visibility
   const searchContainerRef = useRef<HTMLDivElement>(null); // To detect clicks outside
   const { buttons, setButtons } = useButtons();
   const { pendingRequests, startStockStream } = usePriceStream();
+  const { previousID } = useWS();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -44,6 +48,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setInputValue(value);
     setSearchQuery(value);
     onSearchClick(value);
+    setPreviousID(value);
     setShowDropdown(false);
   };
   const filteredHistory = buttons.filter((item) =>
@@ -53,6 +58,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const handleSearchClick = async () => {
     setSearchQuery(inputValue);
     onSearchClick(inputValue);
+    setPreviousID(inputValue);
     setShowDropdown(false); // Close after searching
 
     if (inputValue.trim() !== "" && !buttons.includes(inputValue)) {

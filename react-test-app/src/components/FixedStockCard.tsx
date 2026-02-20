@@ -2,20 +2,21 @@ import { useState } from "react";
 import SearchBar from "./SearchBar";
 import { TodayStockWSComponent } from "./TodayGraph";
 import { usePriceStream } from "./PriceContext";
-import { OptionExpirationCards } from "./OptionExpirationCards";
+import { FixedOptionWSComponent } from "./FixedOptionGraph";
 import { useWS } from "./WSContest";
-
-interface StockCardProps {
+import { OptionExpirationCards } from "./OptionExpirationCards";
+interface FixedStockCardProps {
   setActiveCard: (query: string) => void;
   setFixedID: (query: string) => void;
+  fixedID: string;
 }
 
-export const StockCard: React.FC<StockCardProps> = ({
+export const StockCard: React.FC<FixedStockCardProps> = ({
   setActiveCard,
   setFixedID,
+  fixedID,
 }) => {
   const { previousID, setPreviousID } = useWS();
-
   const [activeStock, setActiveStock] = useState<string>(previousID || ""); // Persistent state for search query
   const { optionExpirations, startStockStream } = usePriceStream();
   return (
@@ -52,14 +53,6 @@ export const StockCard: React.FC<StockCardProps> = ({
             minWidth: 0,
           }}
         >
-          <SearchBar
-            setSearchQuery={setActiveStock}
-            searchQuery={activeStock}
-            inputMessage="Enter Stock Symbol..."
-            onEnter={startStockStream}
-            onSearchClick={startStockStream}
-            setPreviousID={setPreviousID}
-          />
           <TodayStockWSComponent stockSymbol={activeStock} />
         </div>
 
@@ -97,7 +90,7 @@ export const StockCard: React.FC<StockCardProps> = ({
               stock={activeStock}
               defaultMessage="Loading..."
               optionExpirations={optionExpirations}
-              prevCard="stock"
+              prevCard="fixedStock"
             />
           </div>
         </div>

@@ -23,6 +23,10 @@ interface WSContextValue {
   trackers: string[];
   setTrackers: React.Dispatch<React.SetStateAction<string[]>>;
   previousBalance: number;
+  previousCard: string;
+  setPreviousCard: React.Dispatch<React.SetStateAction<string>>;
+  previousID: string;
+  setPreviousID: React.Dispatch<React.SetStateAction<string>>;
 }
 const WSContext = createContext<WSContextValue | undefined>(undefined);
 
@@ -37,6 +41,8 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
   const [ids, setIds] = useState<Record<string, number>>({});
   const [trackers, setTrackers] = useState<string[]>([]);
   const [previousBalance, setPreviousBalance] = useState<number>(0);
+  const [previousCard, setPreviousCard] = useState<string>("");
+  const [previousID, setPreviousID] = useState<string>("");
 
   const {
     updateStockPoint,
@@ -82,7 +88,6 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
       }
 
       if (parsed.MarketCap !== undefined) {
-        console.log(parsed);
         updateCompanyStats(parsed.Symbol, parsed as CompanyStats);
         return;
       }
@@ -104,7 +109,6 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
       // 2) Batch array of OptionPoint or StockPoint
       if (Array.isArray(parsed)) {
         const first = parsed[0] as any;
-        console.log("first", first);
         if (first?.IV !== undefined) {
           (parsed as OptionPoint[]).forEach((opt) =>
             updateOptionPoint(opt.Symbol, opt as OptionPoint),
@@ -127,7 +131,6 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
 
       // 3) Single object (e.g. balance or lone stock point)
       if (parsed.symbol) {
-        console.log("called");
         updateStockPoint(parsed.symbol, {
           Symbol: parsed.symbol,
           Mark: parsed.Mark,
@@ -170,6 +173,10 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
         trackers,
         setTrackers,
         previousBalance,
+        previousCard,
+        setPreviousCard,
+        previousID,
+        setPreviousID,
       }}
     >
       {children}
