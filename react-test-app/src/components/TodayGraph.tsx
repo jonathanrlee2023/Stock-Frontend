@@ -105,11 +105,6 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
       filtered = rawData.filter((p) => p.timestamp >= minTimestamp);
     }
 
-    if (timeframe === "All") {
-      // p is the element, i is the index
-      filtered = filtered.filter((_, i) => i % 5 === 0);
-    }
-
     const upOrDown = (latestMark ?? 0) >= (prevClose ?? 0);
 
     // 3. Process for Display
@@ -153,7 +148,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
             ? upOrDown
               ? "#22c55e"
               : "#ef4444" // Green if up, Red if down
-            : "#4200bd", // Neutral Blue/Purple for History
+            : "#00bb10", // Neutral Blue/Purple for History
           tension: isLive ? 0 : 0.1, // Smooth lines look better on long history
           pointRadius: isLive ? 3 : 0, // Hide points on long history for performance
         },
