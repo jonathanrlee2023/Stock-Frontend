@@ -102,7 +102,9 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
         "3Y": day * 1095,
       };
       const minTimestamp = nowInSeconds - (cutoffs[timeframe] || 0);
-      filtered = rawData.filter((p) => p.timestamp >= minTimestamp);
+      filtered = (rawData as StockPoint[]).filter(
+        (p: StockPoint) => p.timestamp >= minTimestamp,
+      );
     }
 
     const upOrDown = (latestMark ?? 0) >= (prevClose ?? 0);
