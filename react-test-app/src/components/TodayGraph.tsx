@@ -381,8 +381,11 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                       : "N/A"
                   }
                 />
-                <StatRow label="PEG Ratio" value={`${stats.PEG}`} />
-                <StatRow label="Sloan Ratio" value={`${stats.Sloan}`} />
+                <StatRow label="PEG Ratio" value={`${stats.PEG?.toFixed(4)}`} />
+                <StatRow
+                  label="Sloan Ratio"
+                  value={`${stats.Sloan?.toFixed(4)}`}
+                />
                 <StatRow
                   label="WACC"
                   value={
@@ -426,6 +429,10 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                 <StatRow label="Hold" value={`${stats.Hold}`} />
                 <StatRow label="Sell" value={`${stats.Sell}`} />
                 <StatRow label="Strong Sell" value={`${stats.StrongSell}`} />
+                <StatRow
+                  label="Next Earnings Date"
+                  value={`${stats.EarningsDate}`}
+                />
               </>
             ) : (
               <div

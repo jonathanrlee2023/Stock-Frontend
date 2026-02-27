@@ -62,6 +62,7 @@ export type CompanyStats = {
   Hold: number | null;
   Sell: number | null;
   StrongSell: number | null;
+  EarningsDate: string | null;
 };
 
 export type OptionExpiration = {
