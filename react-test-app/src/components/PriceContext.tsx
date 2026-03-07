@@ -55,6 +55,7 @@ export type CompanyStats = {
   WACC: number | null;
   FCFF: number | null;
   FCF: number | null;
+  FCFPerShare: number | null;
   NWC: number | null;
   PriceTarget: number | null;
   StrongBuy: number | null;
@@ -63,6 +64,7 @@ export type CompanyStats = {
   Sell: number | null;
   StrongSell: number | null;
   EarningsDate: string | null;
+  Grade: number | null;
 };
 
 export type OptionExpiration = {

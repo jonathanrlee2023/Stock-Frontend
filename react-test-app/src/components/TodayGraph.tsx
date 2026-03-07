@@ -157,19 +157,26 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
       ],
     };
   }, [stockPoints, historicalStockPoints, stockSymbol, timeframe]);
-  const StatRow = ({ label, value }: { label: string; value: any }) => (
-    <div className="d-flex flex-column">
-      <span
-        style={{ color: "#888", fontSize: "12px", textTransform: "uppercase" }}
-      >
-        {label}
-      </span>
-      <span style={{ color: "white", fontWeight: "bold" }}>
-        {value || "N/A"}
+  interface StatRowProps {
+    label: string;
+    value: string | number;
+    valueStyle?: React.CSSProperties; // Add this
+  }
+
+  const StatRow: React.FC<StatRowProps> = ({ label, value, valueStyle }) => (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        fontSize: "0.9rem",
+      }}
+    >
+      <span style={{ color: "#888" }}>{label}</span>
+      <span style={{ color: "#fff", textAlign: "right", ...valueStyle }}>
+        {value}
       </span>
     </div>
   );
-
   const options = React.useMemo(() => {
     return {
       responsive: true,
@@ -213,6 +220,19 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
       },
     };
   }, [stockSymbol, timeframe]);
+
+  const getScoreColor = (score: number | null | undefined): string => {
+    if (score === null || score === undefined) return "#666";
+
+    // Clamp score between 0 and 100
+    const normalizedScore = Math.min(Math.max(score, 0), 100);
+
+    // Hue: 0 is red, 60 is yellow, 120 is green.
+    // Multiplying score by 1.2 maps 100 to 120.
+    const hue = normalizedScore * 1.2;
+
+    return `hsl(${hue}, 80%, 50%)`;
+  };
 
   return (
     <div
@@ -326,6 +346,38 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
             {stats ? (
               <>
                 <StatRow
+                  label="Overall Health Score"
+                  value={stats.Grade != null ? `${stats.Grade} / 100` : "N/A"}
+                  valueStyle={{
+                    color: getScoreColor(stats.Grade),
+                    fontWeight: "bold",
+                    fontSize: "1.1rem",
+                    textShadow: "0 0 10px rgba(0,0,0,0.5)", // Helps pop against dark background
+                  }}
+                />
+
+                {/* Optional: A visual progress bar for the score */}
+                <div style={{ gridColumn: "span 2", marginBottom: "10px" }}>
+                  <div
+                    style={{
+                      height: "4px",
+                      background: "#222",
+                      borderRadius: "2px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${stats.Grade || 0}%`,
+                        height: "100%",
+                        background: getScoreColor(stats.Grade),
+                        transition: "width 1s ease-in-out",
+                        borderRadius: "2px",
+                        boxShadow: `0 0 8px ${getScoreColor(stats.Grade)}`,
+                      }}
+                    />
+                  </div>
+                </div>
+                <StatRow
                   label="Market Cap"
                   value={
                     stats.MarketCap != null
@@ -405,6 +457,14 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                   value={
                     stats.FCF != null
                       ? `$${stats.FCF.toLocaleString()} M`
+                      : "N/A"
+                  }
+                />
+                <StatRow
+                  label="FCF Per Share"
+                  value={
+                    stats.FCFPerShare != null
+                      ? `$${stats.FCFPerShare.toLocaleString()} M`
                       : "N/A"
                   }
                 />
