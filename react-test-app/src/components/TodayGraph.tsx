@@ -66,6 +66,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   const [timeframe, setTimeframe] = useState<Timeframe>("Live");
   const { stockPoints, historicalStockPoints, companyStats } = usePriceStream();
   const [amount, setAmount] = useState<number>(0);
+  const [dollarValue, setDollarValue] = useState<number>(0); // Cash
   const { setIds, setTrackers } = useWS();
   const points = stockPoints[stockSymbol] || [];
   const latestPoint = points.length > 0 ? points[points.length - 1] : null;
@@ -233,6 +234,21 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
 
     return `hsl(${hue}, 80%, 50%)`;
   };
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const val = Number(e.target.value);
+    setAmount(val);
+    // Calculate dollar value: Shares * Price
+    setDollarValue(Number((val * latestMark).toFixed(2)));
+  };
+
+  // Handler for Dollar changes
+  const handleDollarChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const val = Number(e.target.value);
+    setDollarValue(val);
+    // Calculate shares: Cash / Price (Check for division by zero)
+    const calculatedShares = latestMark > 0 ? val / latestMark : 0;
+    setAmount(Number(calculatedShares.toFixed(5))); // High precision for shares
+  };
 
   return (
     <div
@@ -385,6 +401,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                       : "N/A"
                   }
                 />
+                <StatRow label="Sector" value={`${stats.Sector}`} />
                 <StatRow
                   label="Intrinsic Value"
                   value={
@@ -509,21 +526,44 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
         )}
       </div>
       <div className="mb-2 mx-2">
-        <label>
-          Amount:{" "}
-          <input
-            className="search-bar input-small"
-            type="number"
-            value={amount}
-            min={0}
-            onChange={(e) => setAmount(Number(e.target.value))}
-            style={{
-              paddingLeft: "5px" /* Overrides the 45px padding */,
-              paddingRight: "25px" /* Pulls the arrows closer to the edge */,
-              textAlign: "center" /* Centers the number between the edges */,
-            }}
-          />
-        </label>
+        <div className="mb-2 mx-2">
+          <label>
+            Shares:{" "}
+            <input
+              className="search-bar input-small"
+              type="number"
+              value={amount}
+              min={0}
+              step="any"
+              onChange={handleAmountChange}
+              style={{
+                paddingLeft: "5px",
+                paddingRight: "25px",
+                textAlign: "center",
+              }}
+            />
+          </label>
+        </div>
+
+        {/* Dollar Amount Input */}
+        <div className="mb-2 mx-2">
+          <label>
+            Total $:{" "}
+            <input
+              className="search-bar input-small"
+              type="number"
+              value={dollarValue}
+              min={0}
+              step="0.01"
+              onChange={handleDollarChange}
+              style={{
+                paddingLeft: "5px",
+                paddingRight: "25px",
+                textAlign: "center",
+              }}
+            />
+          </label>
+        </div>
       </div>
       {/* Container for everything at the bottom */}
       <div className="d-flex justify-content-between align-items-center mb-2 mx-2">
