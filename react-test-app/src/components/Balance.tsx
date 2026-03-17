@@ -13,7 +13,7 @@ import {
 } from "chart.js";
 import { useWS } from "./WSContest"; // adjust import
 import "chartjs-adapter-date-fns";
-import { StockPoint, usePriceStream } from "./PriceContext";
+import { BalancePoint, StockPoint, usePriceStream } from "./PriceContext";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -26,14 +26,17 @@ ChartJS.register(
 );
 
 export const BalanceWSComponent: React.FC = ({}) => {
-  const { stockPoints } = usePriceStream();
+  const { balancePoints } = usePriceStream();
   const { previousBalance } = useWS();
 
-  const points = stockPoints["balance"] || [];
-  const latestBalance = points.length > 0 ? points[points.length - 1].Mark : 0;
+  const points = balancePoints || [];
+  const latestBalance =
+    points.length > 0 ? points[points.length - 1].Balance : 0;
+
+  const latestCash = points.length > 0 ? points[points.length - 1].Cash : 0;
 
   const graphData = React.useMemo(() => {
-    const minutePoints = new Map<number, StockPoint>(); // key: floored minute, value: StockPoint
+    const minutePoints = new Map<number, BalancePoint>(); // key: floored minute, value: StockPoint
 
     for (const p of points) {
       const minuteKey = Math.floor((p.timestamp - 15) / 60);
@@ -77,7 +80,7 @@ export const BalanceWSComponent: React.FC = ({}) => {
 
     const lastPoint = filteredPoints[filteredPoints.length - 1];
     const balanceLineColor =
-      lastPoint && lastPoint.Mark < previousBalance
+      lastPoint && lastPoint.Balance < previousBalance
         ? "rgba(200, 0, 0, 0.8)"
         : "rgba(0, 150, 0, 0.8)";
 
@@ -87,7 +90,7 @@ export const BalanceWSComponent: React.FC = ({}) => {
           label: `Balance`,
           data: filteredPoints.map((p) => ({
             x: new Date(p.timestamp * 1000),
-            y: p.Mark,
+            y: p.Balance,
           })),
           fill: false,
           borderColor: balanceLineColor,
@@ -146,10 +149,23 @@ export const BalanceWSComponent: React.FC = ({}) => {
           marginBottom: "5px",
         }}
       >
-        <div style={{ fontSize: "1.2rem", fontWeight: "bold" }}>
-          Balance:{" "}
-          <span style={{ color: balanceColor }}>
-            ${latestBalance.toFixed(2)}
+        <div
+          style={{
+            fontSize: "1.2rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "24px",
+          }}
+        >
+          <span>
+            Balance:{" "}
+            <span style={{ color: balanceColor, fontWeight: "bold" }}>
+              ${latestBalance.toFixed(2)}
+            </span>
+          </span>
+          <span>
+            Cash:{" "}
+            <span style={{ fontWeight: "bold" }}>${latestCash.toFixed(2)}</span>
           </span>
         </div>
         <div

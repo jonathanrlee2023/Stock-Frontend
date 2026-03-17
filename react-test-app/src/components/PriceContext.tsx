@@ -30,6 +30,12 @@ export type StockPoint = {
   timestamp: number;
 };
 
+export type BalancePoint = {
+  timestamp: number;
+  Balance: number;
+  Cash: number;
+};
+
 export type HistoricalStockPoint = {
   open: number;
   high: number;
@@ -82,6 +88,7 @@ type PriceStreamContextValue = {
   historicalStockPoints: Record<string, HistoricalStockPoint[]>;
   pendingRequests: Set<string>;
   optionExpirations: Record<string, OptionExpiration>;
+  balancePoints: BalancePoint[];
   startStockStream: (symbol: string) => Promise<void>;
   startOptionStream: (
     stockSymbol: string,
@@ -102,6 +109,7 @@ type PriceStreamContextValue = {
     symbol: string,
     expirations: OptionExpiration,
   ) => void;
+  updateBalancePoint: (point: BalancePoint) => void;
 };
 
 const PriceStreamContext = createContext<PriceStreamContextValue | undefined>(
@@ -152,6 +160,8 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
   const [optionExpirations, setOptionExpirations] = useState<
     Record<string, OptionExpiration>
   >({});
+
+  const [balancePoints, setBalancePoints] = useState<BalancePoint[]>([]);
 
   const startStockStream = useCallback(
     async (symbol: string) => {
@@ -317,6 +327,10 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
     }));
   };
 
+  const updateBalancePoint = (point: BalancePoint) => {
+    setBalancePoints((prev) => [...prev, point]);
+  };
+
   return (
     <PriceStreamContext.Provider
       value={{
@@ -326,6 +340,7 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
         historicalStockPoints,
         pendingRequests,
         optionExpirations,
+        balancePoints,
         startStockStream,
         startOptionStream,
         updateOptionPoint,
@@ -333,6 +348,7 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
         updateCompanyStats,
         updateHistoricalStockPoint,
         updateOptionExpirations,
+        updateBalancePoint,
       }}
     >
       {children}

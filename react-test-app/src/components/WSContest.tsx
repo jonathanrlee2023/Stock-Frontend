@@ -12,7 +12,7 @@ import {
   StockPoint,
   CompanyStats,
   HistoricalStockPoint,
-  OptionExpiration,
+  BalancePoint,
 } from "./PriceContext";
 
 interface WSContextValue {
@@ -50,6 +50,7 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
     updateCompanyStats,
     updateHistoricalStockPoint,
     updateOptionExpirations,
+    updateBalancePoint,
   } = usePriceStream();
 
   useEffect(() => {
@@ -75,15 +76,8 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
         return;
       }
 
-      if (parsed.Symbol === "balance") {
-        updateStockPoint(parsed.Symbol, {
-          Symbol: parsed.Symbol,
-          Mark: parsed.Mark,
-          BidPrice: 0,
-          AskPrice: 0,
-          LastPrice: 0,
-          timestamp: parsed.timestamp,
-        });
+      if (parsed.Balance !== undefined) {
+        updateBalancePoint(parsed as BalancePoint);
         return;
       }
 

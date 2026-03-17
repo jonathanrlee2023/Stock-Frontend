@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -64,16 +64,24 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
     }
   };
   const [timeframe, setTimeframe] = useState<Timeframe>("Live");
-  const { stockPoints, historicalStockPoints, companyStats } = usePriceStream();
+  const { stockPoints, historicalStockPoints, companyStats, balancePoints } =
+    usePriceStream();
+  const latestCash =
+    balancePoints.length > 0 ? balancePoints[balancePoints.length - 1].Cash : 0;
   const [amount, setAmount] = useState<number>(0);
   const [dollarValue, setDollarValue] = useState<number>(0); // Cash
-  const { setIds, setTrackers } = useWS();
+  const { setIds, setTrackers, ids } = useWS();
   const points = stockPoints[stockSymbol] || [];
   const latestPoint = points.length > 0 ? points[points.length - 1] : null;
 
   const latestMark = latestPoint?.Mark ?? 0;
   const [showStats, setShowStats] = useState(false);
   const stats = companyStats[stockSymbol]; // Get stats for current symbol
+
+  const previousIdsRef = useRef<Record<string, number>>({});
+  useEffect(() => {
+    previousIdsRef.current = ids; // just track the latest ids
+  }, [ids]);
   const graphData = React.useMemo(() => {
     // 1. Select the Source
     const isLive = timeframe === "Live";
@@ -525,45 +533,45 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
           </div>
         )}
       </div>
-      <div className="mb-2 mx-2">
-        <div className="mb-2 mx-2">
-          <label>
-            Shares:{" "}
-            <input
-              className="search-bar input-small"
-              type="number"
-              value={amount}
-              min={0}
-              step="any"
-              onChange={handleAmountChange}
-              style={{
-                paddingLeft: "5px",
-                paddingRight: "25px",
-                textAlign: "center",
-              }}
-            />
-          </label>
-        </div>
-
-        {/* Dollar Amount Input */}
-        <div className="mb-2 mx-2">
-          <label>
-            Total $:{" "}
-            <input
-              className="search-bar input-small"
-              type="number"
-              value={dollarValue}
-              min={0}
-              step="0.01"
-              onChange={handleDollarChange}
-              style={{
-                paddingLeft: "5px",
-                paddingRight: "25px",
-                textAlign: "center",
-              }}
-            />
-          </label>
-        </div>
+      <div
+        className="mb-2 mx-2"
+        style={{ display: "flex", alignItems: "center", gap: "20px" }}
+      >
+        <label>
+          Shares:{" "}
+          <input
+            className="search-bar input-small"
+            type="number"
+            value={amount}
+            min={0}
+            step="any"
+            onChange={handleAmountChange}
+            style={{
+              paddingLeft: "5px",
+              paddingRight: "25px",
+              textAlign: "center",
+            }}
+          />
+        </label>
+        <label>
+          Total $:{" "}
+          <input
+            className="search-bar input-small"
+            type="number"
+            value={dollarValue}
+            min={0}
+            step="0.01"
+            onChange={handleDollarChange}
+            style={{
+              paddingLeft: "5px",
+              paddingRight: "25px",
+              textAlign: "center",
+            }}
+          />
+        </label>
+        <span>
+          <b>Open Shares:</b> {ids[stockSymbol] ?? 0}
+        </span>
       </div>
       {/* Container for everything at the bottom */}
       <div className="d-flex justify-content-between align-items-center mb-2 mx-2">
@@ -583,7 +591,9 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                 [stockSymbol]: (prev[stockSymbol] ?? 0) + amount,
               }));
             }}
-            disabled={latestMark <= 0}
+            disabled={
+              latestMark <= 0 || amount * latestMark > latestCash || amount <= 0
+            }
           >
             Open Position
           </button>
@@ -605,7 +615,9 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                 return updated;
               });
             }}
-            disabled={latestMark <= 0}
+            disabled={
+              latestMark <= 0 || amount <= 0 || amount > ids[stockSymbol]
+            }
           >
             Close Position
           </button>
