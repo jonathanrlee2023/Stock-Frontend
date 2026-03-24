@@ -43,17 +43,16 @@ function formatOptionSymbol(
   type: string,
   strike: string,
 ): string {
-  const yy = year.length === 4 ? year.slice(2) : year; // Convert YYYY to YY if needed
+  const ticker = stock.toUpperCase().padEnd(6, " ");
+
+  const yy = year.length === 4 ? year.slice(2) : year;
+
   const typeLetter = type.toUpperCase().startsWith("C") ? "C" : "P";
 
-  // Convert strike price string to number, then format
   const strikeNum = parseFloat(strike);
-  const strikeStr = (strikeNum * 1000).toFixed(0).padStart(8, "0");
+  const strikeStr = Math.round(strikeNum * 1000).toString().padStart(8, "0");
 
-  return `${stock.toUpperCase()}_${yy}${month.padStart(2, "0")}${day.padStart(
-    2,
-    "0",
-  )}${typeLetter}${strikeStr}`;
+  return `${ticker}${yy}${month.padStart(2, "0")}${day.padStart(2, "0")}${typeLetter}${strikeStr}`;
 }
 export const postData = async (
   openOrClose: string,
@@ -171,6 +170,8 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
   // Check if the expiration date is in the past
   const now = new Date();
   const isExpired = expirationDate < now;
+
+  console.log(expectedSymbol);
 
   const points = optionPoints[expectedSymbol] || [];
   const [amount, setAmount] = useState<number>(1);

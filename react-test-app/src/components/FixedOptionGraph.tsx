@@ -142,6 +142,8 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
   const now = new Date();
   const isExpired = expiration < now;
 
+  console.log(optionID);
+
   const points = optionPoints[optionID] || [];
   const [amount, setAmount] = useState<number>(1);
   const [dataPoint, setDataPoint] = useState<OptionMetric>("Mark");

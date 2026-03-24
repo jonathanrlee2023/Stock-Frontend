@@ -127,7 +127,6 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
 
       for (const p of filtered) {
         const timeSinceLastPoint = p.timestamp - lastTimestamp;
-        console.log(p.timestamp, lastTimestamp, timeSinceLastPoint);
 
         if (timeSinceLastPoint > 60) {
           minutePoints.set(p.timestamp, {

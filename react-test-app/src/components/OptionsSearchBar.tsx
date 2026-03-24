@@ -30,21 +30,27 @@ const OptionsSearchBar: React.FC<OptionsSearchBarProps> = ({
   };
 
   return (
-    <div className="d-flex mb-2 mt-2 mx-2" style={{ maxWidth: "500px" }}>
+    <div className="d-flex mb-2 mt-2 mx-2 w-100" style={{ maxWidth: "15%" }}> 
       <input
         type="text"
-        className="search-bar search-bar-small"
+        className="search-bar search-bar-small flex-grow-1"
+        style={{ minWidth: "150px" }}
         placeholder={inputMessage}
         value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)} // Update local state
-        onKeyDown={handleKeyDown} // Handle Enter key press
+        onChange={(e) => setInputValue(e.target.value)}
+        onKeyDown={handleKeyDown}
       />
       <button
-        className="btn-sleek btn-sleek-short"
+        className="btn-sleek btn-sleek-short d-flex align-items-center justify-content-center"
         type="button"
-        onClick={handleSearchClick} // Handle search button click
+        style={{ 
+          minWidth: "40px",
+          padding: "0",
+          aspectRatio: "1/1"
+        }}
+        onClick={handleSearchClick}
       >
-        Confirm
+        <span style={{ lineHeight: "1" }}>✅</span>
       </button>
     </div>
   );
