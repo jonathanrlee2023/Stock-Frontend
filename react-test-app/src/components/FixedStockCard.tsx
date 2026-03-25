@@ -8,17 +8,17 @@ import { OptionExpirationCards } from "./OptionExpirationCards";
 interface FixedStockCardProps {
   setActiveCard: (query: string) => void;
   setFixedID: (query: string) => void;
-  fixedID: string;
+  activeCard: string;
 }
 
 export const StockCard: React.FC<FixedStockCardProps> = ({
   setActiveCard,
   setFixedID,
-  fixedID,
+  activeCard,
 }) => {
   const { previousID, setPreviousID } = useWS();
-  const [activeStock, setActiveStock] = useState<string>(previousID || ""); // Persistent state for search query
-  const { optionExpirations, startStockStream } = usePriceStream();
+  const [activeStock] = useState<string>(previousID || ""); // Persistent state for search query
+  const { optionExpirations } = usePriceStream();
   return (
     <div
       style={{
@@ -53,7 +53,7 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
             minWidth: 0,
           }}
         >
-          <TodayStockWSComponent stockSymbol={activeStock} setActiveCard={setActiveCard} />
+          <TodayStockWSComponent stockSymbol={activeStock} setActiveCard={setActiveCard} activeCard={activeCard}/>
         </div>
 
         {/* Right side - Open Positions */}

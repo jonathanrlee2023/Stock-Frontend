@@ -56,13 +56,13 @@ const App: React.FC = () => {
             <OptionCard setActiveCard={setActiveCard} />
           )}
           {activeCard == "stock" && (
-            <StockCard setActiveCard={setActiveCard} setFixedID={setFixedID} />
+            <StockCard setActiveCard={setActiveCard} setFixedID={setFixedID} activeCard="stock" />
           )}
           {activeCard == "fixedStock" && (
             <FixedStockCard
               setActiveCard={setActiveCard}
               setFixedID={setFixedID}
-              fixedID={fixedID}
+              activeCard="fixedStock"
             />
           )}
           {activeCard == "fixedOption" && (

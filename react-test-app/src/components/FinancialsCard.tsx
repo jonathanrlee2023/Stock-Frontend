@@ -11,10 +11,6 @@ const getActiveReport = (
   period: Period, 
   type: ReportType
 ) => {
-  // Earnings don't usually have a separate Annual/Quarterly split in most APIs,
-  // they are just a list of events.
-  if (type === 'Earnings') return stats.Earnings;
-
   const key = `${period}${type}` as keyof CompanyStats;
   return stats[key] as any[]; // Type assertion to help TS understand it's an array
 };
@@ -30,6 +26,8 @@ export const FinancialsCard: React.FC<FinancialsCardProps> = ({ setActiveCard })
   
   const stats = companyStats[previousID];
   const activeData = getActiveReport(stats, period, reportType);
+
+  console.log(previousCard)
 
   return (
     <div className="card bg-dark text-white p-4 h-100 d-flex flex-column" style={{ minHeight: '500px' }}>

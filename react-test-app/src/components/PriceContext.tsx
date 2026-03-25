@@ -75,10 +75,11 @@ export type CompanyStats = {
   AnnualIncome: IncomeStatement[] | null;
   AnnualBalance: BalanceSheet[] | null;
   AnnualCash: CashFlowStatement[] | null;
-  Earnings: EarningsReport[] | null;
+  AnnualEarnings: EarningsReport[] | null;
   QuarterlyIncome: IncomeStatement[] | null;
   QuarterlyBalance: BalanceSheet[] | null;
   QuarterlyCash: CashFlowStatement[] | null;
+  QuarterlyEarnings: EarningsReport[] | null;
 };
 
 export type EarningsReport = {

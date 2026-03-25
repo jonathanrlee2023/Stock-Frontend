@@ -124,6 +124,7 @@ export const FinancialGrid: React.FC<GridProps> = ({ data, type }) => {
             )}
             {type === 'Earnings' && (
               <>
+                <th className="border-secondary text-end">Report Date</th>
                 <th className="border-secondary text-end">Reported EPS</th>
                 <th className="border-secondary text-end">Estimate</th>
                 <th className="border-secondary text-end">Surprise %</th>
@@ -271,6 +272,7 @@ export const FinancialGrid: React.FC<GridProps> = ({ data, type }) => {
 
               {type === 'Earnings' && (
                 <>
+                  <td className="text-end">{(row as EarningsReport).reportedDate || '—'}</td>
                   <td className="text-end">{(row as EarningsReport).reportedEPS?.toFixed(2) || '—'}</td>
                   <td className="text-end">{(row as EarningsReport).estimatedEPS?.toFixed(2) || '—'}</td>
                   <td className={`text-end ${(row as EarningsReport).surprisePercentage! > 0 ? 'text-success' : 'text-danger'}`}>

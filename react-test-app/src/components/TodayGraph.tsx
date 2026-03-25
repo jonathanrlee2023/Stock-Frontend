@@ -33,6 +33,7 @@ ChartJS.register(
 interface TodayStockWSProps {
   stockSymbol: string;
   setActiveCard: (query: string) => void;
+  activeCard: string;
 }
 
 type Timeframe = "Live" | "1W" | "1M" | "3M" | "1Y" | "3Y" | "All";
@@ -40,6 +41,7 @@ type Timeframe = "Live" | "1W" | "1M" | "3M" | "1Y" | "3Y" | "All";
 export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   stockSymbol,
   setActiveCard,
+  activeCard,
 }) => {
   const ModifyTracker = async (action: string) => {
     let data: { id: string } = { id: "" };
@@ -78,6 +80,8 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   const latestMark = latestPoint?.Mark ?? 0;
   const [showStats, setShowStats] = useState(false);
   const stats = companyStats[stockSymbol]; // Get stats for current symbol
+
+  console.log(activeCard);
 
   const previousIdsRef = useRef<Record<string, number>>({});
   useEffect(() => {
@@ -522,8 +526,12 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                   className="btn-sleek"
                   onClick={() => {
                     setActiveCard("financials");
-                    // setPreviousCard("TodayGraph");
+                    setPreviousCard(activeCard);
                   }}
+                  disabled={stats["AnnualBalance"] == null || 
+                    stats["AnnualIncome"] == null || 
+                    stats["AnnualCash"] == null || 
+                    stats["AnnualEarnings"] == null}
                 >
                   See Financials
                 </button>
