@@ -53,7 +53,7 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
             minWidth: 0,
           }}
         >
-          <TodayStockWSComponent stockSymbol={activeStock} />
+          <TodayStockWSComponent stockSymbol={activeStock} setActiveCard={setActiveCard} />
         </div>
 
         {/* Right side - Open Positions */}

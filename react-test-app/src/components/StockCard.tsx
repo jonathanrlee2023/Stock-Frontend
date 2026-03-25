@@ -60,7 +60,7 @@ export const StockCard: React.FC<StockCardProps> = ({
             onSearchClick={startStockStream}
             setPreviousID={setPreviousID}
           />
-          <TodayStockWSComponent stockSymbol={activeStock} />
+          <TodayStockWSComponent stockSymbol={activeStock} setActiveCard={setActiveCard} />
         </div>
 
         {/* Right side - Open Positions */}

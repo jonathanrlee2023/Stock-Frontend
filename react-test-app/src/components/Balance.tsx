@@ -128,7 +128,7 @@ export const BalanceWSComponent: React.FC = ({}) => {
         ticks: { maxTicksLimit: 6, fontSize: 10 },
       },
       y: {
-        ticks: { fontSize: 10, callback: (value: any) => `$${value}` },
+        ticks: { fontSize: 10, callback: (value: any) => `$${value.toFixed(2)}` },
       },
     },
   };

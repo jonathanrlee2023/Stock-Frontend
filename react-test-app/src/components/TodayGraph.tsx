@@ -16,7 +16,6 @@ import "chartjs-adapter-date-fns";
 import {
   StockPoint,
   HistoricalStockPoint,
-  CompanyStats,
   usePriceStream,
 } from "./PriceContext";
 import { postData } from "./OptionGraph";
@@ -33,12 +32,14 @@ ChartJS.register(
 
 interface TodayStockWSProps {
   stockSymbol: string;
+  setActiveCard: (query: string) => void;
 }
 
 type Timeframe = "Live" | "1W" | "1M" | "3M" | "1Y" | "3Y" | "All";
 
 export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   stockSymbol,
+  setActiveCard,
 }) => {
   const ModifyTracker = async (action: string) => {
     let data: { id: string } = { id: "" };
@@ -70,7 +71,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
     balancePoints.length > 0 ? balancePoints[balancePoints.length - 1].Cash : 0;
   const [amount, setAmount] = useState<number>(0);
   const [dollarValue, setDollarValue] = useState<number>(0); // Cash
-  const { setIds, setTrackers, ids } = useWS();
+  const { setIds, setTrackers, ids, setPreviousCard } = useWS();
   const points = stockPoints[stockSymbol] || [];
   const latestPoint = points.length > 0 ? points[points.length - 1] : null;
 
@@ -222,7 +223,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
           type: "linear" as const,
           beginAtZero: false,
           ticks: {
-            callback: (value: any) => `$${value}`,
+            callback: (value: any) => `$${value.toFixed(2)}`,
           },
         },
       },
@@ -517,6 +518,15 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                   label="Next Earnings Date"
                   value={`${stats.EarningsDate}`}
                 />
+                <button
+                  className="btn-sleek"
+                  onClick={() => {
+                    setActiveCard("financials");
+                    // setPreviousCard("TodayGraph");
+                  }}
+                >
+                  See Financials
+                </button>
               </>
             ) : (
               <div
