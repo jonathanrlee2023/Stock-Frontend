@@ -638,6 +638,26 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
           >
             Close Position
           </button>
+          <button
+            className="btn-sleek btn-sleek-red"
+            style={{
+              opacity: latestMark <= 0 ? 0.5 : 1,
+              cursor: latestMark <= 0 ? "not-allowed" : "pointer",
+            }}
+            onClick={() => {
+              postData("closePosition", stockSymbol, latestMark, ids[stockSymbol]);
+              setIds((prev) => {
+                const updated = { ...prev };
+                delete updated[stockSymbol]; 
+                return updated;
+              });
+            }}
+            disabled={
+              latestMark <= 0 || ids[stockSymbol] <= 0
+            }
+          >
+            Sell All
+          </button>
         </div>
 
         {/* Right Side: Tracker Actions */}

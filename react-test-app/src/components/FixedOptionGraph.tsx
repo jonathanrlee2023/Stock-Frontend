@@ -125,7 +125,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
   optionID,
 }) => {
   const { optionPoints } = usePriceStream();
-  const { previousCard, setIds, setTrackers, setPreviousCard } = useWS();
+  const { ids, setIds, setTrackers } = useWS();
 
   // Parse optionID once per render
   const parsedData = React.useMemo(() => parseOptionId(optionID), [optionID]);
@@ -212,7 +212,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
       ],
     };
   }, [points, stockSymbol, strikePrice, type, month, day, year, dataPoint]);
-
+  console.log(ids[optionID]);
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -342,7 +342,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
           );
         })}
       </div>
-      <div className="d-flex justify-content-between align-items-center mb-2 mx-2">
+      <div className="d-flex justify-content-between align-items-center mb-2 mx-2 mt-2">
         {/* Left Side: Position Actions */}
         <div className="d-flex gap-2 mb-2 mx-2">
           <button
@@ -391,6 +391,26 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
           >
             Close Position
           </button>
+          <button
+            className="btn-sleek btn-sleek-red"
+            style={{
+              opacity: latestMark <= 0 ? 0.5 : 1,
+              cursor: latestMark <= 0 ? "not-allowed" : "pointer",
+            }}
+            onClick={() => {
+              postData("closePosition", optionID, latestMark, ids[optionID]);
+              setIds((prev) => {
+                const updated = { ...prev };
+                delete updated[optionID]; 
+                return updated;
+              });
+            }}
+            disabled={
+              latestMark <= 0 || (ids[optionID] ?? 0) <= 0
+            }
+          >
+            Sell All
+          </button>
           {isExpired && (
             <div
               style={{
@@ -399,7 +419,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
                 marginTop: "10px",
               }}
             >
-              The option expiration date has passed. Actions are disabled.
+              The option expiration date has passed
             </div>
           )}
           {latestMark <= 0 && (
@@ -459,9 +479,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
           >
             UNTRACK
           </button>
-        </div>
-
-        {isExpired && (
+          {isExpired && (
           <div
             style={{
               color: "red",
@@ -469,9 +487,10 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
               marginTop: "10px",
             }}
           >
-            The option expiration date has passed. Actions are disabled.
+            The option expiration date has passed
           </div>
         )}
+        </div>
       </div>
     </div>
   );
