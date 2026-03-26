@@ -27,10 +27,9 @@ export const FinancialsCard: React.FC<FinancialsCardProps> = ({ setActiveCard })
   const stats = companyStats[previousID];
   const activeData = getActiveReport(stats, period, reportType);
 
-  console.log(previousCard)
-
   return (
-    <div className="card bg-dark text-white p-4 h-100 d-flex flex-column" style={{ minHeight: '500px' }}>
+    <div className="card bg-dark text-white p-4 h-100 d-flex flex-column" 
+        style={{ minHeight: '80vh', maxHeight: '95vh' }}>
       
       {/* Header Section (Static) */}
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
@@ -81,19 +80,18 @@ export const FinancialsCard: React.FC<FinancialsCardProps> = ({ setActiveCard })
           </div>
         </div>
       </div>
-
-      {/* 2. Scrollable Body Section */}
-      {/* 'flex-grow-1' makes this div fill the remaining space in the card */}
-      {/* 'overflow-hidden' ensures the container doesn't spill out */}
       <div className="report-container flex-grow-1 d-flex flex-column overflow-hidden mt-2">
-        {activeData && activeData.length > 0 ? (
-          /* Ensure FinancialGrid parent allows internal scrolling */
-             <FinancialGrid data={activeData} type={reportType} />
-        ) : (
-          <div className="text-center py-5 text-muted border border-secondary rounded h-100 d-flex align-items-center justify-content-center">
-            No {period} {reportType} data available.
-          </div>
-        )}
+        {/* The Scroll Window: This is the actual "viewbox" */}
+        <div className="flex-grow-1 overflow-auto border border-secondary rounded custom-scrollbar">
+              {activeData && activeData.length > 0 ? (
+                /* Ensure FinancialGrid parent allows internal scrolling */
+                  <FinancialGrid data={activeData} type={reportType} />
+              ) : (
+                <div className="text-center py-5 text-muted border border-secondary rounded h-100 d-flex align-items-center justify-content-center">
+                  No {period} {reportType} data available.
+                </div>
+              )}
+        </div>
       </div>
     </div>
   );

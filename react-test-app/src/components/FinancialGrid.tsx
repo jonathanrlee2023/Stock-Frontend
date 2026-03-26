@@ -26,7 +26,7 @@ export const FinancialGrid: React.FC<GridProps> = ({ data, type }) => {
   };
 
   return (
-    <div className="table-responsive border rounded border-secondary" style={{ maxHeight: '600px', overflowY: 'auto' }}>
+    <div className="table-responsive border rounded border-secondary" style={{ height: '100%', overflowY: 'auto' }}>
       <table className="table table-dark table-hover mb-0 text-nowrap">
         <thead className="sticky-top bg-dark" style={{ zIndex: 10 }}>
           <tr>
@@ -85,7 +85,7 @@ export const FinancialGrid: React.FC<GridProps> = ({ data, type }) => {
                 <th className="border-secondary text-end">Capital Lease Obligations</th>
                 <th className="border-secondary text-end">Long Term Debt</th>
                 <th className="border-secondary text-end">Current Long Term Debt</th>
-                <th className="border-secondary text-end">Short Long Term Debt Total</th>
+                <th className="border-secondary text-end">Short Long Term Debt</th>
                 <th className="border-secondary text-end">Other Current Liablilities</th>
                 <th className="border-secondary text-end">Other Non Current Liabilities</th>
                 <th className="border-secondary text-end">Total Shareholder Equity</th>
@@ -201,14 +201,8 @@ export const FinancialGrid: React.FC<GridProps> = ({ data, type }) => {
                   <td className="text-end">{formatValue((row as BalanceSheet).shortTermInvestments)}</td>
                   <td className="text-end">{formatValue((row as BalanceSheet).otherCurrentAssets)}</td>
                   <td className="text-end">{formatValue((row as BalanceSheet).totalLiabilities)}</td>
-                  <td className="text-end">{formatValue((row as BalanceSheet).intangibleAssetsExcludingGoodwill)}</td>
-                  <td className="text-end">{formatValue((row as BalanceSheet).goodwill)}</td>
-                  <td className="text-end">{formatValue((row as BalanceSheet).longTermInvestments)}</td>
-                  <td className="text-end">{formatValue((row as BalanceSheet).shortTermInvestments)}</td>
-                  <td className="text-end">{formatValue((row as BalanceSheet).otherCurrentAssets)}</td>
-                  <td className="text-end">{formatValue((row as BalanceSheet).totalLiabilities)}</td>
-
                   <td className="text-end">{formatValue((row as BalanceSheet).totalCurrentLiabilities)}</td>
+
                   <td className="text-end">{formatValue((row as BalanceSheet).currentAccountsPayable)}</td>
                   <td className="text-end">{formatValue((row as BalanceSheet).shortTermDebt)}</td>
                   <td className="text-end">{formatValue((row as BalanceSheet).totalNonCurrentLiabilities)}</td>

@@ -19,6 +19,7 @@ import {
   usePriceStream,
 } from "./PriceContext";
 import { postData } from "./OptionGraph";
+import SentimentDial from "./SentimentDial";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -474,38 +475,6 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                   }
                 />
                 <StatRow
-                  label="FCFF"
-                  value={
-                    stats.FCFF != null
-                      ? `$${stats.FCFF.toLocaleString()} M`
-                      : "N/A"
-                  }
-                />
-                <StatRow
-                  label="FCF"
-                  value={
-                    stats.FCF != null
-                      ? `$${stats.FCF.toLocaleString()} M`
-                      : "N/A"
-                  }
-                />
-                <StatRow
-                  label="FCF Per Share"
-                  value={
-                    stats.FCFPerShare != null
-                      ? `$${stats.FCFPerShare.toLocaleString()} M`
-                      : "N/A"
-                  }
-                />
-                <StatRow
-                  label="NWC"
-                  value={
-                    stats.NWC != null
-                      ? `$${stats.NWC.toLocaleString()} M`
-                      : "N/A"
-                  }
-                />
-                <StatRow
                   label="Analyst Price Target"
                   value={
                     stats.PriceTarget != null
@@ -513,28 +482,55 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                       : "N/A"
                   }
                 />
-                <StatRow label="Strong Buy" value={`${stats.StrongBuy}`} />
-                <StatRow label="Buy" value={`${stats.Buy}`} />
-                <StatRow label="Hold" value={`${stats.Hold}`} />
-                <StatRow label="Sell" value={`${stats.Sell}`} />
-                <StatRow label="Strong Sell" value={`${stats.StrongSell}`} />
                 <StatRow
                   label="Next Earnings Date"
                   value={`${stats.EarningsDate}`}
                 />
-                <button
-                  className="btn-sleek"
-                  onClick={() => {
-                    setActiveCard("financials");
-                    setPreviousCard(activeCard);
+                <div 
+                  style={{ 
+                    gridColumn: "span 2", 
+                    display: "grid", 
+                    gridTemplateColumns: "1fr 1fr", 
+                    alignItems: "center",          
+                    justifyItems: "center", 
+                    padding: "20px 0",
+                    minHeight: "150px"
                   }}
-                  disabled={stats["AnnualBalance"] == null || 
-                    stats["AnnualIncome"] == null || 
-                    stats["AnnualCash"] == null || 
-                    stats["AnnualEarnings"] == null}
                 >
-                  See Financials
-                </button>
+                  <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+                    <SentimentDial
+                      StrongBuy={stats.StrongBuy}
+                      Buy={stats.Buy}
+                      Hold={stats.Hold}
+                      Sell={stats.Sell}
+                      StrongSell={stats.StrongSell}
+                    />
+                  </div>
+
+                  <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+                    <button
+                      className="btn-sleek"
+                      style={{ 
+                        whiteSpace: 'nowrap', 
+                        fontSize: '0.9rem',
+                        padding: "10px 24px",
+                        boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
+                      }}
+                      onClick={() => {
+                        setActiveCard("financials");
+                        setPreviousCard(activeCard);
+                      }}
+                      disabled={
+                        stats["AnnualBalance"] == null ||
+                        stats["AnnualIncome"] == null ||
+                        stats["AnnualCash"] == null ||
+                        stats["AnnualEarnings"] == null
+                      }
+                    >
+                      See Financials
+                    </button>
+                  </div>
+                </div>
               </>
             ) : (
               <div
