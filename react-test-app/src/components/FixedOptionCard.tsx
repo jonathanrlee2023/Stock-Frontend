@@ -7,11 +7,13 @@ import { useWS } from "./WSContest";
 interface FixedOptionCardProps {
   setActiveCard: (query: string) => void;
   fixedID: string;
+  activePortfolio: number;
 }
 
 export const StockCard: React.FC<FixedOptionCardProps> = ({
   setActiveCard,
   fixedID,
+  activePortfolio,
 }) => {
   const { previousCard, previousID } = useWS();
   return (
@@ -50,7 +52,10 @@ export const StockCard: React.FC<FixedOptionCardProps> = ({
           Back to Home
         </button>
       </div>
-      <FixedOptionWSComponent optionID={fixedID} />
+      <FixedOptionWSComponent
+        optionID={fixedID}
+        activePortfolio={activePortfolio}
+      />
     </div>
   );
 };

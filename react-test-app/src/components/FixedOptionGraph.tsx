@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { act, useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -29,6 +29,7 @@ ChartJS.register(
 
 interface FixedOptionWSProps {
   optionID: string;
+  activePortfolio: number;
 }
 
 export const postData = async (
@@ -36,8 +37,9 @@ export const postData = async (
   ID: string,
   price: number,
   amount: number,
+  portfolio_id: number,
 ) => {
-  const data = { id: ID, price, amount };
+  const data = { id: ID, price, amount, portfolio_id };
 
   try {
     const response = await fetch(`http://localhost:8080/${openOrClose}`, {
@@ -123,6 +125,7 @@ const METRICS: OptionMetric[] = [
 
 export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
   optionID,
+  activePortfolio,
 }) => {
   const { optionPoints } = usePriceStream();
   const { ids, setIds, setTrackers } = useWS();
@@ -142,10 +145,10 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
   const now = new Date();
   const isExpired = expiration < now;
 
-  console.log(optionID);
-
   const points = optionPoints[optionID] || [];
   const [amount, setAmount] = useState<number>(1);
+  const portfolioPositions = ids[activePortfolio] || {};
+  const currentContracts = portfolioPositions[optionID] ?? 0;
   const [dataPoint, setDataPoint] = useState<OptionMetric>("Mark");
   const latestPoint = points.length > 0 ? points[points.length - 1] : null;
   const latestMark = latestPoint?.Mark ?? 0;
@@ -212,7 +215,6 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
       ],
     };
   }, [points, stockSymbol, strikePrice, type, month, day, year, dataPoint]);
-  console.log(ids[optionID]);
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -353,12 +355,29 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
               color: latestMark <= 0 ? "gray" : "green",
             }}
             onClick={() => {
-              postData("openPosition", optionID, latestMark, amount);
+              postData(
+                "openPosition",
+                optionID,
+                latestMark,
+                amount,
+                activePortfolio,
+              );
               ModifyTracker("newTracker");
-              setIds((prev) => ({
-                ...prev,
-                [optionID]: (prev[optionID] ?? 0) + amount,
-              }));
+              setIds((prev) => {
+                const nextState = { ...prev };
+
+                if (!nextState[activePortfolio]) {
+                  nextState[activePortfolio] = {};
+                }
+
+                const currentShares = nextState[activePortfolio][optionID] ?? 0;
+                nextState[activePortfolio] = {
+                  ...nextState[activePortfolio],
+                  [optionID]: currentShares + amount,
+                };
+
+                return nextState;
+              });
             }}
             disabled={latestMark <= 0 || isExpired}
           >
@@ -372,16 +391,22 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
               color: latestMark <= 0 ? "gray" : "red",
             }}
             onClick={() => {
-              postData("closePosition", optionID, latestMark, amount);
+              postData(
+                "closePosition",
+                optionID,
+                latestMark,
+                amount,
+                activePortfolio,
+              );
               setIds((prev) => {
                 const updated = { ...prev };
-                const currentAmount = updated[optionID] ?? 0;
+                const currentAmount = updated[activePortfolio][optionID] ?? 0;
                 const newAmount = currentAmount - amount;
 
                 if (newAmount <= 0) {
-                  delete updated[optionID];
+                  delete updated[activePortfolio][optionID];
                 } else {
-                  updated[optionID] = newAmount;
+                  updated[activePortfolio][optionID] = newAmount;
                 }
 
                 return updated;
@@ -398,16 +423,20 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
               cursor: latestMark <= 0 ? "not-allowed" : "pointer",
             }}
             onClick={() => {
-              postData("closePosition", optionID, latestMark, ids[optionID]);
+              postData(
+                "closePosition",
+                optionID,
+                latestMark,
+                currentContracts,
+                activePortfolio,
+              );
               setIds((prev) => {
                 const updated = { ...prev };
-                delete updated[optionID]; 
+                delete updated[activePortfolio][optionID];
                 return updated;
               });
             }}
-            disabled={
-              latestMark <= 0 || (ids[optionID] ?? 0) <= 0
-            }
+            disabled={latestMark <= 0 || (currentContracts ?? 0) <= 0}
           >
             Sell All
           </button>
@@ -480,16 +509,16 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
             UNTRACK
           </button>
           {isExpired && (
-          <div
-            style={{
-              color: "red",
-              fontWeight: "bold",
-              marginTop: "10px",
-            }}
-          >
-            The option expiration date has passed
-          </div>
-        )}
+            <div
+              style={{
+                color: "red",
+                fontWeight: "bold",
+                marginTop: "10px",
+              }}
+            >
+              The option expiration date has passed
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -34,7 +34,10 @@ export type BalancePoint = {
   timestamp: number;
   Balance: number;
   Cash: number;
+  PortfolioID: number;
 };
+
+export type PortfolioBalancePoint = Record<number, BalancePoint[]>;
 
 export type HistoricalStockPoint = {
   open: number;
@@ -93,7 +96,7 @@ export type EarningsReport = {
   estimatedEPS: number | null;
   surprise: number | null;
   surprisePercentage: number | null;
-}
+};
 
 export type CashFlowStatement = {
   date: string;
@@ -127,7 +130,7 @@ export type CashFlowStatement = {
   FCF_yoy_growth: number | null;
   FCF_per_share: number | null;
   FCFF: number | null;
-}
+};
 
 export type IncomeStatement = {
   date: string; // ISO string format
@@ -167,9 +170,9 @@ export type IncomeStatement = {
   daPctRevenue: number | null;
   ebitGrowth: number | null;
   roic: number | null;
-}
+};
 
-export type BalanceSheet ={
+export type BalanceSheet = {
   date: string;
   reportedCurrency: string;
   totalAssets: number | null;
@@ -214,7 +217,7 @@ export type BalanceSheet ={
   deltaNWC: number | null;
   nwcRatio: number | null;
   symbol_id: number;
-}
+};
 
 export type OptionExpiration = {
   Call: string[];
@@ -230,7 +233,7 @@ type PriceStreamContextValue = {
   historicalStockPoints: Record<string, HistoricalStockPoint[]>;
   pendingRequests: Set<string>;
   optionExpirations: Record<string, OptionExpiration>;
-  balancePoints: BalancePoint[];
+  balancePoints: PortfolioBalancePoint;
   startStockStream: (symbol: string) => Promise<void>;
   startOptionStream: (
     stockSymbol: string,
@@ -303,7 +306,7 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
     Record<string, OptionExpiration>
   >({});
 
-  const [balancePoints, setBalancePoints] = useState<BalancePoint[]>([]);
+  const [balancePoints, setBalancePoints] = useState<PortfolioBalancePoint>({});
 
   const startStockStream = useCallback(
     async (symbol: string) => {
@@ -470,7 +473,18 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const updateBalancePoint = (point: BalancePoint) => {
-    setBalancePoints((prev) => [...prev, point]);
+    setBalancePoints((prev) => {
+      const id = point.PortfolioID;
+
+      const existingHistory = prev[id] || [];
+
+      const updatedHistory = [...existingHistory, point].slice(-1000);
+
+      return {
+        ...prev,
+        [id]: updatedHistory,
+      };
+    });
   };
 
   return (

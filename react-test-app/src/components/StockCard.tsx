@@ -9,12 +9,14 @@ interface StockCardProps {
   setActiveCard: (query: string) => void;
   setFixedID: (query: string) => void;
   activeCard: string;
+  activePortfolio: number;
 }
 
 export const StockCard: React.FC<StockCardProps> = ({
   setActiveCard,
   setFixedID,
   activeCard,
+  activePortfolio,
 }) => {
   const { previousID, setPreviousID } = useWS();
 
@@ -62,7 +64,12 @@ export const StockCard: React.FC<StockCardProps> = ({
             onSearchClick={startStockStream}
             setPreviousID={setPreviousID}
           />
-          <TodayStockWSComponent stockSymbol={activeStock} setActiveCard={setActiveCard} activeCard={activeCard}/>
+          <TodayStockWSComponent
+            stockSymbol={activeStock}
+            setActiveCard={setActiveCard}
+            activeCard={activeCard}
+            activePortfolio={activePortfolio}
+          />
         </div>
 
         {/* Right side - Open Positions */}

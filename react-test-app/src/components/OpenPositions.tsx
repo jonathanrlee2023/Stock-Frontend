@@ -6,6 +6,7 @@ interface IdCardProps {
   setActiveID: (query: string) => void;
   setActiveCard: (query: string) => void;
   defaultMessage: string;
+  activePortfolio: number;
 }
 interface OptionParts {
   ticker: string;
@@ -50,12 +51,14 @@ export const IdCards: React.FC<IdCardProps> = ({
   setActiveID,
   setActiveCard,
   defaultMessage,
+  activePortfolio,
 }) => {
   const { ids, setPreviousID } = useWS();
+  const portfolioIds = ids[activePortfolio];
   const previousIdsRef = useRef<Record<string, number>>({});
   const { stockPoints, startStockStream, startOptionStream } = usePriceStream();
   useEffect(() => {
-    previousIdsRef.current = ids; // just track the latest ids
+    previousIdsRef.current = portfolioIds; // just track the latest ids
   }, [ids]);
 
   const handleCardClick = (id: string) => {
@@ -117,7 +120,7 @@ export const IdCards: React.FC<IdCardProps> = ({
           {defaultMessage}
         </div>
       ) : (
-        Object.entries(ids).map(([id, amount]) => (
+        Object.entries(portfolioIds).map(([id, amount]) => (
           <div
             key={id}
             onClick={() => handleCardClick(id)}

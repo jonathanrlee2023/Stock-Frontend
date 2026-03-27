@@ -21,8 +21,7 @@ import { FinancialsCard } from "./components/FinancialsCard";
 const App: React.FC = () => {
   const [activeCard, setActiveCard] = useState<string>("home"); // State to track the active screen
   const [fixedID, setFixedID] = useState<string>("");
-
-  const { startStockStream } = usePriceStream();
+  const [activePortfolio, setActivePortfolio] = useState<number>(1);
 
   return (
     <div
@@ -50,23 +49,40 @@ const App: React.FC = () => {
           }}
         >
           {activeCard === "home" && (
-            <HomePage setActiveCard={setActiveCard} setFixedID={setFixedID} />
+            <HomePage
+              setActiveCard={setActiveCard}
+              setFixedID={setFixedID}
+              activePortfolio={activePortfolio}
+            />
           )}
           {activeCard === "options" && (
-            <OptionCard setActiveCard={setActiveCard} />
+            <OptionCard
+              setActiveCard={setActiveCard}
+              activePortfolio={activePortfolio}
+            />
           )}
           {activeCard == "stock" && (
-            <StockCard setActiveCard={setActiveCard} setFixedID={setFixedID} activeCard="stock" />
+            <StockCard
+              setActiveCard={setActiveCard}
+              setFixedID={setFixedID}
+              activeCard="stock"
+              activePortfolio={activePortfolio}
+            />
           )}
           {activeCard == "fixedStock" && (
             <FixedStockCard
               setActiveCard={setActiveCard}
               setFixedID={setFixedID}
               activeCard="fixedStock"
+              activePortfolio={activePortfolio}
             />
           )}
           {activeCard == "fixedOption" && (
-            <FixedOptionCard setActiveCard={setActiveCard} fixedID={fixedID} />
+            <FixedOptionCard
+              setActiveCard={setActiveCard}
+              fixedID={fixedID}
+              activePortfolio={activePortfolio}
+            />
           )}
           {activeCard == "financials" && (
             <FinancialsCard setActiveCard={setActiveCard} />

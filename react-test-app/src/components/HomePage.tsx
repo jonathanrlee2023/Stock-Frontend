@@ -4,11 +4,13 @@ import { IdCards } from "./OpenPositions";
 interface HomePageProps {
   setActiveCard: (query: string) => void;
   setFixedID: (query: string) => void;
+  activePortfolio: number;
 }
 
 export const HomePage: React.FC<HomePageProps> = ({
   setActiveCard,
   setFixedID,
+  activePortfolio,
 }) => {
   return (
     <div
@@ -38,7 +40,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             minWidth: 0,
           }}
         >
-          <BalanceWSComponent />
+          <BalanceWSComponent activePortfolio={activePortfolio} />
           <div className="d-flex justify-content-center mb-10 mt-5">
             <button
               className="btn-sleek mx-2"
@@ -87,6 +89,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               setActiveCard={setActiveCard}
               setActiveID={setFixedID}
               defaultMessage="No Open Positions"
+              activePortfolio={activePortfolio}
             />
           </div>
         </div>

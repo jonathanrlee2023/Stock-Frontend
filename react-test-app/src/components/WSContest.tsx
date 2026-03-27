@@ -18,11 +18,13 @@ import {
 interface WSContextValue {
   sendMessage: (msg: any) => void;
   lastMessage: any | null;
-  ids: Record<string, number>;
-  setIds: React.Dispatch<React.SetStateAction<Record<string, number>>>;
+  ids: Record<number, Record<string, number>>;
+  setIds: React.Dispatch<
+    React.SetStateAction<Record<number, Record<string, number>>>
+  >;
   trackers: string[];
   setTrackers: React.Dispatch<React.SetStateAction<string[]>>;
-  previousBalance: number;
+  previousBalance: Record<number, number>;
   previousCard: string;
   setPreviousCard: React.Dispatch<React.SetStateAction<string>>;
   previousID: string;
@@ -38,9 +40,11 @@ interface Props {
 export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
   const ws = useRef<WebSocket | null>(null);
   const [lastMessage, setLastMessage] = useState<any>(null);
-  const [ids, setIds] = useState<Record<string, number>>({});
+  const [ids, setIds] = useState<Record<number, Record<string, number>>>({});
   const [trackers, setTrackers] = useState<string[]>([]);
-  const [previousBalance, setPreviousBalance] = useState<number>(0);
+  const [previousBalance, setPreviousBalance] = useState<
+    Record<number, number>
+  >({});
   const [previousCard, setPreviousCard] = useState<string>("");
   const [previousID, setPreviousID] = useState<string>("");
 
@@ -64,19 +68,14 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
       const parsed = JSON.parse(event.data);
       setLastMessage(parsed);
 
-      // 1) Initialization object
-      if (
-        parsed.openIdList !== undefined &&
-        parsed.trackerIdList !== undefined &&
-        parsed.prevBalance !== undefined
-      ) {
-        setIds(parsed.openIdList ?? {});
+      if (parsed.openIdList !== undefined && parsed.prevBalance !== undefined) {
+        setIds(parsed.openIdList);
         setTrackers(parsed.trackerIdList ?? []);
         setPreviousBalance(parsed.prevBalance);
         return;
       }
 
-      if (parsed.Balance !== undefined) {
+      if (parsed.PortfolioID !== undefined || parsed.Balance !== undefined) {
         updateBalancePoint(parsed as BalancePoint);
         return;
       }

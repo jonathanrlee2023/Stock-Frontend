@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { act, useEffect, useRef, useState } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -35,6 +35,7 @@ interface TodayStockWSProps {
   stockSymbol: string;
   setActiveCard: (query: string) => void;
   activeCard: string;
+  activePortfolio: number;
 }
 
 type Timeframe = "Live" | "1W" | "1M" | "3M" | "1Y" | "3Y" | "All";
@@ -43,6 +44,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   stockSymbol,
   setActiveCard,
   activeCard,
+  activePortfolio,
 }) => {
   const ModifyTracker = async (action: string) => {
     let data: { id: string } = { id: "" };
@@ -70,11 +72,17 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   const [timeframe, setTimeframe] = useState<Timeframe>("Live");
   const { stockPoints, historicalStockPoints, companyStats, balancePoints } =
     usePriceStream();
+  const portfolioHistory = balancePoints[activePortfolio] || [];
   const latestCash =
-    balancePoints.length > 0 ? balancePoints[balancePoints.length - 1].Cash : 0;
+    portfolioHistory.length > 0
+      ? portfolioHistory[portfolioHistory.length - 1].Cash
+      : 0;
   const [amount, setAmount] = useState<number>(0);
   const [dollarValue, setDollarValue] = useState<number>(0); // Cash
   const { setIds, setTrackers, ids, setPreviousCard } = useWS();
+
+  const portfolioPositions = ids[activePortfolio] || {};
+  const currentShares = portfolioPositions[stockSymbol] ?? 0;
   const points = stockPoints[stockSymbol] || [];
   const latestPoint = points.length > 0 ? points[points.length - 1] : null;
 
@@ -82,11 +90,9 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   const [showStats, setShowStats] = useState(false);
   const stats = companyStats[stockSymbol]; // Get stats for current symbol
 
-  console.log(activeCard);
-
-  const previousIdsRef = useRef<Record<string, number>>({});
+  const previousIdsRef = useRef<Record<number, Record<string, number>>>({});
   useEffect(() => {
-    previousIdsRef.current = ids; // just track the latest ids
+    previousIdsRef.current = { ...ids };
   }, [ids]);
   const graphData = React.useMemo(() => {
     // 1. Select the Source
@@ -486,18 +492,24 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                   label="Next Earnings Date"
                   value={`${stats.EarningsDate}`}
                 />
-                <div 
-                  style={{ 
-                    gridColumn: "span 2", 
-                    display: "grid", 
-                    gridTemplateColumns: "1fr 1fr", 
-                    alignItems: "center",          
-                    justifyItems: "center", 
+                <div
+                  style={{
+                    gridColumn: "span 2",
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    alignItems: "center",
+                    justifyItems: "center",
                     padding: "20px 0",
-                    minHeight: "150px"
+                    minHeight: "150px",
                   }}
                 >
-                  <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+                  <div
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      justifyContent: "center",
+                    }}
+                  >
                     <SentimentDial
                       StrongBuy={stats.StrongBuy}
                       Buy={stats.Buy}
@@ -507,12 +519,18 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                     />
                   </div>
 
-                  <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+                  <div
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      justifyContent: "center",
+                    }}
+                  >
                     <button
                       className="btn-sleek"
-                      style={{ 
-                        whiteSpace: 'nowrap', 
-                        fontSize: '0.9rem',
+                      style={{
+                        whiteSpace: "nowrap",
+                        fontSize: "0.9rem",
                         padding: "10px 24px",
                         boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
                       }}
@@ -583,7 +601,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
           />
         </label>
         <span>
-          <b>Open Shares:</b> {ids[stockSymbol] ?? 0}
+          <b>Open Shares:</b> {currentShares ?? 0}
         </span>
       </div>
       {/* Container for everything at the bottom */}
@@ -597,12 +615,30 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
               cursor: latestMark <= 0 ? "not-allowed" : "pointer",
             }}
             onClick={() => {
-              postData("openPosition", stockSymbol, latestMark, amount);
+              postData(
+                "openPosition",
+                stockSymbol,
+                latestMark,
+                amount,
+                activePortfolio,
+              );
               ModifyTracker("newTracker");
-              setIds((prev) => ({
-                ...prev,
-                [stockSymbol]: (prev[stockSymbol] ?? 0) + amount,
-              }));
+              setIds((prev) => {
+                const nextState = { ...prev };
+
+                if (!nextState[activePortfolio]) {
+                  nextState[activePortfolio] = {};
+                }
+
+                const currentShares =
+                  nextState[activePortfolio][stockSymbol] ?? 0;
+                nextState[activePortfolio] = {
+                  ...nextState[activePortfolio],
+                  [stockSymbol]: currentShares + amount,
+                };
+
+                return nextState;
+              });
             }}
             disabled={
               latestMark <= 0 || amount * latestMark > latestCash || amount <= 0
@@ -618,19 +654,32 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
               cursor: latestMark <= 0 ? "not-allowed" : "pointer",
             }}
             onClick={() => {
-              postData("closePosition", stockSymbol, latestMark, amount);
+              postData(
+                "closePosition",
+                stockSymbol,
+                latestMark,
+                amount,
+                activePortfolio,
+              );
               setIds((prev) => {
                 const updated = { ...prev };
-                const currentAmount = updated[stockSymbol] ?? 0;
+
+                if (!updated[activePortfolio]) return prev;
+
+                const currentAmount =
+                  updated[activePortfolio][stockSymbol] ?? 0;
                 const newAmount = currentAmount - amount;
-                if (newAmount <= 0) delete updated[stockSymbol];
-                else updated[stockSymbol] = newAmount;
+
+                if (newAmount <= 0) {
+                  delete updated[activePortfolio][stockSymbol];
+                } else {
+                  updated[activePortfolio][stockSymbol] = newAmount;
+                }
+
                 return updated;
               });
             }}
-            disabled={
-              latestMark <= 0 || amount <= 0 || amount > ids[stockSymbol]
-            }
+            disabled={latestMark <= 0 || amount <= 0 || amount > currentShares}
           >
             Close Position
           </button>
@@ -641,16 +690,26 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
               cursor: latestMark <= 0 ? "not-allowed" : "pointer",
             }}
             onClick={() => {
-              postData("closePosition", stockSymbol, latestMark, ids[stockSymbol]);
+              postData(
+                "closePosition",
+                stockSymbol,
+                latestMark,
+                currentShares,
+                activePortfolio,
+              );
               setIds((prev) => {
                 const updated = { ...prev };
-                delete updated[stockSymbol]; 
+
+                if (updated[activePortfolio]) {
+                  const newPortfolio = { ...updated[activePortfolio] };
+                  delete newPortfolio[stockSymbol];
+                  updated[activePortfolio] = newPortfolio;
+                }
+
                 return updated;
               });
             }}
-            disabled={
-              latestMark <= 0 || ids[stockSymbol] <= 0
-            }
+            disabled={latestMark <= 0 || currentShares <= 0}
           >
             Sell All
           </button>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { act, useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -15,6 +15,7 @@ import { useWS } from "./WSContest"; // adjust import
 import "chartjs-adapter-date-fns";
 import { OptionPoint, usePriceStream } from "./PriceContext";
 import { data } from "react-router-dom";
+import exp from "constants";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -33,6 +34,7 @@ interface OptionWSProps {
   year: string;
   strikePrice: string;
   type: string;
+  activePortfolio: number;
 }
 
 function formatOptionSymbol(
@@ -50,7 +52,9 @@ function formatOptionSymbol(
   const typeLetter = type.toUpperCase().startsWith("C") ? "C" : "P";
 
   const strikeNum = parseFloat(strike);
-  const strikeStr = Math.round(strikeNum * 1000).toString().padStart(8, "0");
+  const strikeStr = Math.round(strikeNum * 1000)
+    .toString()
+    .padStart(8, "0");
 
   return `${ticker}${yy}${month.padStart(2, "0")}${day.padStart(2, "0")}${typeLetter}${strikeStr}`;
 }
@@ -59,8 +63,11 @@ export const postData = async (
   ID: string,
   price: number,
   amount: number,
+  portfolio_id: number,
 ) => {
-  const data = { id: ID, price, amount };
+  const data = { id: ID, price, amount, portfolio_id };
+
+  console.log(data);
 
   try {
     const response = await fetch(`http://localhost:8080/${openOrClose}`, {
@@ -102,6 +109,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
   year,
   strikePrice,
   type,
+  activePortfolio,
 }) => {
   const { pendingRequests, optionPoints, startOptionStream } = usePriceStream();
   const ModifyTracker = async (action: string) => {
@@ -144,7 +152,9 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
     type,
     strikePrice,
   );
-  const { setIds, setTrackers } = useWS();
+  const { ids, setIds, setTrackers } = useWS();
+  const portfolioPositions = ids[activePortfolio] || {};
+  const currentContracts = portfolioPositions[expectedSymbol] ?? 0;
   const isPending = pendingRequests.has(expectedSymbol);
 
   const expirationDate = React.useMemo(() => {
@@ -284,16 +294,10 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           onClick={() => {
             {
               ModifyTracker("newTracker");
-              const symbol = formatOptionSymbol(
-                stockSymbol,
-                day,
-                month,
-                year,
-                type,
-                strikePrice,
-              );
               setTrackers((prev) =>
-                prev.includes(symbol) ? prev : [...prev, symbol],
+                prev.includes(expectedSymbol)
+                  ? prev
+                  : [...prev, expectedSymbol],
               );
             }
           }}
@@ -306,15 +310,9 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           onClick={() => {
             {
               ModifyTracker("closeTracker");
-              const symbol = formatOptionSymbol(
-                stockSymbol,
-                day,
-                month,
-                year,
-                type,
-                strikePrice,
+              setTrackers((prev) =>
+                prev.filter((item) => item !== expectedSymbol),
               );
-              setTrackers((prev) => prev.filter((item) => item !== symbol));
             }
           }}
           disabled={fieldMissing || isExpired}
@@ -405,11 +403,18 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
             color: latestMark <= 0 ? "gray" : "green",
           }}
           onClick={() => {
-            postData("openPosition", expectedSymbol, latestMark, amount);
+            postData(
+              "openPosition",
+              expectedSymbol,
+              latestMark,
+              amount,
+              activePortfolio,
+            );
             ModifyTracker("newTracker");
             setIds((prev) => ({
               ...prev,
-              [expectedSymbol]: (prev[expectedSymbol] ?? 0) + amount,
+              [expectedSymbol]:
+                (prev[activePortfolio][expectedSymbol] ?? 0) + amount,
             }));
           }}
           disabled={latestMark <= 0 || isExpired}
@@ -424,16 +429,23 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
             color: latestMark <= 0 ? "gray" : "red",
           }}
           onClick={() => {
-            postData("closePosition", expectedSymbol, latestMark, amount);
+            postData(
+              "closePosition",
+              expectedSymbol,
+              latestMark,
+              amount,
+              activePortfolio,
+            );
             setIds((prev) => {
               const updated = { ...prev };
-              const currentAmount = updated[expectedSymbol] ?? 0;
+              const currentAmount =
+                updated[activePortfolio][expectedSymbol] ?? 0;
               const newAmount = currentAmount - amount;
 
               if (newAmount <= 0) {
-                delete updated[expectedSymbol];
+                delete updated[activePortfolio][expectedSymbol];
               } else {
-                updated[expectedSymbol] = newAmount;
+                updated[activePortfolio][expectedSymbol] = newAmount;
               }
 
               return updated;
@@ -450,16 +462,20 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
             cursor: latestMark <= 0 ? "not-allowed" : "pointer",
           }}
           onClick={() => {
-            postData("closePosition", stockSymbol, latestMark, ids[stockSymbol]);
+            postData(
+              "closePosition",
+              stockSymbol,
+              latestMark,
+              portfolioPositions[expectedSymbol],
+              activePortfolio,
+            );
             setIds((prev) => {
               const updated = { ...prev };
-              delete updated[stockSymbol]; 
+              delete updated[activePortfolio][expectedSymbol];
               return updated;
             });
           }}
-          disabled={
-            latestMark <= 0 || ids[stockSymbol] <= 0
-          }
+          disabled={latestMark <= 0 || currentContracts <= 0}
         >
           Sell All
         </button>

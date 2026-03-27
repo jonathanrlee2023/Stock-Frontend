@@ -9,12 +9,14 @@ interface FixedStockCardProps {
   setActiveCard: (query: string) => void;
   setFixedID: (query: string) => void;
   activeCard: string;
+  activePortfolio: number;
 }
 
 export const StockCard: React.FC<FixedStockCardProps> = ({
   setActiveCard,
   setFixedID,
   activeCard,
+  activePortfolio,
 }) => {
   const { previousID, setPreviousID } = useWS();
   const [activeStock] = useState<string>(previousID || ""); // Persistent state for search query
@@ -53,7 +55,12 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
             minWidth: 0,
           }}
         >
-          <TodayStockWSComponent stockSymbol={activeStock} setActiveCard={setActiveCard} activeCard={activeCard}/>
+          <TodayStockWSComponent
+            stockSymbol={activeStock}
+            setActiveCard={setActiveCard}
+            activeCard={activeCard}
+            activePortfolio={activePortfolio}
+          />
         </div>
 
         {/* Right side - Open Positions */}

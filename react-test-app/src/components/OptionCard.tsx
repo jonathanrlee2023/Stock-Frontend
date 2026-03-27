@@ -6,9 +6,13 @@ import { OptionWSComponent } from "./OptionGraph";
 
 interface OptionCardProps {
   setActiveCard: (query: string) => void;
+  activePortfolio: number;
 }
 
-export const OptionCard: React.FC<OptionCardProps> = ({ setActiveCard }) => {
+export const OptionCard: React.FC<OptionCardProps> = ({
+  setActiveCard,
+  activePortfolio,
+}) => {
   const [underlyingStock, setUnderlyingStock] = useState<string>("");
   const [optionDay, setOptionDay] = useState<string>("");
   const [optionMonth, setOptionMonth] = useState<string>("");
@@ -85,6 +89,7 @@ export const OptionCard: React.FC<OptionCardProps> = ({ setActiveCard }) => {
         month={optionMonth}
         day={optionDay}
         type={optionType}
+        activePortfolio={activePortfolio}
       />
     </div>
   );

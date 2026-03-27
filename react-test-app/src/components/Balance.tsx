@@ -25,20 +25,31 @@ ChartJS.register(
   Legend,
 );
 
-export const BalanceWSComponent: React.FC = ({}) => {
+interface BalanceWSProps {
+  activePortfolio: number;
+}
+
+export const BalanceWSComponent: React.FC<BalanceWSProps> = ({
+  activePortfolio,
+}) => {
   const { balancePoints } = usePriceStream();
   const { previousBalance } = useWS();
-
-  const points = balancePoints || [];
+  const previousPortfolioBalance = previousBalance[activePortfolio] || 0;
+  const portfolioHistory = balancePoints[activePortfolio] || [];
   const latestBalance =
-    points.length > 0 ? points[points.length - 1].Balance : 0;
+    portfolioHistory.length > 0
+      ? portfolioHistory[portfolioHistory.length - 1].Balance
+      : 0;
 
-  const latestCash = points.length > 0 ? points[points.length - 1].Cash : 0;
+  const latestCash =
+    portfolioHistory.length > 0
+      ? portfolioHistory[portfolioHistory.length - 1].Cash
+      : 0;
 
   const graphData = React.useMemo(() => {
     const minutePoints = new Map<number, BalancePoint>(); // key: floored minute, value: StockPoint
 
-    for (const p of points) {
+    for (const p of portfolioHistory) {
       const minuteKey = Math.floor((p.timestamp - 15) / 60);
 
       const pointTime = new Date(p.timestamp * 1000);
@@ -80,7 +91,7 @@ export const BalanceWSComponent: React.FC = ({}) => {
 
     const lastPoint = filteredPoints[filteredPoints.length - 1];
     const balanceLineColor =
-      lastPoint && lastPoint.Balance < previousBalance
+      lastPoint && lastPoint.Balance < previousPortfolioBalance
         ? "rgba(200, 0, 0, 0.8)"
         : "rgba(0, 150, 0, 0.8)";
 
@@ -99,8 +110,8 @@ export const BalanceWSComponent: React.FC = ({}) => {
         {
           label: "Previous Balance",
           data: [
-            { x: minX, y: previousBalance },
-            { x: maxX, y: previousBalance },
+            { x: minX, y: previousPortfolioBalance },
+            { x: maxX, y: previousPortfolioBalance },
           ],
           borderColor: "rgba(200, 0, 0, 0.8)",
           borderWidth: 1,
@@ -109,7 +120,7 @@ export const BalanceWSComponent: React.FC = ({}) => {
         },
       ],
     };
-  }, [points, previousBalance]);
+  }, [portfolioHistory, previousPortfolioBalance]);
 
   const options = {
     responsive: true,
@@ -128,17 +139,20 @@ export const BalanceWSComponent: React.FC = ({}) => {
         ticks: { maxTicksLimit: 6, fontSize: 10 },
       },
       y: {
-        ticks: { fontSize: 10, callback: (value: any) => `$${value.toFixed(2)}` },
+        ticks: {
+          fontSize: 10,
+          callback: (value: any) => `$${value.toFixed(2)}`,
+        },
       },
     },
   };
 
   const balanceColor =
-    latestBalance < previousBalance
+    latestBalance < previousPortfolioBalance
       ? "rgba(200, 0, 0, 0.8)"
       : "rgba(0, 150, 0, 0.8)";
 
-  let change = latestBalance - previousBalance;
+  let change = latestBalance - previousPortfolioBalance;
 
   return (
     <div style={{ padding: "20px", height: "85vh" }}>
