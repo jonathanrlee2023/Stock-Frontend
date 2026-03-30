@@ -54,6 +54,12 @@ export const HomePage: React.FC<HomePageProps> = ({
             >
               Options
             </button>
+            <button
+              className="btn-sleek mx-2"
+              onClick={() => setActiveCard("portfolioList")}
+            >
+              Portfolios
+            </button>
           </div>
         </div>
 

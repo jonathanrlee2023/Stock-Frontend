@@ -17,6 +17,7 @@ import StockCard from "./components/StockCard";
 import FixedOptionCard from "./components/FixedOptionCard";
 import FixedStockCard from "./components/FixedStockCard";
 import { FinancialsCard } from "./components/FinancialsCard";
+import { PortfolioCards } from "./components/PortfoliosListCard";
 
 const App: React.FC = () => {
   const [activeCard, setActiveCard] = useState<string>("home"); // State to track the active screen
@@ -86,6 +87,13 @@ const App: React.FC = () => {
           )}
           {activeCard == "financials" && (
             <FinancialsCard setActiveCard={setActiveCard} />
+          )}
+          {activeCard == "portfolioList" && (
+            <PortfolioCards
+              setActiveCard={setActiveCard}
+              setActivePortfolio={setActivePortfolio}
+              activePortfolio={activePortfolio}
+            />
           )}
         </div>
       </div>
