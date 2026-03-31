@@ -29,6 +29,10 @@ interface WSContextValue {
   setPreviousCard: React.Dispatch<React.SetStateAction<string>>;
   previousID: string;
   setPreviousID: React.Dispatch<React.SetStateAction<string>>;
+  portfolioNames: Record<number, string>;
+  setPortfolioNames: React.Dispatch<
+    React.SetStateAction<Record<number, string>>
+  >;
 }
 const WSContext = createContext<WSContextValue | undefined>(undefined);
 
@@ -47,6 +51,8 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
   >({});
   const [previousCard, setPreviousCard] = useState<string>("");
   const [previousID, setPreviousID] = useState<string>("");
+  const [portfolioNames, setPortfolioNames] =
+    useState<Record<number, string>>("");
 
   const {
     updateStockPoint,
@@ -72,6 +78,7 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
         setIds(parsed.openIdList);
         setTrackers(parsed.trackerIdList ?? []);
         setPreviousBalance(parsed.prevBalance);
+        setPortfolioNames(parsed.portfolioNames ?? {});
         return;
       }
 
@@ -170,6 +177,8 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
         setPreviousCard,
         previousID,
         setPreviousID,
+        portfolioNames,
+        setPortfolioNames,
       }}
     >
       {children}

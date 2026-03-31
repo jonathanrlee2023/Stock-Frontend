@@ -17,7 +17,7 @@ const App: React.FC = () => {
   const [fixedID, setFixedID] = useState<string>("");
   const [activePortfolio, setActivePortfolio] = useState<number>(1);
   const [newStocks, setNewStocks] = useState<Record<string, Position>>({});
-  const [portfolioName, setPortfolioName] = useState<string>("");
+  const [tempPortfolioName, setTempPortfolioName] = useState<string>("");
 
   return (
     <div
@@ -96,10 +96,10 @@ const App: React.FC = () => {
               setFixedID={setFixedID}
               setNewStocks={setNewStocks}
               setActivePortfolio={setActivePortfolio}
-              setPortfolioName={setPortfolioName}
+              setTempPortfolioName={setTempPortfolioName}
               newStocks={newStocks}
               activePortfolio={activePortfolio}
-              portfolioName={portfolioName}
+              tempPortfolioName={tempPortfolioName}
             />
           )}
           {activeCard == "stockToPortfolio" && (

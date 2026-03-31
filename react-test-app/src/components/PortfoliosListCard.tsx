@@ -15,6 +15,7 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
 }) => {
   const { balancePoints } = usePriceStream();
   const { ids, setIds } = useWS();
+  const { portfolioNames } = useWS();
 
   // Get unique portfolio IDs from the balancePoints record
   const portfolioIds = Object.keys(balancePoints).map(Number);
@@ -71,7 +72,7 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
           }}
         >
           <div style={{ fontSize: "14px", fontWeight: "700", color: "#fff" }}>
-            Portfolio #{id}
+            {portfolioNames[id]}
           </div>
           <div
             style={{ fontSize: "11px", fontWeight: "600", color: "#00ff88" }}

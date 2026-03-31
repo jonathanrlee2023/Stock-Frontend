@@ -7,10 +7,10 @@ interface NewPortfolioCardProps {
   setFixedID: (query: string) => void;
   setNewStocks: Dispatch<SetStateAction<Record<string, Position>>>;
   setActivePortfolio: (id: number) => void;
-  setPortfolioName: Dispatch<SetStateAction<string>>;
+  setTempPortfolioName: Dispatch<SetStateAction<string>>;
   newStocks: Record<string, Position>;
   activePortfolio: number;
-  portfolioName: string;
+  tempPortfolioName: string;
 }
 
 const PostData = async (PID: number, name: string, positions: Position[]) => {
@@ -41,13 +41,13 @@ export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
   setFixedID,
   setNewStocks,
   setActivePortfolio,
-  setPortfolioName,
+  setTempPortfolioName,
   newStocks,
   activePortfolio,
-  portfolioName,
+  tempPortfolioName,
 }) => {
   const { stockPoints } = usePriceStream();
-  const { ids, setIds } = useWS();
+  const { ids, setIds, setPortfolioNames } = useWS();
   const portfolioIds = ids[activePortfolio];
   const tickerSymbols = Object.keys(portfolioIds);
   const newTickerSymbols = Object.keys(newStocks);
@@ -164,7 +164,7 @@ export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
             letterSpacing: "0.5px",
           }}
         >
-          {portfolioName ? portfolioName : "New Portfolio"}
+          {tempPortfolioName ? tempPortfolioName : "New Portfolio"}
         </h3>
       </div>
       <div style={{ padding: "16px", borderBottom: "1px solid #222" }}>
@@ -181,8 +181,8 @@ export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
         <input
           type="text"
           placeholder="Enter Portfolio Name (e.g. Tech Growth)"
-          value={portfolioName}
-          onChange={(e) => setPortfolioName(e.target.value)}
+          value={tempPortfolioName}
+          onChange={(e) => setTempPortfolioName(e.target.value)}
           style={{
             width: "100%",
             padding: "10px",
@@ -277,7 +277,11 @@ export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
           className="btn-sleek mx-2"
           onClick={() => {
             const positionsArray: Position[] = Object.values(newStocks);
-            PostData(activePortfolio, portfolioName, positionsArray);
+            PostData(activePortfolio, tempPortfolioName, positionsArray);
+            setPortfolioNames((prevNames) => ({
+              ...prevNames,
+              [activePortfolio]: tempPortfolioName,
+            }));
             if (Object.keys(newStocks).length !== 0) {
               setIds((prevIds) => {
                 const updatedPortfolio = {
