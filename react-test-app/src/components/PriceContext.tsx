@@ -219,6 +219,13 @@ export type BalanceSheet = {
   symbol_id: number;
 };
 
+export type Position = {
+  id: string;
+  price: number;
+  amount: number;
+  portfolio_id: number;
+};
+
 export type OptionExpiration = {
   Call: string[];
   Put: string[];

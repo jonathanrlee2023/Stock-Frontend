@@ -1,31 +1,29 @@
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import SearchBar from "./SearchBar";
 import { TodayStockWSComponent } from "./TodayGraph";
-import { usePriceStream } from "./PriceContext";
+import { Position, usePriceStream } from "./PriceContext";
 import { OptionExpirationCards } from "./OptionExpirationCards";
 import { useWS } from "./WSContest";
-import { postData } from "./OptionGraph";
 
 interface StockCardProps {
   setActiveCard: (query: string) => void;
-  setFixedID: (query: string) => void;
+  setNewStocks: Dispatch<SetStateAction<Record<string, Position>>>;
   activeCard: string;
   activePortfolio: number;
 }
 
-export const StockCard: React.FC<StockCardProps> = ({
+export const StockToPortfolioCard: React.FC<StockCardProps> = ({
   setActiveCard,
-  setFixedID,
   activeCard,
+  setNewStocks,
   activePortfolio,
 }) => {
-  const { ids, setIds, setTrackers, previousID, setPreviousID } = useWS();
+  const { ids, previousID, setPreviousID } = useWS();
   const [amount, setAmount] = useState<number>(0);
   const [dollarValue, setDollarValue] = useState<number>(0); // Cash
 
   const [activeStock, setActiveStock] = useState<string>(previousID || ""); // Persistent state for search query
-  const { optionExpirations, startStockStream, balancePoints, stockPoints } =
-    usePriceStream();
+  const { startStockStream, balancePoints, stockPoints } = usePriceStream();
 
   const latestMark =
     stockPoints[activeStock]?.[stockPoints[activeStock].length - 1]?.Mark || 0;
@@ -87,9 +85,9 @@ export const StockCard: React.FC<StockCardProps> = ({
     >
       <button
         className="btn btn-secondary"
-        onClick={() => setActiveCard("home")}
+        onClick={() => setActiveCard("newPortfolio")}
       >
-        Back to Home
+        Back
       </button>
       {/* Main content area with graph and positions side by side */}
       <div
@@ -174,148 +172,30 @@ export const StockCard: React.FC<StockCardProps> = ({
                   cursor: latestMark <= 0 ? "not-allowed" : "pointer",
                 }}
                 onClick={() => {
-                  postData(
-                    "openPosition",
-                    activeStock,
-                    latestMark,
-                    amount,
-                    activePortfolio,
-                  );
-                  ModifyTracker("newTracker");
-                  setIds((prev) => {
-                    const nextState = { ...prev };
-
-                    if (!nextState[activePortfolio]) {
-                      nextState[activePortfolio] = {};
-                    }
-
-                    const currentShares =
-                      nextState[activePortfolio][activeStock] ?? 0;
-                    nextState[activePortfolio] = {
-                      ...nextState[activePortfolio],
-                      [activeStock]: currentShares + amount,
+                  setNewStocks((prev) => {
+                    const existingPosition = prev[activeStock] || {
+                      id: activeStock,
+                      amount: 0,
+                      price: 0,
+                      portfolio_id: activePortfolio,
                     };
 
-                    return nextState;
+                    return {
+                      ...prev,
+                      [activeStock]: {
+                        ...existingPosition,
+                        amount: existingPosition.amount + amount,
+                      },
+                    };
                   });
+                  ModifyTracker("newTracker");
+                  setActiveCard("newPortfolio");
                 }}
-                disabled={
-                  latestMark <= 0 ||
-                  amount * latestMark > latestCash ||
-                  amount <= 0
-                }
+                disabled={latestMark <= 0 || amount <= 0}
               >
-                Open Position
-              </button>
-
-              <button
-                className="btn-sleek btn-sleek-red"
-                style={{
-                  opacity: latestMark <= 0 ? 0.5 : 1,
-                  cursor: latestMark <= 0 ? "not-allowed" : "pointer",
-                }}
-                onClick={() => {
-                  postData(
-                    "closePosition",
-                    activeStock,
-                    latestMark,
-                    amount,
-                    activePortfolio,
-                  );
-                  setIds((prev) => {
-                    const updated = { ...prev };
-
-                    if (!updated[activePortfolio]) return prev;
-
-                    const currentAmount =
-                      updated[activePortfolio][activeStock] ?? 0;
-                    const newAmount = currentAmount - amount;
-
-                    if (newAmount <= 0) {
-                      delete updated[activePortfolio][activeStock];
-                    } else {
-                      updated[activePortfolio][activeStock] = newAmount;
-                    }
-
-                    return updated;
-                  });
-                }}
-                disabled={
-                  latestMark <= 0 || amount <= 0 || amount > currentShares
-                }
-              >
-                Close Position
-              </button>
-              <button
-                className="btn-sleek btn-sleek-red"
-                style={{
-                  opacity: latestMark <= 0 ? 0.5 : 1,
-                  cursor: latestMark <= 0 ? "not-allowed" : "pointer",
-                }}
-                onClick={() => {
-                  postData(
-                    "closePosition",
-                    activeStock,
-                    latestMark,
-                    currentShares,
-                    activePortfolio,
-                  );
-                  setIds((prev) => {
-                    const updated = { ...prev };
-
-                    if (updated[activePortfolio]) {
-                      const newPortfolio = { ...updated[activePortfolio] };
-                      delete newPortfolio[activeStock];
-                      updated[activePortfolio] = newPortfolio;
-                    }
-
-                    return updated;
-                  });
-                }}
-                disabled={latestMark <= 0 || currentShares <= 0}
-              >
-                Sell All
+                Add Position
               </button>
             </div>
-          </div>
-        </div>
-
-        {/* Right side - Open Positions */}
-        <div
-          style={{
-            width: "280px",
-            display: "flex",
-            flexDirection: "column",
-            flexShrink: 0,
-          }}
-        >
-          <div
-            style={{
-              fontSize: "20px",
-              fontWeight: "bold",
-              marginBottom: "12px",
-              padding: "0 16px",
-            }}
-          >
-            Options
-          </div>
-          <div
-            style={{
-              flex: 1,
-              overflow: "auto",
-              border: "1px solid #ffffff",
-              borderRadius: "8px",
-              padding: "12px 0",
-            }}
-          >
-            <OptionExpirationCards
-              setActiveCard={setActiveCard}
-              setActiveID={setFixedID}
-              stock={activeStock}
-              defaultMessage="Loading..."
-              optionExpirations={optionExpirations}
-              prevCard="stock"
-            />
           </div>
         </div>
       </div>
@@ -323,4 +203,4 @@ export const StockCard: React.FC<StockCardProps> = ({
   );
 };
 
-export default StockCard;
+export default StockToPortfolioCard;

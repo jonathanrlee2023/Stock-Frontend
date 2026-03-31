@@ -1,5 +1,6 @@
 import React from "react";
 import { usePriceStream } from "./PriceContext";
+import { useWS } from "./WSContest";
 
 interface PortfolioCardsProps {
   setActiveCard: (query: string) => void;
@@ -13,9 +14,11 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
   activePortfolio,
 }) => {
   const { balancePoints } = usePriceStream();
+  const { ids, setIds } = useWS();
 
   // Get unique portfolio IDs from the balancePoints record
   const portfolioIds = Object.keys(balancePoints).map(Number);
+  const lastPortfolioId = portfolioIds[portfolioIds.length - 1];
 
   const PortfolioCard = ({
     id,
@@ -187,7 +190,15 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
       >
         <button
           className="btn-sleek mx-2"
-          onClick={() => setActiveCard("newPortfolioCard")}
+          onClick={() => {
+            const nextId = (lastPortfolioId || 0) + 1;
+            setActiveCard("newPortfolio");
+            setActivePortfolio(lastPortfolioId + 1);
+            setIds((prevIds) => ({
+              ...prevIds,
+              [nextId]: {},
+            }));
+          }}
         >
           Create New Portfolio
         </button>

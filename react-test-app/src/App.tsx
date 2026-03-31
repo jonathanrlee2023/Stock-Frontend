@@ -1,15 +1,6 @@
-import React, { act, useState } from "react";
-import { OptionWSComponent } from "./components/OptionGraph";
-import { TodayStockWSComponent } from "./components/TodayGraph";
-import { WSProvider } from "./components/WSContest";
-import SearchBar from "./components/SearchBar";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { PriceStreamProvider } from "./components/PriceContext";
-import { ButtonsProvider } from "./components/ButtonContext";
-import OptionsSearchBar from "./components/OptionsSearchBar";
-import { BalanceWSComponent } from "./components/Balance";
-import { FixedOptionWSComponent } from "./components/FixedOptionGraph";
-import { usePriceStream } from "./components/PriceContext";
+import { Position } from "./components/PriceContext";
+import React, { useState } from "react";
 import "../App.css";
 import OptionCard from "./components/OptionCard";
 import HomePage from "./components/HomePage";
@@ -18,11 +9,15 @@ import FixedOptionCard from "./components/FixedOptionCard";
 import FixedStockCard from "./components/FixedStockCard";
 import { FinancialsCard } from "./components/FinancialsCard";
 import { PortfolioCards } from "./components/PortfoliosListCard";
+import { NewPortfolioCard } from "./components/NewPortfolioCard";
+import StockToPortfolioCard from "./components/StockToPortfolioCard";
 
 const App: React.FC = () => {
   const [activeCard, setActiveCard] = useState<string>("home"); // State to track the active screen
   const [fixedID, setFixedID] = useState<string>("");
   const [activePortfolio, setActivePortfolio] = useState<number>(1);
+  const [newStocks, setNewStocks] = useState<Record<string, Position>>({});
+  const [portfolioName, setPortfolioName] = useState<string>("");
 
   return (
     <div
@@ -93,6 +88,26 @@ const App: React.FC = () => {
               setActiveCard={setActiveCard}
               setActivePortfolio={setActivePortfolio}
               activePortfolio={activePortfolio}
+            />
+          )}
+          {activeCard == "newPortfolio" && (
+            <NewPortfolioCard
+              setActiveCard={setActiveCard}
+              setFixedID={setFixedID}
+              setNewStocks={setNewStocks}
+              setActivePortfolio={setActivePortfolio}
+              setPortfolioName={setPortfolioName}
+              newStocks={newStocks}
+              activePortfolio={activePortfolio}
+              portfolioName={portfolioName}
+            />
+          )}
+          {activeCard == "stockToPortfolio" && (
+            <StockToPortfolioCard
+              setActiveCard={setActiveCard}
+              activePortfolio={activePortfolio}
+              setNewStocks={setNewStocks}
+              activeCard="stockToPortfolio"
             />
           )}
         </div>
