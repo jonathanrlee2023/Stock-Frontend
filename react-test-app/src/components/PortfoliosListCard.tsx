@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { usePriceStream } from "./PriceContext";
 import { useWS } from "./WSContest";
 
@@ -14,12 +14,40 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
   activePortfolio,
 }) => {
   const { balancePoints } = usePriceStream();
-  const { ids, setIds } = useWS();
+  const { ids, setIds, setPortfolioNames } = useWS();
   const { portfolioNames } = useWS();
 
-  // Get unique portfolio IDs from the balancePoints record
-  const portfolioIds = Object.keys(balancePoints).map(Number);
-  const lastPortfolioId = portfolioIds[portfolioIds.length - 1];
+  const portfolioIds = Object.keys(ids).map(Number);
+
+  // 2. Keep this for your "Create" logic
+  const lastPortfolioId =
+    portfolioIds.length > 0 ? Math.max(...portfolioIds) : 0;
+
+  const deletePortfolio = useCallback(
+    async (pid: number) => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+      try {
+        const baseUrl = "http://localhost:8080";
+        const response = await fetch(`${baseUrl}/deletePortfolio?id=${pid}`, {
+          method: "DELETE",
+          signal: controller.signal,
+        });
+
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
+      } catch (err: any) {
+        if (err.name === "AbortError") {
+          console.error(`Deletion of Portfolio ${pid} timed out`);
+        } else {
+          console.error("API error:", err);
+        }
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    },
+    [setIds, setPortfolioNames],
+  );
 
   const PortfolioCard = ({
     id,
@@ -46,22 +74,9 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
           borderLeft: isActive ? "4px solid #00ff88" : "4px solid #444",
           border: isActive ? "1px solid #333" : "1px solid transparent",
           marginBottom: "10px",
-          // 1. Added smooth transition for transform and shadow
           transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-          // 2. Initial shadow (flat)
           boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-        }}
-        onMouseEnter={(e) => {
-          // 3. Apply the "Pop" effect
-          e.currentTarget.style.transform = "scale(1.005) translateY(-2px)";
-          e.currentTarget.style.boxShadow = "0 8px 16px rgba(0,0,0,0.4)";
-          if (!isActive) e.currentTarget.style.backgroundColor = "#242424";
-        }}
-        onMouseLeave={(e) => {
-          // 4. Reset to original state
-          e.currentTarget.style.transform = "scale(1) translateY(0)";
-          e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.2)";
-          if (!isActive) e.currentTarget.style.backgroundColor = "#1e1e1e";
+          position: "relative",
         }}
       >
         <div
@@ -72,13 +87,15 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
           }}
         >
           <div style={{ fontSize: "14px", fontWeight: "700", color: "#fff" }}>
-            {portfolioNames[id]}
+            {portfolioNames[id] || `Portfolio ${id}`}
           </div>
-          <div
-            style={{ fontSize: "11px", fontWeight: "600", color: "#00ff88" }}
-          >
-            ACTIVE
-          </div>
+          {isActive && (
+            <div
+              style={{ fontSize: "11px", fontWeight: "600", color: "#00ff88" }}
+            >
+              ACTIVE
+            </div>
+          )}
         </div>
 
         <div
@@ -100,24 +117,32 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
               ${balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </span>
           </div>
-          <div
+
+          <button
+            className="btn-sleek btn-sleek-red"
             style={{
-              display: "flex",
-              flexDirection: "column",
-              textAlign: "right",
+              padding: "4px 8px",
+              fontSize: "10px",
+              alignSelf: "flex-end",
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+
+              setIds((prevIds) => {
+                const { [id]: _, ...rest } = prevIds;
+                return rest;
+              });
+
+              setPortfolioNames((prevNames) => {
+                const { [id]: _, ...rest } = prevNames;
+                return rest;
+              });
+
+              deletePortfolio(id);
             }}
           >
-            <span
-              style={{ fontSize: "10px", color: "#888", fontWeight: "800" }}
-            >
-              AVAILABLE CASH
-            </span>
-            <span
-              style={{ fontSize: "13px", fontWeight: "600", color: "#bbb" }}
-            >
-              ${cash.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-            </span>
-          </div>
+            Delete
+          </button>
         </div>
       </div>
     );
