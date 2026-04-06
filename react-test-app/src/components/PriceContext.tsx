@@ -4,6 +4,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useRef,
 } from "react";
 
 export type OptionPoint = {
@@ -315,16 +316,16 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const [balancePoints, setBalancePoints] = useState<PortfolioBalancePoint>({});
 
+  const MAX_COMPANY_CACHE = 50;
+  const companyQueue = useRef<string[]>([]);
+  const inQueue = useRef<Set<string>>(new Set());
+
   const startStockStream = useCallback(
     async (symbol: string) => {
       const cleanSymbol = symbol.toUpperCase().trim();
 
       // 1. Guard: Don't fetch if we have data OR if a request is already flying
-      if (
-        historicalStockPoints[cleanSymbol] ||
-        pendingRequests.has(cleanSymbol)
-      )
-        return;
+      if (companyStats[cleanSymbol] || pendingRequests.has(cleanSymbol)) return;
 
       // 2. Mark as pending
       setPendingRequests((prev) => new Set(prev).add(cleanSymbol));
@@ -446,10 +447,22 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const updateCompanyStats = (symbol: string, stats: CompanyStats) => {
-    setCompanyStats((prev) => ({
-      ...prev,
-      [symbol]: stats,
-    }));
+    setCompanyStats((prev) => {
+      const next = { ...prev, [symbol]: stats };
+
+      if (!inQueue.current.has(symbol)) {
+        companyQueue.current.push(symbol);
+        inQueue.current.add(symbol);
+      }
+
+      if (companyQueue.current.length > MAX_COMPANY_CACHE) {
+        const oldest = companyQueue.current.shift()!;
+        inQueue.current.delete(oldest);
+        delete next[oldest];
+      }
+
+      return next;
+    });
   };
 
   const updateHistoricalStockPoint = (
