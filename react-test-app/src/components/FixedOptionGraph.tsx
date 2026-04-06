@@ -346,6 +346,27 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
       </div>
       <div className="d-flex justify-content-between align-items-center mb-2 mx-2 mt-2">
         {/* Left Side: Position Actions */}
+        <div
+          className="mb-2 mx-2"
+          style={{ display: "flex", alignItems: "center", gap: "20px" }}
+        >
+          <label>
+            Contracts:{" "}
+            <input
+              className="search-bar input-small"
+              type="number"
+              value={amount}
+              min={0}
+              step="any"
+              onChange={(e) => setAmount(Number(e.target.value))}
+              style={{
+                paddingLeft: "5px",
+                paddingRight: "25px",
+                textAlign: "center",
+              }}
+            />
+          </label>
+        </div>
         <div className="d-flex gap-2 mb-2 mx-2">
           <button
             className="btn-sleek btn-sleek-green"

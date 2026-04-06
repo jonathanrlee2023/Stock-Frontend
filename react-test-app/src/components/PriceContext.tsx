@@ -316,7 +316,7 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const [balancePoints, setBalancePoints] = useState<PortfolioBalancePoint>({});
 
-  const MAX_COMPANY_CACHE = 50;
+  const MAX_COMPANY_CACHE = 30;
   const companyQueue = useRef<string[]>([]);
   const inQueue = useRef<Set<string>>(new Set());
 
@@ -324,8 +324,13 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
     async (symbol: string) => {
       const cleanSymbol = symbol.toUpperCase().trim();
 
-      // 1. Guard: Don't fetch if we have data OR if a request is already flying
-      if (companyStats[cleanSymbol] || pendingRequests.has(cleanSymbol)) return;
+      if (
+        !companyStats[cleanSymbol] ||
+        !historicalStockPoints[cleanSymbol] ||
+        !optionExpirations[cleanSymbol]
+      ) {
+        if (pendingRequests.has(cleanSymbol)) return;
+      }
 
       // 2. Mark as pending
       setPendingRequests((prev) => new Set(prev).add(cleanSymbol));
@@ -362,7 +367,7 @@ export const PriceStreamProvider: React.FC<{ children: React.ReactNode }> = ({
         });
       }
     },
-    [historicalStockPoints, pendingRequests],
+    [companyStats, pendingRequests],
   );
 
   const startOptionStream = useCallback(

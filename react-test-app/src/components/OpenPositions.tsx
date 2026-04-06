@@ -18,32 +18,21 @@ interface OptionParts {
 }
 
 export const ParseOptionId = (optionId: string): OptionParts | null => {
-  // Standard option format: TICKER + YYMMDD + C/P + Strike
-  // Example: AAPL250117C00150000 = AAPL, 25, 01, 17, C, 00150000
+  if (optionId.length < 15) return null;
 
-  const cleanId = optionId.trim();
+  // [A-Z]+ captures only letters, \s* consumes the OCC padding separately
+  const regex = /^([A-Z]+)\s*(\d{2})(\d{2})(\d{2})([CP])(\d+)$/;
+  const match = optionId.trim().match(regex);
 
-  // Check if it's long enough to be an option (at least ticker + 6 date + 1 type + strike)
-  if (optionId.length < 15) {
-    return null;
-  }
-
-  // Find where the date part starts (after the ticker, before the 6-digit date)
-  // The date is always YYMMDD (6 digits) followed by C or P
-  const regex = /^([A-Z\s]+)(\d{2})(\d{2})(\d{2})([CP])(\d+)$/;
-  const match = cleanId.match(regex);
-
-  if (!match) {
-    return null;
-  }
+  if (!match) return null;
 
   return {
-    ticker: match[1], // e.g., "AAPL"
-    year: match[2], // e.g., "25" (2025)
-    month: match[3], // e.g., "01" (January)
-    day: match[4], // e.g., "17"
-    type: match[5], // e.g., "C" (Call) or "P" (Put)
-    strike: String(parseInt(match[6]) / 1000), // e.g., "00150000" (150.00)
+    ticker: match[1], // "SPY" — no trailing spaces
+    year: match[2],
+    month: match[3],
+    day: match[4],
+    type: match[5],
+    strike: String(parseInt(match[6]) / 1000),
   };
 };
 
@@ -56,7 +45,8 @@ export const IdCards: React.FC<IdCardProps> = ({
   const { ids, setPreviousID } = useWS();
   const portfolioIds = ids[activePortfolio];
   const previousIdsRef = useRef<Record<string, number>>({});
-  const { stockPoints, startStockStream, startOptionStream } = usePriceStream();
+  const { stockPoints, optionPoints, startStockStream, startOptionStream } =
+    usePriceStream();
   useEffect(() => {
     previousIdsRef.current = portfolioIds; // just track the latest ids
   }, [ids]);
@@ -88,13 +78,33 @@ export const IdCards: React.FC<IdCardProps> = ({
     setActiveID(id);
   };
   const getLatestPrice = (id: string): string => {
-    const points = stockPoints[id];
-    if (!points || points.length === 0) {
-      return "Loading...";
+    if (id.length > 6) {
+      const points = optionPoints[id];
+      if (!points || points.length === 0) {
+        return "Loading...";
+      }
+      const latestPoint = points.at(-1);
+      return latestPoint ? `$${latestPoint.Mark.toFixed(2)}` : "N/A";
+    } else {
+      const points = stockPoints[id];
+      if (!points || points.length === 0) {
+        return "Loading...";
+      }
+      const latestPoint = points.at(-1);
+      return latestPoint ? `$${latestPoint.Mark.toFixed(2)}` : "N/A";
     }
-    const latestPoint = points.at(-1);
-    return latestPoint ? `$${latestPoint.Mark.toFixed(2)}` : "N/A";
   };
+
+  const formatDisplayId = (id: string): string => {
+    const parts = ParseOptionId(id);
+    if (!parts) return id; // plain stock, show as-is
+
+    const typeFull = parts.type === "C" ? "Call" : "Put";
+    const fullYear = `20${parts.year}`;
+    return `${parts.ticker} $${parts.strike} ${typeFull} ${parts.month}/${parts.day}/${fullYear}`;
+  };
+
+  const isOption = (id: string): boolean => ParseOptionId(id) !== null;
 
   return (
     <div
@@ -134,7 +144,7 @@ export const IdCards: React.FC<IdCardProps> = ({
                 marginBottom: "4px",
               }}
             >
-              {id}
+              {formatDisplayId(id)}
             </div>
             <div
               style={{
@@ -151,7 +161,7 @@ export const IdCards: React.FC<IdCardProps> = ({
                 color: "#666",
               }}
             >
-              {id.length <= 6 ? "Shares" : "Contracts"}: {amount}
+              {isOption(id) ? "Contracts" : "Shares"}: {amount}
             </div>
           </div>
         ))
