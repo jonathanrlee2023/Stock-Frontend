@@ -15,6 +15,7 @@ import { useWS } from "./WSContest"; // adjust import
 import "chartjs-adapter-date-fns";
 import { OptionPoint, usePriceStream } from "./PriceContext";
 import { verticalLinePlugin } from "./TodayGraph";
+import { formatFriendlyId } from "./OptionExpirationCards";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -260,7 +261,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
         legend: { display: false },
         title: {
           display: true,
-          text: `METRIC_STREAM: ${dataPoint.toUpperCase()}_HIST // ${stockSymbol.toUpperCase()}`,
+          text: `METRIC_STREAM: ${dataPoint.toUpperCase()}_HIST // ${formatFriendlyId(expectedSymbol)}`,
           align: "start" as const,
           color: "#7e7cf3", // Brand Purple
           font: {

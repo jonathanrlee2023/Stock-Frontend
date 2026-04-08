@@ -36,11 +36,15 @@ const Login: React.FC<LoginProps> = ({ onLogin, onGoToRegister }) => {
     <div className="container-fluid d-flex justify-content-center align-items-center vh-100 login-container">
       <div
         className="card p-4 login-card"
-        style={{ width: "380px", border: "1px solid #333" }}
+        style={{
+          width: "380px",
+          border: "1px solid #333",
+          boxShadow: "0 4px 8px rgba(255, 255, 255, 0.5)",
+        }}
       >
         <h3
           className="card-title text-center mb-4"
-          style={{ letterSpacing: "0.15em" }}
+          style={{ letterSpacing: "0.15em", color: "#ffffff" }}
         >
           Quantae Divitiae
         </h3>

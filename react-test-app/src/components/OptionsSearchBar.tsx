@@ -31,20 +31,24 @@ const OptionsSearchBar: React.FC<OptionsSearchBarProps> = ({
 
   return (
     <div
-      className="d-flex align-items-center"
+      className="d-flex align-items-center gap-1"
       style={{
         flex: "1 1 auto",
-        // Remove individual margins, handle them in the parent with gap-0
+        backgroundColor: "transparent",
       }}
     >
       <input
         type="text"
         className="search-bar search-bar-small flex-grow-1"
         style={{
-          // ... previous styles
           border: "1px solid #222",
-          borderRight: "none", // Input joins button
-          borderRadius: "0", // Sharp edges for a more industrial look
+          borderRight: "none",
+          borderRadius: "0",
+          backgroundColor: "#050505",
+          color: "#fff",
+          height: "32px", // Explicit height to match button
+          fontSize: "0.75rem",
+          paddingLeft: "10px",
         }}
         placeholder={inputMessage}
         value={inputValue}
@@ -52,18 +56,39 @@ const OptionsSearchBar: React.FC<OptionsSearchBarProps> = ({
         onKeyDown={handleKeyDown}
       />
       <button
-        className="btn-sleek btn-sleek-short d-flex align-items-center justify-content-center"
         type="button"
         style={{
-          // ... previous styles
-          border: "1px solid #222",
+          height: "40px", // Match input height
+          padding: "0 12px",
           backgroundColor: "#0a0a0a",
+          border: "1px solid #222",
           borderRadius: "0",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "all 0.1s ease-in-out",
         }}
         onClick={handleSearchClick}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = "#7e7cf3";
+          e.currentTarget.style.backgroundColor = "#111";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = "#222";
+          e.currentTarget.style.backgroundColor = "#0a0a0a";
+        }}
       >
-        <span style={{ fontSize: "0.8rem", filter: "grayscale(100%)" }}>
-          ✅
+        <span
+          style={{
+            fontSize: "0.6rem",
+            fontFamily: "monospace",
+            fontWeight: "900", // Extra heavy for that "system label" feel
+            color: "#7e7cf3",
+            letterSpacing: "1.5px",
+          }}
+        >
+          EXEC
         </span>
       </button>
     </div>

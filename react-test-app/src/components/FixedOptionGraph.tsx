@@ -14,9 +14,9 @@ import {
 import { useWS } from "./WSContest"; // adjust import
 import "chartjs-adapter-date-fns";
 import { OptionPoint, usePriceStream } from "./PriceContext";
-import { data } from "react-router-dom";
 import { OptionMetric } from "./OptionGraph";
 import { verticalLinePlugin } from "./TodayGraph";
+import { formatFriendlyId } from "./OptionExpirationCards";
 
 ChartJS.register(
   CategoryScale,
@@ -233,7 +233,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
         legend: { display: false },
         title: {
           display: true,
-          text: `METRIC_STREAM: ${dataPoint.toUpperCase()}_HIST // ${stockSymbol.toUpperCase()}`,
+          text: `METRIC_STREAM: ${dataPoint.toUpperCase()}_HIST // ${formatFriendlyId(optionID)}`,
           align: "start" as const,
           color: "#7e7cf3", // Brand Purple
           font: {
@@ -284,7 +284,6 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
           ticks: {
             color: "#444",
             font: { family: "monospace", size: 9 },
-            // If the metric is a small decimal (like Theta), force 4 decimal places
             callback: (value: any) =>
               typeof value === "number" ? value.toFixed(4) : value,
           },
@@ -378,7 +377,12 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
           borderBottom: "1px solid #111",
         }}
       >
-        <Line key={stockSymbol} options={options} data={graphData} />
+        <Line
+          key={stockSymbol}
+          options={options}
+          data={graphData}
+          plugins={[verticalLinePlugin]}
+        />
       </div>
 
       {/* --- Metrics Selector (Grid) --- */}
@@ -461,7 +465,22 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
                     activePortfolio,
                   );
                   ModifyTracker("newTracker");
-                  // ... setIds logic
+                  setIds((prev) => {
+                    const nextState = { ...prev };
+
+                    if (!nextState[activePortfolio]) {
+                      nextState[activePortfolio] = {};
+                    }
+
+                    const currentShares =
+                      nextState[activePortfolio][optionID] ?? 0;
+                    nextState[activePortfolio] = {
+                      ...nextState[activePortfolio],
+                      [optionID]: currentShares + amount,
+                    };
+
+                    return nextState;
+                  });
                 }}
                 disabled={latestMark <= 0 || isExpired}
               >
@@ -477,6 +496,20 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
                     amount,
                     activePortfolio,
                   );
+                  setIds((prev) => {
+                    const updated = { ...prev };
+                    const currentAmount =
+                      updated[activePortfolio][optionID] ?? 0;
+                    const newAmount = currentAmount - amount;
+
+                    if (newAmount <= 0) {
+                      delete updated[activePortfolio][optionID];
+                    } else {
+                      updated[activePortfolio][optionID] = newAmount;
+                    }
+
+                    return updated;
+                  });
                 }}
                 disabled={latestMark <= 0 || isExpired}
               >
@@ -493,6 +526,11 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
                     currentContracts,
                     activePortfolio,
                   );
+                  setIds((prev) => {
+                    const updated = { ...prev };
+                    delete updated[activePortfolio][optionID];
+                    return updated;
+                  });
                 }}
                 disabled={latestMark <= 0 || (currentContracts ?? 0) <= 0}
               >

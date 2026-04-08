@@ -36,6 +36,18 @@ export const ParseOptionId = (optionId: string): OptionParts | null => {
   };
 };
 
+export const formatFriendlyId = (id: string): string => {
+  const parts = ParseOptionId(id);
+  if (!parts) return id; // Fallback to raw ID if parsing fails
+
+  // Convert YY to 20YY
+  const fullYear = `20${parts.year}`;
+  const typeFull = parts.type === "C" ? "Call" : "Put";
+
+  // Format: "$180 NVDA Call Expiring 02/20/2026"
+  return `$${parts.strike} ${parts.ticker} ${typeFull} Expiring ${parts.month}/${parts.day}/${fullYear}`;
+};
+
 export const OptionExpirationCards: React.FC<OptionExpirationCardsProps> = ({
   setActiveID,
   setActiveCard,
@@ -72,18 +84,6 @@ export const OptionExpirationCards: React.FC<OptionExpirationCardsProps> = ({
     if (!points || points.length === 0) return "Loading...";
     const latestPoint = points.at(-1);
     return latestPoint ? `$${latestPoint.Mark.toFixed(2)}` : "N/A";
-  };
-
-  const formatFriendlyId = (id: string): string => {
-    const parts = ParseOptionId(id);
-    if (!parts) return id; // Fallback to raw ID if parsing fails
-
-    // Convert YY to 20YY
-    const fullYear = `20${parts.year}`;
-    const typeFull = parts.type === "C" ? "Call" : "Put";
-
-    // Format: "$180 NVDA Call Expiring 02/20/2026"
-    return `$${parts.strike} ${parts.ticker} ${typeFull} Expiring ${parts.month}/${parts.day}/${fullYear}`;
   };
 
   const filteredExpirations = Object.entries(optionExpirations).filter(

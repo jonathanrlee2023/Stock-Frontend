@@ -153,6 +153,10 @@ export const BalanceWSComponent: React.FC<BalanceWSProps> = ({
       : "rgba(0, 150, 0, 0.8)";
 
   let change = latestBalance - previousPortfolioBalance;
+  let changePercent =
+    previousPortfolioBalance !== 0
+      ? (change / previousPortfolioBalance) * 100
+      : 0;
 
   return (
     <div
@@ -212,8 +216,8 @@ export const BalanceWSComponent: React.FC<BalanceWSProps> = ({
             fontFamily: "monospace",
           }}
         >
-          [{change >= 0 ? "+" : ""}
-          {change.toFixed(2)}]
+          {change >= 0 ? "+" : ""}
+          {change.toFixed(2)} | ({changePercent.toFixed(2)}%)
         </div>
       </div>
 

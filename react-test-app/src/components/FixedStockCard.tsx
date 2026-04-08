@@ -223,7 +223,23 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
                       amount,
                       activePortfolio,
                     );
-                    // ... existing logic
+                    ModifyTracker("newTracker");
+                    setIds((prev) => {
+                      const nextState = { ...prev };
+
+                      if (!nextState[activePortfolio]) {
+                        nextState[activePortfolio] = {};
+                      }
+
+                      const currentShares =
+                        nextState[activePortfolio][activeStock] ?? 0;
+                      nextState[activePortfolio] = {
+                        ...nextState[activePortfolio],
+                        [activeStock]: currentShares + amount,
+                      };
+
+                      return nextState;
+                    });
                   }}
                   disabled={
                     latestMark <= 0 ||
@@ -243,7 +259,23 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
                       amount,
                       activePortfolio,
                     );
-                    // ... existing logic
+                    setIds((prev) => {
+                      const updated = { ...prev };
+
+                      if (!updated[activePortfolio]) return prev;
+
+                      const currentAmount =
+                        updated[activePortfolio][activeStock] ?? 0;
+                      const newAmount = currentAmount - amount;
+
+                      if (newAmount <= 0) {
+                        delete updated[activePortfolio][activeStock];
+                      } else {
+                        updated[activePortfolio][activeStock] = newAmount;
+                      }
+
+                      return updated;
+                    });
                   }}
                   disabled={
                     latestMark <= 0 || amount <= 0 || amount > currentShares
@@ -262,7 +294,17 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
                       currentShares,
                       activePortfolio,
                     );
-                    // ... existing logic
+                    setIds((prev) => {
+                      const updated = { ...prev };
+
+                      if (updated[activePortfolio]) {
+                        const newPortfolio = { ...updated[activePortfolio] };
+                        delete newPortfolio[activeStock];
+                        updated[activePortfolio] = newPortfolio;
+                      }
+
+                      return updated;
+                    });
                   }}
                   disabled={latestMark <= 0 || currentShares <= 0}
                 >

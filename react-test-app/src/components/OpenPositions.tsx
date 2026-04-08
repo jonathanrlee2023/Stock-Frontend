@@ -44,6 +44,7 @@ export const IdCards: React.FC<IdCardProps> = ({
   activePortfolio,
 }) => {
   const { ids, setPreviousID } = useWS();
+  console.log(ids);
   const portfolioIds = ids[activePortfolio];
   const previousIdsRef = useRef<Record<string, number>>({});
   const {
@@ -106,8 +107,8 @@ export const IdCards: React.FC<IdCardProps> = ({
     if (!points || points.length < 2) return "#ffffff"; // Default color
     const latest = points.at(-1)?.Mark || 0;
     const previous = historicalStockPoints[id]?.at(-1)?.close || 0;
-    if (latest > previous) return "rgba(0, 150, 0, 0.8)";
-    if (latest < previous) return "rgba(150, 0, 0, 0.8)";
+    if (latest > previous) return "rgb(38, 154, 25)";
+    if (latest < previous) return "rgb(155, 0, 0)";
     return "#ffffff"; // Default color
   };
 
