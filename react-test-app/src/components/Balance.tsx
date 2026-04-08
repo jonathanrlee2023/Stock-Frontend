@@ -155,43 +155,78 @@ export const BalanceWSComponent: React.FC<BalanceWSProps> = ({
   let change = latestBalance - previousPortfolioBalance;
 
   return (
-    <div style={{ padding: "20px", height: "85vh" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%" /* Fill the container exactly */,
+        padding: "15px" /* Consistent with terminal spacing */,
+        boxSizing: "border-box",
+        overflow: "hidden",
+      }}
+    >
+      {/* Data Header Row */}
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
-          marginBottom: "5px",
+          alignItems: "baseline",
+          marginBottom: "10px",
         }}
       >
         <div
           style={{
-            fontSize: "1.2rem",
+            fontSize: "1.25rem" /* Consistent with sidebar titles */,
             display: "flex",
             alignItems: "center",
-            gap: "24px",
+            gap: "20px",
+            letterSpacing: "0.05em",
           }}
         >
-          <span>
-            Balance:{" "}
+          <span style={{ color: "#666" }}>
+            TOTAL BALANCE:{" "}
             <span style={{ color: balanceColor, fontWeight: "bold" }}>
-              ${latestBalance.toFixed(2)}
+              $
+              {latestBalance.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
             </span>
           </span>
-          <span>
-            Cash:{" "}
-            <span style={{ fontWeight: "bold" }}>${latestCash.toFixed(2)}</span>
+          <span style={{ color: "#666" }}>
+            CASH:{" "}
+            <span style={{ color: "#ffffff", fontWeight: "bold" }}>
+              $
+              {latestCash.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
+            </span>
           </span>
         </div>
+
+        {/* Performance Delta */}
         <div
-          style={{ color: balanceColor, fontSize: "14px", fontWeight: "bold" }}
+          style={{
+            color: balanceColor,
+            fontSize: "12px",
+            fontWeight: "900",
+            fontFamily: "monospace",
+          }}
         >
-          ({change >= 0 ? "+" : ""}
-          {change.toFixed(2)})
+          [{change >= 0 ? "+" : ""}
+          {change.toFixed(2)}]
         </div>
       </div>
-      {/* This wrapper controls the chart's actual screen real estate */}
-      <div style={{ height: "calc(100%)", position: "relative" }}>
-        <Line options={options} data={graphData} />
+
+      {/* Chart Container - Forced to fill remaining vertical space */}
+      <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
+        <Line
+          options={{
+            ...options,
+            maintainAspectRatio: false /* Critical for filling flex space */,
+            responsive: true,
+          }}
+          data={graphData}
+        />
       </div>
     </div>
   );

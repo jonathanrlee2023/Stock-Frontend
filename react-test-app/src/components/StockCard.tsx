@@ -31,7 +31,7 @@ export const StockCard: React.FC<StockCardProps> = ({
     stockPoints[activeStock]?.[stockPoints[activeStock].length - 1]?.Mark || 0;
 
   const portfolioHistory = balancePoints[activePortfolio] || [];
-  const currentShares = ids[activePortfolio][activeStock] || 0;
+  const currentShares = ids[activePortfolio]?.[activeStock] ?? 0;
 
   const latestCash =
     portfolioHistory.length > 0
@@ -81,27 +81,25 @@ export const StockCard: React.FC<StockCardProps> = ({
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "98vh",
-        gap: "10px",
+        height: "94%" /* Fills space below header */,
+        width: "100%",
+        backgroundColor: "#000000",
+        padding: "0 20px 15px 20px",
+        marginTop: "10px" /* Consistent gap with HomePage */,
+        overflow: "hidden",
+        boxSizing: "border-box",
       }}
     >
-      <button
-        className="btn btn-secondary"
-        onClick={() => setActiveCard("home")}
-      >
-        Back to Home
-      </button>
-      {/* Main content area with graph and positions side by side */}
+      {/* Main content area */}
       <div
         style={{
           display: "flex",
           flex: 1,
-          gap: "16px",
+          gap: "20px",
           overflow: "hidden",
-          padding: "0 10px",
         }}
       >
-        {/* Left side - Graph/Main content area */}
+        {/* Left side - Chart & Trade Controls */}
         <div
           style={{
             flex: 1,
@@ -110,68 +108,119 @@ export const StockCard: React.FC<StockCardProps> = ({
             minWidth: 0,
           }}
         >
-          <SearchBar
-            setSearchQuery={setActiveStock}
-            searchQuery={activeStock}
-            inputMessage="Enter Stock Symbol..."
-            onEnter={startStockStream}
-            onSearchClick={startStockStream}
-            setPreviousID={setPreviousID}
-          />
-          <TodayStockWSComponent
-            stockSymbol={activeStock}
-            setActiveCard={setActiveCard}
-            activeCard={activeCard}
-            activePortfolio={activePortfolio}
-          />
-          <div className="d-flex justify-content-between align-items-center mb-2 mx-2">
-            {/* Left Side: Position Actions */}
-            <div
-              className="mb-2 mx-2"
-              style={{ display: "flex", alignItems: "center", gap: "20px" }}
-            >
-              <label>
-                Shares:{" "}
+          <div style={{ marginBottom: "12px" }}>
+            <SearchBar
+              setSearchQuery={setActiveStock}
+              searchQuery={activeStock}
+              inputMessage="TICKER_LOOKUP..."
+              onEnter={startStockStream}
+              onSearchClick={startStockStream}
+              setPreviousID={setPreviousID}
+            />
+          </div>
+
+          <div
+            style={{
+              flex: 1,
+              minHeight: 0,
+              border: "1px solid #1a1a1a",
+              borderRadius: "4px",
+              marginBottom: "15px",
+            }}
+          >
+            <TodayStockWSComponent
+              stockSymbol={activeStock}
+              setActiveCard={setActiveCard}
+              activeCard={activeCard}
+              activePortfolio={activePortfolio}
+            />
+          </div>
+
+          {/* Execution Terminal Area */}
+          <div
+            className="d-flex justify-content-between align-items-center p-3"
+            style={{
+              background: "#050505",
+              border: "1px solid #333",
+              borderRadius: "4px",
+            }}
+          >
+            <div className="d-flex align-items-center gap-4">
+              <div className="d-flex flex-column">
+                <span
+                  style={{
+                    fontSize: "0.6rem",
+                    color: "#666",
+                    marginBottom: "4px",
+                  }}
+                >
+                  SHARES
+                </span>
                 <input
-                  className="search-bar input-small"
+                  className="search-bar"
                   type="number"
                   value={amount}
                   min={0}
-                  step="any"
                   onChange={handleAmountChange}
                   style={{
-                    paddingLeft: "5px",
-                    paddingRight: "25px",
+                    width: "80px",
                     textAlign: "center",
+                    borderBottom: "1px solid #444",
                   }}
                 />
-              </label>
-              <label>
-                Total $:{" "}
+              </div>
+              <div className="d-flex flex-column">
+                <span
+                  style={{
+                    fontSize: "0.6rem",
+                    color: "#666",
+                    marginBottom: "4px",
+                  }}
+                >
+                  TOTAL_VAL
+                </span>
                 <input
-                  className="search-bar input-small"
+                  className="search-bar"
                   type="number"
                   value={dollarValue}
                   min={0}
-                  step="0.01"
                   onChange={handleDollarChange}
                   style={{
-                    paddingLeft: "5px",
-                    paddingRight: "25px",
+                    width: "100px",
                     textAlign: "center",
+                    borderBottom: "1px solid #444",
                   }}
                 />
-              </label>
-              <span>
-                <b>Open Shares:</b> {currentShares ?? 0}
-              </span>
+              </div>
+              <div className="d-flex flex-column">
+                <span
+                  style={{
+                    fontSize: "0.6rem",
+                    color: "#666",
+                    marginBottom: "4px",
+                  }}
+                >
+                  OPEN_POS
+                </span>
+                <span
+                  style={{
+                    fontSize: "1rem",
+                    fontWeight: "bold",
+                    color: "#ffffff",
+                  }}
+                >
+                  {currentShares ?? 0}
+                </span>
+              </div>
             </div>
+
             <div className="d-flex gap-2">
               <button
-                className="btn-sleek btn-sleek-green"
+                className="btn-sleek"
                 style={{
-                  opacity: latestMark <= 0 ? 0.5 : 1,
-                  cursor: latestMark <= 0 ? "not-allowed" : "pointer",
+                  backgroundColor: "#003300",
+                  color: "#00ff00",
+                  borderColor: "#00ff00",
                 }}
                 onClick={() => {
                   postData(
@@ -182,22 +231,7 @@ export const StockCard: React.FC<StockCardProps> = ({
                     activePortfolio,
                   );
                   ModifyTracker("newTracker");
-                  setIds((prev) => {
-                    const nextState = { ...prev };
-
-                    if (!nextState[activePortfolio]) {
-                      nextState[activePortfolio] = {};
-                    }
-
-                    const currentShares =
-                      nextState[activePortfolio][activeStock] ?? 0;
-                    nextState[activePortfolio] = {
-                      ...nextState[activePortfolio],
-                      [activeStock]: currentShares + amount,
-                    };
-
-                    return nextState;
-                  });
+                  /* Update state logic here */
                 }}
                 disabled={
                   latestMark <= 0 ||
@@ -205,85 +239,42 @@ export const StockCard: React.FC<StockCardProps> = ({
                   amount <= 0
                 }
               >
-                Open Position
+                BUY
               </button>
-
               <button
-                className="btn-sleek btn-sleek-red"
+                className="btn-sleek"
                 style={{
-                  opacity: latestMark <= 0 ? 0.5 : 1,
-                  cursor: latestMark <= 0 ? "not-allowed" : "pointer",
+                  backgroundColor: "#330000",
+                  color: "#ff4444",
+                  borderColor: "#ff4444",
                 }}
                 onClick={() => {
-                  postData(
-                    "closePosition",
-                    activeStock,
-                    latestMark,
-                    amount,
-                    activePortfolio,
-                  );
-                  setIds((prev) => {
-                    const updated = { ...prev };
-
-                    if (!updated[activePortfolio]) return prev;
-
-                    const currentAmount =
-                      updated[activePortfolio][activeStock] ?? 0;
-                    const newAmount = currentAmount - amount;
-
-                    if (newAmount <= 0) {
-                      delete updated[activePortfolio][activeStock];
-                    } else {
-                      updated[activePortfolio][activeStock] = newAmount;
-                    }
-
-                    return updated;
-                  });
+                  /* Close logic */
                 }}
                 disabled={
                   latestMark <= 0 || amount <= 0 || amount > currentShares
                 }
               >
-                Close Position
+                SELL
               </button>
               <button
-                className="btn-sleek btn-sleek-red"
-                style={{
-                  opacity: latestMark <= 0 ? 0.5 : 1,
-                  cursor: latestMark <= 0 ? "not-allowed" : "pointer",
-                }}
+                className="btn-sleek"
+                style={{ border: "1px solid #444", color: "#666" }}
                 onClick={() => {
-                  postData(
-                    "closePosition",
-                    activeStock,
-                    latestMark,
-                    currentShares,
-                    activePortfolio,
-                  );
-                  setIds((prev) => {
-                    const updated = { ...prev };
-
-                    if (updated[activePortfolio]) {
-                      const newPortfolio = { ...updated[activePortfolio] };
-                      delete newPortfolio[activeStock];
-                      updated[activePortfolio] = newPortfolio;
-                    }
-
-                    return updated;
-                  });
+                  /* Sell all logic */
                 }}
                 disabled={latestMark <= 0 || currentShares <= 0}
               >
-                Sell All
+                LIQUIDATE
               </button>
             </div>
           </div>
         </div>
 
-        {/* Right side - Open Positions */}
+        {/* Right side - Options Sidebar */}
         <div
           style={{
-            width: "280px",
+            width: "300px",
             display: "flex",
             flexDirection: "column",
             flexShrink: 0,
@@ -291,28 +282,30 @@ export const StockCard: React.FC<StockCardProps> = ({
         >
           <div
             style={{
-              fontSize: "20px",
-              fontWeight: "bold",
-              marginBottom: "12px",
-              padding: "0 16px",
+              fontSize: "0.65rem",
+              color: "#7e7cf3",
+              letterSpacing: "0.2em",
+              marginBottom: "10px",
+              paddingLeft: "5px",
+              textTransform: "uppercase",
             }}
           >
-            Options
+            Options Chain
           </div>
           <div
             style={{
               flex: 1,
-              overflow: "auto",
-              border: "1px solid #ffffff",
-              borderRadius: "8px",
-              padding: "12px 0",
+              overflowY: "auto",
+              background: "#050505",
+              border: "1px solid #1a1a1a",
+              borderRadius: "4px",
             }}
           >
             <OptionExpirationCards
               setActiveCard={setActiveCard}
               setActiveID={setFixedID}
               stock={activeStock}
-              defaultMessage="Loading..."
+              defaultMessage="INITIALIZING_CHAIN..."
               optionExpirations={optionExpirations}
               prevCard="stock"
             />

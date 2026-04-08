@@ -4,6 +4,7 @@ import { IdCards } from "./OpenPositions";
 interface HomePageProps {
   setActiveCard: (query: string) => void;
   setFixedID: (query: string) => void;
+  activeCard: string;
   activePortfolio: number;
 }
 
@@ -17,21 +18,25 @@ export const HomePage: React.FC<HomePageProps> = ({
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "98vh",
-        gap: "10px",
+        height: "94vh" /* Fill the space below the header */,
+        width: "100%",
+        backgroundColor: "#000000",
+        padding: "0 20px 15px 20px",
+        marginTop: "10px" /* The gap between the header and the content */,
+        marginBottom: "10px" /* The gap between the content and the footer */,
+        overflow: "hidden",
+        boxSizing: "border-box",
       }}
     >
-      {/* Main content area with graph and positions side by side */}
       <div
         style={{
           display: "flex",
           flex: 1,
-          gap: "16px",
+          gap: "20px",
           overflow: "hidden",
-          padding: "0 10px",
         }}
       >
-        {/* Left side - Graph/Main content area */}
+        {/* Left side - Chart Dashboard */}
         <div
           style={{
             flex: 1,
@@ -40,30 +45,26 @@ export const HomePage: React.FC<HomePageProps> = ({
             minWidth: 0,
           }}
         >
-          <BalanceWSComponent activePortfolio={activePortfolio} />
-          <div className="d-flex justify-content-center mb-10 mt-5">
-            <button
-              className="btn-sleek mx-2"
-              onClick={() => setActiveCard("stock")}
-            >
-              Stocks
-            </button>
-            <button
-              className="btn-sleek mx-2"
-              onClick={() => setActiveCard("options")}
-            >
-              Options
-            </button>
-            <button
-              className="btn-sleek mx-2"
-              onClick={() => setActiveCard("portfolioList")}
-            >
-              Portfolios
-            </button>
+          <div
+            className="card"
+            style={{
+              flex: 1,
+              margin: "0",
+              display: "flex",
+              flexDirection: "column",
+              background: "#000000",
+              border: "1px solid #1a1a1a",
+              borderRadius: "4px",
+              overflow: "hidden",
+            }}
+          >
+            <div style={{ flex: 1, height: "100%", width: "100%" }}>
+              <BalanceWSComponent activePortfolio={activePortfolio} />
+            </div>
           </div>
         </div>
 
-        {/* Right side - Open Positions */}
+        {/* Right side - Sidebar */}
         <div
           style={{
             width: "280px",
@@ -73,28 +74,31 @@ export const HomePage: React.FC<HomePageProps> = ({
           }}
         >
           <div
+            className="card-title"
             style={{
-              fontSize: "20px",
-              fontWeight: "bold",
-              marginBottom: "12px",
-              padding: "0 16px",
+              fontSize: "0.65rem",
+              color: "#7e7cf3",
+              letterSpacing: "0.15em",
+              marginBottom: "10px",
+              paddingLeft: "5px",
             }}
           >
-            Open Positions
+            MARKET POSITIONS
           </div>
+
           <div
             style={{
               flex: 1,
-              overflow: "auto",
-              border: "1px solid #ffffff",
-              borderRadius: "8px",
-              padding: "12px 0",
+              overflowY: "auto",
+              background: "#050505",
+              border: "1px solid #1a1a1a",
+              borderRadius: "4px",
             }}
           >
             <IdCards
               setActiveCard={setActiveCard}
               setActiveID={setFixedID}
-              defaultMessage="No Open Positions"
+              defaultMessage="NO OPEN POSITIONS"
               activePortfolio={activePortfolio}
             />
           </div>

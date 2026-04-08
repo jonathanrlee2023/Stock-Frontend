@@ -30,11 +30,22 @@ const OptionsSearchBar: React.FC<OptionsSearchBarProps> = ({
   };
 
   return (
-    <div className="d-flex mb-2 mt-2 mx-2 w-100" style={{ maxWidth: "15%" }}> 
+    <div
+      className="d-flex align-items-center"
+      style={{
+        flex: "1 1 auto",
+        // Remove individual margins, handle them in the parent with gap-0
+      }}
+    >
       <input
         type="text"
         className="search-bar search-bar-small flex-grow-1"
-        style={{ minWidth: "150px" }}
+        style={{
+          // ... previous styles
+          border: "1px solid #222",
+          borderRight: "none", // Input joins button
+          borderRadius: "0", // Sharp edges for a more industrial look
+        }}
         placeholder={inputMessage}
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
@@ -43,14 +54,17 @@ const OptionsSearchBar: React.FC<OptionsSearchBarProps> = ({
       <button
         className="btn-sleek btn-sleek-short d-flex align-items-center justify-content-center"
         type="button"
-        style={{ 
-          minWidth: "40px",
-          padding: "0",
-          aspectRatio: "1/1"
+        style={{
+          // ... previous styles
+          border: "1px solid #222",
+          backgroundColor: "#0a0a0a",
+          borderRadius: "0",
         }}
         onClick={handleSearchClick}
       >
-        <span style={{ lineHeight: "1" }}>✅</span>
+        <span style={{ fontSize: "0.8rem", filter: "grayscale(100%)" }}>
+          ✅
+        </span>
       </button>
     </div>
   );

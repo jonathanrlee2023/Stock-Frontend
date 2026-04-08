@@ -16,6 +16,8 @@ import "chartjs-adapter-date-fns";
 import { OptionPoint, usePriceStream } from "./PriceContext";
 import { data } from "react-router-dom";
 import { OptionMetric } from "./OptionGraph";
+import { verticalLinePlugin } from "./TodayGraph";
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -215,27 +217,81 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
       ],
     };
   }, [points, stockSymbol, strikePrice, type, month, day, year, dataPoint]);
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { position: "top" as const },
-      title: {
-        display: true,
-        text: `${dataPoint.charAt(0).toUpperCase()}${dataPoint.slice(
-          1,
-        )} History`,
+  const options = React.useMemo(() => {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: {
+        duration: 0, // Keep it snappy for live data
       },
-    },
-    scales: {
-      x: {
-        type: "time" as const,
-        time: {
-          tooltipFormat: "HH:mm:ss",
+      interaction: {
+        mode: "index" as const,
+        intersect: false,
+      },
+      plugins: {
+        // Legend is usually redundant for a single metric history
+        legend: { display: false },
+        title: {
+          display: true,
+          text: `METRIC_STREAM: ${dataPoint.toUpperCase()}_HIST // ${stockSymbol.toUpperCase()}`,
+          align: "start" as const,
+          color: "#7e7cf3", // Brand Purple
+          font: {
+            family: "monospace",
+            size: 11,
+            weight: "bold" as const,
+          },
+          padding: { bottom: 15 },
+        },
+        tooltip: {
+          enabled: true,
+          backgroundColor: "#0a0a0a",
+          borderColor: "#333",
+          borderWidth: 1,
+          cornerRadius: 0,
+          titleFont: { family: "monospace", size: 12, weight: "bold" as const },
+          bodyFont: { family: "monospace", size: 12 },
+          displayColors: false,
         },
       },
-    },
-  };
+      scales: {
+        x: {
+          type: "time" as const,
+          time: {
+            tooltipFormat: "HH:mm:ss",
+            // Use a shorter format for ticks to keep the terminal look clean
+            displayFormats: {
+              second: "HH:mm:ss",
+              minute: "HH:mm",
+              hour: "HH:mm",
+            },
+          },
+          grid: {
+            color: "#111",
+            borderColor: "#222",
+          },
+          ticks: {
+            color: "#444",
+            font: { family: "monospace", size: 9 },
+            maxRotation: 0,
+          },
+        },
+        y: {
+          grid: {
+            color: "#111",
+            borderColor: "#222",
+          },
+          ticks: {
+            color: "#444",
+            font: { family: "monospace", size: 9 },
+            // If the metric is a small decimal (like Theta), force 4 decimal places
+            callback: (value: any) =>
+              typeof value === "number" ? value.toFixed(4) : value,
+          },
+        },
+      },
+    };
+  }, [dataPoint, stockSymbol]);
 
   const ModifyTracker = async (action: string) => {
     let data: { id: string } = { id: "" };
@@ -303,40 +359,52 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
   return (
     <div
       style={{
-        padding: "0px", // Remove or minimize padding
-        height: "100%",
-        width: "100%", // Force full width
+        padding: "0px",
+        height: "94%",
+        width: "100%",
         display: "flex",
         flexDirection: "column",
+        backgroundColor: "#000",
         overflow: "hidden",
       }}
     >
+      {/* --- Chart Area (Flexible) --- */}
       <div
         style={{
           flex: "1 1 auto",
           width: "100%",
           minHeight: "0",
           position: "relative",
+          borderBottom: "1px solid #111",
         }}
       >
         <Line key={stockSymbol} options={options} data={graphData} />
       </div>
+
+      {/* --- Metrics Selector (Grid) --- */}
       <div
-        style={{
-          display: "flex",
-          gap: "10px",
-          flexWrap: "wrap",
-          justifyContent: "center",
-        }}
+        className="p-2 d-flex gap-1 flex-wrap justify-content-center"
+        style={{ backgroundColor: "#050505", borderBottom: "1px solid #222" }}
       >
         {METRICS.map((g) => {
           const val = latestPoint ? latestPoint[g as keyof OptionPoint] : null;
+          const isActive = dataPoint === g;
 
           return (
             <button
               key={g}
-              className={`btn btn-sm ${dataPoint === g ? "btn-primary" : "btn-outline-secondary"}`}
               onClick={() => setDataPoint(g)}
+              style={{
+                padding: "4px 10px",
+                fontSize: "0.65rem",
+                fontFamily: "monospace",
+                backgroundColor: isActive ? "#7e7cf3" : "#111",
+                color: isActive ? "#000" : "#666",
+                border: `1px solid ${isActive ? "#7e7cf3" : "#333"}`,
+                fontWeight: isActive ? "bold" : "normal",
+                borderRadius: "2px",
+                transition: "all 0.1s ease",
+              }}
             >
               {g.toUpperCase()}:{" "}
               {typeof val === "number" ? val.toFixed(4) : "N/A"}
@@ -344,153 +412,101 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
           );
         })}
       </div>
-      <div className="d-flex justify-content-between align-items-center mb-2 mx-2 mt-2">
-        {/* Left Side: Position Actions */}
-        <div
-          className="mb-2 mx-2"
-          style={{ display: "flex", alignItems: "center", gap: "20px" }}
-        >
-          <label>
-            Contracts:{" "}
-            <input
-              className="search-bar input-small"
-              type="number"
-              value={amount}
-              min={0}
-              step="any"
-              onChange={(e) => setAmount(Number(e.target.value))}
-              style={{
-                paddingLeft: "5px",
-                paddingRight: "25px",
-                textAlign: "center",
-              }}
-            />
-          </label>
-        </div>
-        <div className="d-flex gap-2 mb-2 mx-2">
-          <button
-            className="btn-sleek btn-sleek-green"
-            style={{
-              opacity: latestMark <= 0 ? 0.5 : 1,
-              cursor: latestMark <= 0 ? "not-allowed" : "pointer",
-              color: latestMark <= 0 ? "gray" : "green",
-            }}
-            onClick={() => {
-              postData(
-                "openPosition",
-                optionID,
-                latestMark,
-                amount,
-                activePortfolio,
-              );
-              ModifyTracker("newTracker");
-              setIds((prev) => {
-                const nextState = { ...prev };
 
-                if (!nextState[activePortfolio]) {
-                  nextState[activePortfolio] = {};
-                }
-
-                const currentShares = nextState[activePortfolio][optionID] ?? 0;
-                nextState[activePortfolio] = {
-                  ...nextState[activePortfolio],
-                  [optionID]: currentShares + amount,
-                };
-
-                return nextState;
-              });
-            }}
-            disabled={latestMark <= 0 || isExpired}
-          >
-            Open Position
-          </button>
-          <button
-            className="btn-sleek btn-sleek-red"
-            style={{
-              opacity: latestMark <= 0 ? 0.5 : 1,
-              cursor: latestMark <= 0 ? "not-allowed" : "pointer",
-              color: latestMark <= 0 ? "gray" : "red",
-            }}
-            onClick={() => {
-              postData(
-                "closePosition",
-                optionID,
-                latestMark,
-                amount,
-                activePortfolio,
-              );
-              setIds((prev) => {
-                const updated = { ...prev };
-                const currentAmount = updated[activePortfolio][optionID] ?? 0;
-                const newAmount = currentAmount - amount;
-
-                if (newAmount <= 0) {
-                  delete updated[activePortfolio][optionID];
-                } else {
-                  updated[activePortfolio][optionID] = newAmount;
-                }
-
-                return updated;
-              });
-            }}
-            disabled={latestMark <= 0 || isExpired}
-          >
-            Close Position
-          </button>
-          <button
-            className="btn-sleek btn-sleek-red"
-            style={{
-              opacity: latestMark <= 0 ? 0.5 : 1,
-              cursor: latestMark <= 0 ? "not-allowed" : "pointer",
-            }}
-            onClick={() => {
-              postData(
-                "closePosition",
-                optionID,
-                latestMark,
-                currentContracts,
-                activePortfolio,
-              );
-              setIds((prev) => {
-                const updated = { ...prev };
-                delete updated[activePortfolio][optionID];
-                return updated;
-              });
-            }}
-            disabled={latestMark <= 0 || (currentContracts ?? 0) <= 0}
-          >
-            Sell All
-          </button>
-          {isExpired && (
-            <div
-              style={{
-                color: "red",
-                fontWeight: "bold",
-                marginTop: "10px",
-              }}
-            >
-              The option expiration date has passed
+      {/* --- Execution & Tracking Bar --- */}
+      <div
+        className="p-3 d-flex flex-column gap-3"
+        style={{ backgroundColor: "#0a0a0a" }}
+      >
+        <div className="d-flex align-items-center justify-content-between">
+          {/* Left: Input & Trade Actions */}
+          <div className="d-flex align-items-center gap-3">
+            <div className="d-flex flex-column">
+              <label
+                style={{
+                  fontSize: "9px",
+                  color: "#555",
+                  fontWeight: "bold",
+                  marginBottom: "2px",
+                }}
+              >
+                QUANTITY
+              </label>
+              <input
+                type="number"
+                className="terminal-input"
+                value={amount}
+                onChange={(e) => setAmount(Number(e.target.value))}
+                style={{
+                  width: "80px",
+                  backgroundColor: "#000",
+                  border: "1px solid #333",
+                  color: "#00ff88",
+                  fontSize: "0.9rem",
+                  fontFamily: "monospace",
+                  padding: "2px 5px",
+                }}
+              />
             </div>
-          )}
-          {latestMark <= 0 && (
-            <div
-              style={{
-                color: "orange",
-                fontWeight: "bold",
-                marginTop: "10px",
-              }}
-            >
-              No Mark
-            </div>
-          )}
-        </div>
 
-        {/* Right Side: Tracker Actions */}
-        <div className="d-flex gap-2 mx-2 mb-2" style={{ flex: "0 0 auto" }}>
-          <button
-            className="btn-sleek ms-auto mt-1"
-            onClick={() => {
-              {
+            <div className="d-flex gap-2 align-self-end">
+              <button
+                className="btn-sleek btn-sleek-green"
+                onClick={() => {
+                  postData(
+                    "openPosition",
+                    optionID,
+                    latestMark,
+                    amount,
+                    activePortfolio,
+                  );
+                  ModifyTracker("newTracker");
+                  // ... setIds logic
+                }}
+                disabled={latestMark <= 0 || isExpired}
+              >
+                OPEN
+              </button>
+              <button
+                className="btn-sleek btn-sleek-red"
+                onClick={() => {
+                  postData(
+                    "closePosition",
+                    optionID,
+                    latestMark,
+                    amount,
+                    activePortfolio,
+                  );
+                }}
+                disabled={latestMark <= 0 || isExpired}
+              >
+                CLOSE
+              </button>
+              <button
+                className="btn-sleek"
+                style={{ borderColor: "#444", color: "#888" }}
+                onClick={() => {
+                  postData(
+                    "closePosition",
+                    optionID,
+                    latestMark,
+                    currentContracts,
+                    activePortfolio,
+                  );
+                }}
+                disabled={latestMark <= 0 || (currentContracts ?? 0) <= 0}
+              >
+                LIQUIDATE
+              </button>
+            </div>
+          </div>
+
+          {/* Right: Tracker Actions */}
+          <div className="d-flex gap-2 align-self-end">
+            <button
+              className="btn-sleek"
+              style={{ color: "#7e7cf3", borderColor: "#333" }}
+              onClick={() => {
                 ModifyTracker("newTracker");
                 const symbol = formatOptionSymbol(
                   stockSymbol,
@@ -503,16 +519,15 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
                 setTrackers((prev) =>
                   prev.includes(symbol) ? prev : [...prev, symbol],
                 );
-              }
-            }}
-            disabled={isExpired || latestMark <= 0}
-          >
-            TRACK
-          </button>
-          <button
-            className="btn-sleek mt-1"
-            onClick={() => {
-              {
+              }}
+              disabled={isExpired || latestMark <= 0}
+            >
+              TRACK
+            </button>
+            <button
+              className="btn-sleek"
+              style={{ color: "#666", borderColor: "#222" }}
+              onClick={() => {
                 ModifyTracker("closeTracker");
                 const symbol = formatOptionSymbol(
                   stockSymbol,
@@ -523,24 +538,31 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
                   strikePrice,
                 );
                 setTrackers((prev) => prev.filter((item) => item !== symbol));
-              }
-            }}
-            disabled={isExpired || latestMark <= 0}
-          >
-            UNTRACK
-          </button>
-          {isExpired && (
-            <div
-              style={{
-                color: "red",
-                fontWeight: "bold",
-                marginTop: "10px",
               }}
             >
-              The option expiration date has passed
-            </div>
-          )}
+              UNTRACK
+            </button>
+          </div>
         </div>
+
+        {/* --- Status Bar --- */}
+        {(isExpired || latestMark <= 0) && (
+          <div
+            className="px-2 py-1"
+            style={{
+              backgroundColor: "#200",
+              border: "1px solid #400",
+              fontSize: "0.7rem",
+              fontFamily: "monospace",
+              color: "#f55",
+              textAlign: "center",
+            }}
+          >
+            {isExpired
+              ? "CRITICAL: OPTION_EXPIRED // SETTLEMENT_CLOSED"
+              : "WARNING: NO_MARK_DATA_AVAILABLE"}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,232 +1,254 @@
-  .card {
-    border-radius: 8px;
-    padding: 16px;
-    margin: 16px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    background-color: #000000;
-    color: #ffffff;
-    background: rgba(18, 18, 18, 0.7) !important;
-    backdrop-filter: blur(10px); /* This creates the frosted glass effect */
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
-  }
+/* --- Global Reset & High-Contrast Base --- */
+body {
+  background-color: #000000 !important; /* Pure black for maximum contrast */
+  color: #ffffff;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+}
 
-  body {
-    background-color: #000000 !important;
-    color: #ffffff;
-  }
-  
-  .card-title {
-    font-size: 1.25rem;
-    font-weight: bold;
-    margin-bottom: 16px;
-  }
+.App {
+  margin: 20px;
+  background-color: #000000;
+}
 
-  table {
-    border-collapse: collapse;
-    width: 100%;
-  }
-  
-  th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-  }
-  
-  th {
-    background-color: #f2f2f2;
-    text-align: left;
-  }
-  
-  .btn-sleek {
-    /* 1. Shape and Size */
-    display: inline-block !important;
-    height: 45px !important;
-    padding: 0 30px !important;
-    border-radius: 99px !important; /* Use 99px for a guaranteed perfect pill shape */
-    
-    /* 2. Colors and Background */
-    background: linear-gradient(135deg, #7e7cf3 0%, #6a68e0 100%) !important;
-    color: #ffffff !important;
-    
-    /* 3. Border and Reset (CRITICAL) */
-    border: 0px solid transparent !important; /* Force border to 0 */
-    outline: none !important;
-    appearance: none !important;
-    -webkit-appearance: none !important;
-    overflow: hidden !important; /* Ensures gradient doesn't leak past corners */
-    
-    /* 4. Effects */
-    font-size: 16px !important;
-    font-weight: 600 !important;
-    box-shadow: 0 0 15px rgba(126, 124, 243, 0.4) !important;
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
-    vertical-align: middle !important;
-  }
+h1 {
+  text-align: center;
+  margin: 0 auto 30px auto;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
 
-  .btn-sleek-short {
-    width: 60px !important;
-    height: 40px !important;
-    padding: 0 20px !important;
-    text-align: center !important;
-  }
+/* --- Refined Glassmorphism Card --- */
+.card {
+  background: rgba(10, 10, 10, 0.8) !important;
+  backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.15); /* Sharper border */
+  border-radius: 12px;
+  padding: 24px;
+  margin: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.9);
+}
 
-  .btn-sleek:hover {
-      box-shadow: 0 0 25px rgba(126, 124, 243, 0.7) !important;
-      transform: translateY(-2px) !important;
-  }
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #ffffff;
+  margin-bottom: 20px;
+}
 
-  .btn-sleek:active {
-    transform: translateY(0px) !important;
-  }
+/* --- Institutional Data Tables --- */
+table {
+  border-collapse: separate;
+  border-spacing: 0 4px; /* Creates distinct rows */
+  width: 100%;
+}
 
-  .btn-sleek:disabled {
-    /* 1. Remove the vibrant colors */
-    background: #444444 !important; /* Flat dark gray */
-    color: #888888 !important;    /* Faded text */
-    
-    /* 2. Remove the glow effect */
-    box-shadow: none !important;
-    
-    /* 3. Change the cursor */
-    cursor: not-allowed !important;
-    
-    /* 4. Stop the hover lift effect */
-    transform: none !important;
-    
-    /* 5. Optional: make it slightly see-through */
-    opacity: 0.6 !important;
-  }
+th {
+  background-color: transparent !important;
+  color: #7e7cf3; /* High-contrast purple accent */
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 12px;
+  border: none !important;
+  text-align: left;
+}
 
-  .btn-sleek-red {
-    /* Red gradient to match the sleek style */
-    background: linear-gradient(135deg, #ff4d4d 0%, #cc0000 100%) !important;
-    /* Red glow instead of purple */
-    box-shadow: 0 0 15px rgba(255, 77, 77, 0.4) !important;
-  }
+td {
+  background-color: #0a0a0a;
+  border-top: 1px solid #1a1a1a;
+  border-bottom: 1px solid #1a1a1a;
+  padding: 14px 12px;
+  color: #e0e0e0;
+}
 
-  .btn-sleek-red:hover {
-      box-shadow: 0 0 25px rgba(255, 77, 77, 0.7) !important;
-  }
+td:first-child {
+  border-left: 1px solid #1a1a1a;
+  border-radius: 8px 0 0 8px;
+}
+td:last-child {
+  border-right: 1px solid #1a1a1a;
+  border-radius: 0 8px 8px 0;
+}
 
-  .btn-sleek-green {
-    /* Red gradient to match the sleek style */
-    background: linear-gradient(135deg, #16bd00 0%, #00cc11 100%) !important;
-    /* Red glow instead of purple */
-    box-shadow: 0 0 15px rgba(0, 172, 14, 0.4) !important;
-  }
+/* --- The Button System --- */
+.btn-sleek {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  height: 45px !important;
+  padding: 0 30px !important;
+  border-radius: 6px !important; /* Sharper corners for a "pro" feel */
+  background: #ffffff !important; /* White on Black is the highest contrast */
+  color: #000000 !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  border: none !important;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+}
 
-  .btn-sleek-green:hover {
-      box-shadow: 0 0 25px rgba(5, 163, 0, 0.7) !important;
-  }
+.btn-sleek:hover {
+  transform: translateY(-2px);
+  background: #f0f0f0 !important;
+  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2) !important;
+}
 
-  .btn-sleek-dark {
-    /* Red gradient to match the sleek style */
-    background: linear-gradient(135deg, #181818 0%, #0f0f0f 100%) !important;
-    /* Red glow instead of purple */
-    box-shadow: 0 0 15px rgba(44, 44, 44, 0.4) !important;
-  }
+.btn-sleek:active {
+  transform: translateY(0px);
+}
 
-  .search-bar {
-    background-color: #1a1a1a !important;
-    border: 1px solid #333 !important;
-    border-radius: 24px !important;
-    padding-left: 45px !important;
-    color: white !important;
-    height: 45px !important;
-    width: 100% !important;
-    outline: none !important;
-    text-align: left !important;
-  }
-  
-  .search-bar::placeholder {
-    text-align: center !important;
-    padding-left: 0 !important;
-  }
-  
-  .search-bar-small {
-    background-color: #1a1a1a !important;
-    border: 1px solid #333 !important;
-    border-radius: 24px !important;
-    padding-left: 10px !important;
-    padding-right: 10px !important;
-    color: white !important;
-    height: 40px !important;
-    width: 140px !important;
-    outline: none !important;
-    text-align: center !important;
-  }
-  
-  .search-bar-small::placeholder {
-    text-align: center !important; 
-  }
+.btn-sleek:disabled {
+  background: #222222 !important;
+  color: #555555 !important;
+  cursor: not-allowed !important;
+  opacity: 0.6;
+  transform: none !important;
+  box-shadow: none !important;
+}
 
-  .position-card {
-    padding: 16px;
-    border-radius: 8px;
-    border: 2px solid #6e2ce9;
-    cursor: pointer;
-    background-color: #252525;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
+/* Button Variants */
+.btn-sleek-short {
+  width: 80px !important;
+  padding: 0 !important;
+}
 
-  .position-card:hover {
-    background-color: #333333;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
+.btn-sleek-red {
+  background: #ff3e3e !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 15px rgba(255, 62, 62, 0.3) !important;
+}
 
-  .dropdown-item-custom:hover {
-    background-color: #333 !important;
-    color: #00d4ff !important; /* Or your brand color */
-  }
+.btn-sleek-green {
+  background: #00ff88 !important;
+  color: #000000 !important;
+  box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3) !important;
+}
 
-  .input-small {
-    width: 150px !important;
-    min-width: 50px !important;
-    display: inline-block !important;
-  }
-  
-  input[type=number]::-webkit-inner-spin-button, 
-  input[type=number]::-webkit-outer-spin-button { 
-    opacity: 1; /* Makes them always visible */
-    height: 25px; /* Adjusts their size */
-    width: 30px;
-  }
-  .grid-container {
-    display: grid; /* Enable grid layout */
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Dynamic columns */
-    gap: 4px; 
-    justify-items: center; 
-    margin: 20px 0; 
-  }
-  @keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.4; }
-    100% { opacity: 1; }
-  }
+.btn-sleek-dark {
+  background: #111111 !important;
+  color: #ffffff !important;
+  border: 1px solid #333 !important;
+}
 
-  .is-pending {
-    animation: pulse 1.5s infinite ease-in-out;
-    color: #7e7cf3;
-  }
+/* --- Precision Inputs --- */
+.search-bar,
+.search-bar-small {
+  background-color: #000000 !important;
+  border: 1px solid #333 !important;
+  border-radius: 4px !important;
+  color: #ffffff !important;
+  font-family: "JetBrains Mono", "Fira Code", monospace; /* Tech/Finance vibe */
+  padding: 10px 16px !important;
+  transition: all 0.2s ease;
+  outline: none !important;
+}
 
-  .form-control::placeholder {
-    color: white !important;
-    opacity: 1; /* Firefox makes placeholders transparent by default, this fixes it */
-  }
+.search-bar {
+  width: 100% !important;
+  height: 45px !important;
+}
+.search-bar-small {
+  width: 150px !important;
+  height: 40px !important;
+  text-align: center;
+}
 
-  /* Optional: If you want it a little bit dim so it doesn't look like typed text */
-  .form-control::placeholder {
-    color: rgba(255, 255, 255, 0.7) !important; 
-  }
+.search-bar:focus .search-bar-small:focus {
+  border-color: #7e7cf3 !important; /* Your signature purple color */
+  background-color: #1a1a1a !important;
+  box-shadow: 0 0 5px rgba(126, 124, 243, 0.3);
+}
 
-  h1 {
-    text-align: center; /* Center text horizontally */
-    margin: 0 auto; /* Ensures the header is centered */
-  }
+.search-bar::placeholder {
+  color: #555;
+  font-style: italic;
+  font-size: 0.7rem;
+}
 
-  .App {
-    margin: 15px; /* Adjust the margin value as needed */
-    background-color: #000000;
+.form-control::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* --- Specialized Layouts --- */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.position-card {
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #222;
+  background-color: #050505;
+  transition: all 0.2s ease;
+}
+
+.position-card:hover {
+  border-color: #7e7cf3;
+  background-color: #0a0a0a;
+  transform: scale(1.02);
+}
+
+.login-container {
+  background: #000000;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-card {
+  background-color: #0a0a0a !important;
+  border: 1px solid #333;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+/* --- Utilities --- */
+.input-small {
+  width: 150px !important;
+}
+
+.dropdown-item-custom:hover {
+  background-color: #7e7cf3 !important;
+  color: #ffffff !important;
+}
+
+.is-pending {
+  animation: pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+  color: #7e7cf3;
+  font-weight: bold;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    filter: brightness(1);
   }
+  50% {
+    opacity: 0.5;
+    filter: brightness(1.4);
+  }
+}
+
+/* Spin Button Styling */
+input[type="number"]::-webkit-inner-spin-button {
+  filter: invert(1);
+  cursor: pointer;
+}

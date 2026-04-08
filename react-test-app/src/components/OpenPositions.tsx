@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useWS } from "./WSContest";
 import { usePriceStream } from "./PriceContext";
+import { get } from "http";
 
 interface IdCardProps {
   setActiveID: (query: string) => void;
@@ -45,8 +46,13 @@ export const IdCards: React.FC<IdCardProps> = ({
   const { ids, setPreviousID } = useWS();
   const portfolioIds = ids[activePortfolio];
   const previousIdsRef = useRef<Record<string, number>>({});
-  const { stockPoints, optionPoints, startStockStream, startOptionStream } =
-    usePriceStream();
+  const {
+    stockPoints,
+    optionPoints,
+    startStockStream,
+    startOptionStream,
+    historicalStockPoints,
+  } = usePriceStream();
   useEffect(() => {
     previousIdsRef.current = portfolioIds; // just track the latest ids
   }, [ids]);
@@ -95,6 +101,16 @@ export const IdCards: React.FC<IdCardProps> = ({
     }
   };
 
+  const priceColor = (id: string): string => {
+    const points = id.length > 6 ? optionPoints[id] : stockPoints[id];
+    if (!points || points.length < 2) return "#ffffff"; // Default color
+    const latest = points.at(-1)?.Mark || 0;
+    const previous = historicalStockPoints[id]?.at(-1)?.close || 0;
+    if (latest > previous) return "rgba(0, 150, 0, 0.8)";
+    if (latest < previous) return "rgba(150, 0, 0, 0.8)";
+    return "#ffffff"; // Default color
+  };
+
   const formatDisplayId = (id: string): string => {
     const parts = ParseOptionId(id);
     if (!parts) return id; // plain stock, show as-is
@@ -111,19 +127,21 @@ export const IdCards: React.FC<IdCardProps> = ({
       style={{
         display: "flex",
         flexDirection: "column",
-        gap: "12px",
-        padding: "0 16px",
+        gap: "2px" /* Tight gap for a "list" feel rather than "card" feel */,
+        padding: "0",
         maxHeight: "100%",
         overflowY: "auto",
+        backgroundColor: "#000000",
       }}
     >
       {Object.keys(ids).length === 0 ? (
-        // 2. Return the fallback UI
         <div
           style={{
-            color: "#666",
-            padding: "16px",
-            fontStyle: "italic",
+            color: "#444",
+            padding: "24px",
+            fontSize: "0.75rem",
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
             textAlign: "center",
           }}
         >
@@ -134,34 +152,61 @@ export const IdCards: React.FC<IdCardProps> = ({
           <div
             key={id}
             onClick={() => handleCardClick(id)}
-            className="position-card"
+            style={{
+              padding: "12px 16px",
+              cursor: "pointer",
+              backgroundColor: "#050505",
+              borderBottom: "1px solid #1a1a1a" /* Thin separator */,
+              transition: "background-color 0.2s ease",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "#111")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "#050505")
+            }
           >
+            {/* Ticker / ID Row */}
             <div
               style={{
-                fontSize: "16px",
-                fontWeight: "600",
-                color: "#919191",
-                marginBottom: "4px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "2px",
               }}
             >
-              {formatDisplayId(id)}
+              <span
+                style={{
+                  fontSize: "0.85rem",
+                  fontWeight: "800",
+                  color: "#ffffff" /* Brighter for readability */,
+                  fontFamily: "monospace",
+                }}
+              >
+                {formatDisplayId(id)}
+              </span>
+              <span
+                style={{
+                  fontSize: "0.85rem",
+                  fontWeight: "700",
+                  color: priceColor(id) /* Accent color for price */,
+                  fontFamily: "monospace",
+                }}
+              >
+                {getLatestPrice(id)}
+              </span>
             </div>
+
+            {/* Holdings Info Row */}
             <div
               style={{
-                fontSize: "16px",
-                fontWeight: "600",
-                color: "#919191",
-              }}
-            >
-              {getLatestPrice(id)}
-            </div>
-            <div
-              style={{
-                fontSize: "14px",
+                fontSize: "0.7rem",
                 color: "#666",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
               }}
             >
-              {isOption(id) ? "Contracts" : "Shares"}: {amount}
+              {isOption(id) ? "CONTRACTS" : "SHARES"}: {amount}
             </div>
           </div>
         ))

@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { CompanyStats, usePriceStream } from "./PriceContext";
-import { FinancialGrid } from './FinancialGrid';
-import { useWS } from './WSContest';
+import { FinancialGrid } from "./FinancialGrid";
+import { useWS } from "./WSContest";
 
-type Period = 'Annual' | 'Quarterly';
-type ReportType = 'Income' | 'Balance' | 'Cash' | 'Earnings';
+type Period = "Annual" | "Quarterly";
+type ReportType = "Income" | "Balance" | "Cash" | "Earnings";
 
 const getActiveReport = (
-  stats: CompanyStats, 
-  period: Period, 
-  type: ReportType
+  stats: CompanyStats,
+  period: Period,
+  type: ReportType,
 ) => {
   const key = `${period}${type}` as keyof CompanyStats;
   return stats[key] as any[]; // Type assertion to help TS understand it's an array
@@ -18,79 +18,173 @@ interface FinancialsCardProps {
   setActiveCard: (query: string) => void;
 }
 
-export const FinancialsCard: React.FC<FinancialsCardProps> = ({ setActiveCard }) => {
-  const [period, setPeriod] = useState<Period>('Annual');
-  const [reportType, setReportType] = useState<ReportType>('Income');
+export const FinancialsCard: React.FC<FinancialsCardProps> = ({
+  setActiveCard,
+}) => {
+  const [period, setPeriod] = useState<Period>("Annual");
+  const [reportType, setReportType] = useState<ReportType>("Income");
   const { companyStats } = usePriceStream();
-  const { previousID, previousCard} = useWS();
-  
+  const { previousID, previousCard } = useWS();
+
   const stats = companyStats[previousID];
   const activeData = getActiveReport(stats, period, reportType);
 
   return (
-    <div className="card bg-dark text-white p-4 h-100 d-flex flex-column" 
-        style={{ minHeight: '80vh', maxHeight: '95vh' }}>
-      
-      {/* Header Section (Static) */}
-      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-        <div className="d-flex align-items-center">
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "94%",
+        backgroundColor: "#000",
+        padding: "0 10px 10px 10px",
+        marginTop: "10px",
+      }}
+    >
+      {/* Integrated Header Section */}
+      <div
+        className="d-flex justify-content-between align-items-center"
+        style={{
+          background: "#050505",
+          padding: "12px 20px",
+          borderBottom: "1px solid #333",
+          borderRadius: "4px 4px 0 0",
+        }}
+      >
+        {/* Left: Ticker & Status */}
+        <div className="d-flex align-items-center gap-3">
           {previousCard && (
             <button
-              className="btn btn-outline-light me-2"
+              className="btn-sleek"
               onClick={() => setActiveCard(previousCard)}
-              style={{ borderRadius: "50%", padding: "5px 12px" }}
+              style={{
+                padding: "2px 8px",
+                fontSize: "0.7rem",
+                border: "1px solid #333",
+                background: "transparent",
+              }}
             >
               ←
             </button>
           )}
-          <button className="btn btn-secondary" onClick={() => setActiveCard("home")}>
-            Back to Home
-          </button>
+          <h2
+            className="mb-0 d-flex align-items-baseline gap-2"
+            style={{ fontSize: "1.4rem" }}
+          >
+            <span
+              style={{
+                fontWeight: "800",
+                letterSpacing: "-0.02em",
+                color: "#fff",
+              }}
+            >
+              {stats.Symbol}
+            </span>
+            <span
+              style={{
+                fontSize: "0.6rem",
+                color: "#666",
+                fontFamily: "monospace",
+                textTransform: "uppercase",
+              }}
+            >
+              {stats.Sector} // DATA_GRID
+            </span>
+          </h2>
         </div>
 
-        <h2 className="mb-0 text-truncate">
-          {stats.Symbol} <small className="text-muted fs-6">{stats.Sector}</small>
-        </h2>
-        
-        <div className="d-flex gap-2">
-          {/* Period Toggle */}
-          <div className="btn-group">
-            {['Annual', 'Quarterly'].map((p) => (
-              <button
+        {/* Right: Integrated Toggles */}
+        <div className="d-flex align-items-center gap-4">
+          {/* Period Selector */}
+          <div
+            className="d-flex gap-1"
+            style={{
+              background: "#111",
+              padding: "2px",
+              borderRadius: "4px",
+              border: "1px solid #222",
+            }}
+          >
+            {["Annual", "Quarterly"].map((p) => (
+              <span
                 key={p}
-                className={`btn btn-sm ${period === p ? 'btn-primary' : 'btn-outline-secondary text-white'}`}
                 onClick={() => setPeriod(p as Period)}
+                style={{
+                  fontSize: "0.6rem",
+                  padding: "4px 10px",
+                  cursor: "pointer",
+                  borderRadius: "2px",
+                  transition: "all 0.2s",
+                  fontWeight: "700",
+                  letterSpacing: "0.05em",
+                  backgroundColor: period === p ? "#7e7cf3" : "transparent",
+                  color: period === p ? "#000" : "#555",
+                }}
               >
-                {p}
-              </button>
+                {p.toUpperCase()}
+              </span>
             ))}
           </div>
 
-          {/* Report Toggle */}
-          <div className="btn-group">
-            {['Income', 'Balance', 'Cash', 'Earnings'].map((r) => (
-              <button
+          <div style={{ width: "1px", height: "16px", background: "#333" }} />
+
+          {/* Report Type Selector */}
+          <div className="d-flex gap-4">
+            {["Income", "Balance", "Cash", "Earnings"].map((r) => (
+              <span
                 key={r}
-                className={`btn btn-sm ${reportType === r ? 'btn-info' : 'btn-outline-secondary text-white'}`}
                 onClick={() => setReportType(r as ReportType)}
+                style={{
+                  fontSize: "0.65rem",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  letterSpacing: "0.12em",
+                  fontWeight: "bold",
+                  color: reportType === r ? "#fff" : "#444",
+                  borderBottom:
+                    reportType === r
+                      ? "2px solid #7e7cf3"
+                      : "2px solid transparent",
+                  paddingBottom: "4px",
+                }}
               >
-                {r}
-              </button>
+                {r.toUpperCase()}
+              </span>
             ))}
           </div>
         </div>
       </div>
-      <div className="report-container flex-grow-1 d-flex flex-column overflow-hidden mt-2">
-        {/* The Scroll Window: This is the actual "viewbox" */}
-        <div className="flex-grow-1 overflow-auto border border-secondary rounded custom-scrollbar">
-              {activeData && activeData.length > 0 ? (
-                /* Ensure FinancialGrid parent allows internal scrolling */
-                  <FinancialGrid data={activeData} type={reportType} />
-              ) : (
-                <div className="text-center py-5 text-muted border border-secondary rounded h-100 d-flex align-items-center justify-content-center">
-                  No {period} {reportType} data available.
-                </div>
-              )}
+
+      {/* Report Container (Now a sibling to the header) */}
+      <div
+        className="flex-grow-1 d-flex flex-column overflow-hidden"
+        style={{
+          background: "#050505",
+          border: "1px solid #1a1a1a",
+          borderTop: "none", // Seamless connection to header
+          borderRadius: "0 0 4px 4px",
+        }}
+      >
+        <div className="flex-grow-1 overflow-auto custom-scrollbar">
+          {activeData && activeData.length > 0 ? (
+            <FinancialGrid data={activeData} type={reportType} />
+          ) : (
+            <div
+              className="h-100 d-flex flex-column align-items-center justify-content-center text-muted"
+              style={{
+                fontSize: "0.8rem",
+                letterSpacing: "0.1em",
+                opacity: 0.5,
+              }}
+            >
+              <span style={{ marginBottom: "10px", fontWeight: "800" }}>
+                NO_DATA_FOUND
+              </span>
+              <span style={{ fontSize: "0.6rem", fontFamily: "monospace" }}>
+                UNABLE TO RETRIEVE {period.toUpperCase()}{" "}
+                {reportType.toUpperCase()} FOR {stats.Symbol}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -18,44 +18,55 @@ export const StockCard: React.FC<FixedOptionCardProps> = ({
   const { previousCard, previousID } = useWS();
   return (
     <div
-      className="card bg-dark text-white" // Bootstrap classes for dark mode
+      className="bg-black text-white"
       style={{
         width: "100%",
-        height: "98vh",
-        margin: "0",
-        borderRadius: "0",
-        border: "none",
-        backgroundColor: "#000000", // Overriding to true black
+        height: "100vh", // Use full viewport height
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: "#000000",
         overflow: "hidden",
       }}
     >
-      <div className="d-flex align-items-center p-2">
-        {/* Previous Card Arrow */}
+      {/* --- Utility Navigation Bar --- */}
+      <div
+        className="d-flex align-items-center p-2 gap-2"
+        style={{ borderBottom: "1px solid #1a1a1a" }}
+      >
+        {/* Return to Previous Card */}
         {previousCard && (
           <button
-            className="btn btn-outline-light me-2"
-            onClick={() => {
-              setActiveCard(previousCard);
+            className="btn-sleek"
+            onClick={() => setActiveCard(previousCard)}
+            style={{
+              padding: "4px 12px",
+              fontSize: "0.8rem",
+              backgroundColor: "transparent",
+              border: "1px solid #333",
             }}
-            title="Go back to previous"
-            style={{ borderRadius: "50%", padding: "5px 12px" }}
           >
-            ←
+            ← ESC
           </button>
         )}
-
-        {/* Back to Home Button */}
-        <button
-          className="btn btn-secondary"
-          onClick={() => setActiveCard("home")}
+        <div
+          style={{
+            marginLeft: "auto",
+            fontFamily: "monospace",
+            fontSize: "0.75rem",
+            color: "#7e7cf3",
+            marginRight: "12px",
+          }}
         >
-          Back to Home
-        </button>
+          ID_NODE: <span style={{ color: "#fff" }}>{fixedID}</span>
+        </div>
       </div>
-      <FixedOptionWSComponent
-        optionID={fixedID}
-        activePortfolio={activePortfolio}
-      />
+
+      <div style={{ flex: 1, minHeight: 0 }}>
+        <FixedOptionWSComponent
+          optionID={fixedID}
+          activePortfolio={activePortfolio}
+        />
+      </div>
     </div>
   );
 };

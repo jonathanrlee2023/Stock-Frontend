@@ -73,6 +73,7 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
     ws.current.onmessage = (event) => {
       const parsed = JSON.parse(event.data);
       setLastMessage(parsed);
+      console.log("Received WS message:", parsed);
 
       if (parsed.openIdList !== undefined && parsed.prevBalance !== undefined) {
         setIds(parsed.openIdList);

@@ -21,76 +21,118 @@ export const OptionCard: React.FC<OptionCardProps> = ({
   const [optionType, setOptionType] = useState<string>("");
   return (
     <div
-      className="card bg-dark text-white" // Bootstrap classes for dark mode
+      className="options-terminal-wrapper"
       style={{
         width: "100%",
-        height: "98vh",
-        margin: "0",
-        borderRadius: "0",
-        border: "none",
-        backgroundColor: "#000000", // Overriding to true black
-        overflow: "hidden",
+        height: "100vh",
+        backgroundColor: "#000000",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden", // Prevents the main body from scrolling
       }}
     >
-      <button
-        className="btn btn-secondary"
-        onClick={() => setActiveCard("home")}
+      {/* --- Navigation & Command Input Bar --- */}
+      <header
+        className="d-flex align-items-center gap-3 p-2"
+        style={{
+          borderBottom: "1px solid #222",
+          backgroundColor: "#050505",
+          zIndex: 10,
+        }}
       >
-        Back to Home
-      </button>
-      <div className="d-flex flex-wrap gap-2 mb-3">
-        <OptionsSearchBar
-          setSearchQuery={setUnderlyingStock}
-          searchQuery={underlyingStock}
-          inputMessage="Stock..."
-          onEnter={setUnderlyingStock}
-          onSearchClick={setUnderlyingStock}
+        <button
+          className="btn btn-sm btn-outline-secondary"
+          onClick={() => setActiveCard("home")}
+          style={{
+            fontSize: "0.65rem",
+            textTransform: "uppercase",
+            letterSpacing: "1px",
+            borderColor: "#444",
+          }}
+        >
+          ← ESC
+        </button>
+
+        {/* Horizontal Input Row */}
+        <div
+          className="d-flex flex-grow-1 align-items-center gap-2 overflow-x-auto no-scrollbar"
+          style={{ scrollbarWidth: "none" }}
+        >
+          <OptionsSearchBar
+            setSearchQuery={setUnderlyingStock}
+            searchQuery={underlyingStock}
+            inputMessage="TICKER"
+            onEnter={setUnderlyingStock}
+            onSearchClick={setUnderlyingStock}
+          />
+
+          <OptionsSearchBar
+            setSearchQuery={setStrikePrice}
+            searchQuery={strikePrice}
+            inputMessage="STRIKE"
+            onEnter={setStrikePrice}
+            onSearchClick={setStrikePrice}
+          />
+
+          {/* Date Cluster */}
+          <div
+            className="d-flex gap-1 align-items-center px-2"
+            style={{
+              borderLeft: "1px solid #333",
+              borderRight: "1px solid #333",
+            }}
+          >
+            <OptionsSearchBar
+              setSearchQuery={setOptionDay}
+              searchQuery={optionDay}
+              inputMessage="DD"
+              onEnter={setOptionDay}
+              onSearchClick={setOptionDay}
+            />
+            <OptionsSearchBar
+              setSearchQuery={setOptionMonth}
+              searchQuery={optionMonth}
+              inputMessage="MM"
+              onEnter={setOptionMonth}
+              onSearchClick={setOptionMonth}
+            />
+            <OptionsSearchBar
+              setSearchQuery={setOptionYear}
+              searchQuery={optionYear}
+              inputMessage="YYYY"
+              onEnter={setOptionYear}
+              onSearchClick={setOptionYear}
+            />
+          </div>
+
+          <OptionsSearchBar
+            setSearchQuery={setOptionType}
+            searchQuery={optionType}
+            inputMessage="CALL/PUT"
+            onEnter={setOptionType}
+            onSearchClick={setOptionType}
+          />
+        </div>
+      </header>
+
+      {/* --- Live Stream & Trading Engine Area --- */}
+      <main
+        className="flex-grow-1"
+        style={{
+          position: "relative",
+          minHeight: 0, // Crucial for inner flex children to scroll/resize correctly
+        }}
+      >
+        <OptionWSComponent
+          stockSymbol={underlyingStock}
+          strikePrice={strikePrice}
+          year={optionYear}
+          month={optionMonth}
+          day={optionDay}
+          type={optionType}
+          activePortfolio={activePortfolio}
         />
-        <OptionsSearchBar
-          setSearchQuery={setStrikePrice}
-          searchQuery={strikePrice}
-          inputMessage="Strike Price..."
-          onEnter={setStrikePrice}
-          onSearchClick={setStrikePrice}
-        />
-        <OptionsSearchBar
-          setSearchQuery={setOptionDay}
-          searchQuery={optionDay}
-          inputMessage="Exp. Day..."
-          onEnter={setOptionDay}
-          onSearchClick={setOptionDay}
-        />
-        <OptionsSearchBar
-          setSearchQuery={setOptionMonth}
-          searchQuery={optionMonth}
-          inputMessage="Exp. Month..."
-          onEnter={setOptionMonth}
-          onSearchClick={setOptionMonth}
-        />
-        <OptionsSearchBar
-          setSearchQuery={setOptionYear}
-          searchQuery={optionYear}
-          inputMessage="Exp. Year..."
-          onEnter={setOptionYear}
-          onSearchClick={setOptionYear}
-        />
-        <OptionsSearchBar
-          setSearchQuery={setOptionType}
-          searchQuery={optionType}
-          inputMessage="Option Type..."
-          onEnter={setOptionType}
-          onSearchClick={setOptionType}
-        />
-      </div>
-      <OptionWSComponent
-        stockSymbol={underlyingStock}
-        strikePrice={strikePrice}
-        year={optionYear}
-        month={optionMonth}
-        day={optionDay}
-        type={optionType}
-        activePortfolio={activePortfolio}
-      />
+      </main>
     </div>
   );
 };

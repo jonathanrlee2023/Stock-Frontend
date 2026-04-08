@@ -14,8 +14,7 @@ import {
 import { useWS } from "./WSContest"; // adjust import
 import "chartjs-adapter-date-fns";
 import { OptionPoint, usePriceStream } from "./PriceContext";
-import { data } from "react-router-dom";
-import exp from "constants";
+import { verticalLinePlugin } from "./TodayGraph";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -245,262 +244,327 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
     };
   }, [points, stockSymbol, strikePrice, type, month, day, year, dataPoint]);
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { position: "top" as const },
-      title: {
-        display: true,
-        text: `${dataPoint.charAt(0).toUpperCase()}${dataPoint.slice(
-          1,
-        )} History`,
+  const options = React.useMemo(() => {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: {
+        duration: 0, // Keep it snappy for live data
       },
-    },
-    scales: {
-      x: {
-        type: "time" as const,
-        time: {
-          tooltipFormat: "HH:mm:ss",
-          timezone: "America/Chicago",
+      interaction: {
+        mode: "index" as const,
+        intersect: false,
+      },
+      plugins: {
+        // Legend is usually redundant for a single metric history
+        legend: { display: false },
+        title: {
+          display: true,
+          text: `METRIC_STREAM: ${dataPoint.toUpperCase()}_HIST // ${stockSymbol.toUpperCase()}`,
+          align: "start" as const,
+          color: "#7e7cf3", // Brand Purple
+          font: {
+            family: "monospace",
+            size: 11,
+            weight: "bold" as const,
+          },
+          padding: { bottom: 15 },
+        },
+        tooltip: {
+          enabled: true,
+          backgroundColor: "#0a0a0a",
+          borderColor: "#333",
+          borderWidth: 1,
+          cornerRadius: 0,
+          titleFont: { family: "monospace", size: 12, weight: "bold" as const },
+          bodyFont: { family: "monospace", size: 12 },
+          displayColors: false,
         },
       },
-    },
-  };
+      scales: {
+        x: {
+          type: "time" as const,
+          time: {
+            tooltipFormat: "HH:mm:ss",
+            // Use a shorter format for ticks to keep the terminal look clean
+            displayFormats: {
+              second: "HH:mm:ss",
+              minute: "HH:mm",
+              hour: "HH:mm",
+            },
+          },
+          grid: {
+            color: "#111",
+            borderColor: "#222",
+          },
+          ticks: {
+            color: "#444",
+            font: { family: "monospace", size: 9 },
+            maxRotation: 0,
+          },
+        },
+        y: {
+          grid: {
+            color: "#111",
+            borderColor: "#222",
+          },
+          ticks: {
+            color: "#444",
+            font: { family: "monospace", size: 9 },
+            // If the metric is a small decimal (like Theta), force 4 decimal places
+            callback: (value: any) =>
+              typeof value === "number" ? value.toFixed(4) : value,
+          },
+        },
+      },
+    };
+  }, [dataPoint, stockSymbol]);
 
   return (
     <div
+      className="d-flex flex-column"
       style={{
-        padding: "0px", // Remove or minimize padding
-        height: "100%",
-        width: "100%", // Force full width
-        display: "flex",
-        flexDirection: "column",
+        height: "94%",
+        width: "100%",
+        backgroundColor: "#000",
         overflow: "hidden",
+        padding: "0",
       }}
     >
-      <div className="d-flex gap-2 mx-2 mb-2" style={{ flex: "0 0 auto" }}>
+      {/* --- TOP CONTROL ROW: Search & Track --- */}
+      <div
+        className="d-flex gap-2 p-2 align-items-center"
+        style={{ flex: "0 0 auto", borderBottom: "1px solid #222" }}
+      >
         <button
-          className="btn-sleek btn-lg"
-          onClick={() => {
-            startOptionStream(stockSymbol, strikePrice, day, month, year, type);
+          className={`btn-sleek ${isPending ? "btn-loading" : ""}`}
+          style={{
+            minWidth: "120px",
+            backgroundColor: "#7e7cf3",
+            color: "#fff",
           }}
+          onClick={() =>
+            startOptionStream(stockSymbol, strikePrice, day, month, year, type)
+          }
           disabled={fieldMissing || isExpired}
         >
-          {isPending ? "SEARCHING..." : "SEARCH 🔍"}
+          {isPending ? "BUSY..." : "STREAM LIVE 📡"}
         </button>
-        <button
-          className="btn-sleek ms-auto mt-1"
-          onClick={() => {
-            {
+
+        <div className="ms-auto d-flex gap-2">
+          <button
+            className="btn-sleek btn-outline"
+            onClick={() => {
               ModifyTracker("newTracker");
               setTrackers((prev) =>
                 prev.includes(expectedSymbol)
                   ? prev
                   : [...prev, expectedSymbol],
               );
-            }
-          }}
-          disabled={fieldMissing || isExpired}
-        >
-          TRACK
-        </button>
-        <button
-          className="btn-sleek mt-1"
-          onClick={() => {
-            {
+            }}
+            disabled={fieldMissing || isExpired}
+          >
+            TRACK
+          </button>
+          <button
+            className="btn-sleek btn-outline text-danger"
+            onClick={() => {
               ModifyTracker("closeTracker");
               setTrackers((prev) =>
                 prev.filter((item) => item !== expectedSymbol),
               );
-            }
-          }}
-          disabled={fieldMissing || isExpired}
-        >
-          UNTRACK
-        </button>
+            }}
+            disabled={fieldMissing || isExpired}
+          >
+            UNTRACK
+          </button>
+        </div>
       </div>
 
-      {isExpired && (
+      {/* --- STATUS NOTIFICATIONS (Pinned) --- */}
+      {(isExpired || fieldMissing || latestMark <= 0) && (
         <div
           style={{
-            color: "red",
-            fontWeight: "bold",
-            marginTop: "10px",
+            flex: "0 0 auto",
+            fontSize: "0.7rem",
+            padding: "4px 12px",
+            backgroundColor: "#1a0000",
+            color: "#ff4444",
+            borderBottom: "1px solid #300",
           }}
         >
-          The option expiration date has passed. Actions are disabled.
+          {isExpired && "⚠️ EXPIRED: Actions Disabled"}
+          {fieldMissing && "⚠️ INPUT REQUIRED: Fill all fields"}
+          {!isExpired &&
+            !fieldMissing &&
+            latestMark <= 0 &&
+            "📡 NO MARK: Waiting for data..."}
         </div>
       )}
-      {fieldMissing && (
-        <div
-          className="d-flex gap-2 mx-2 mb-2"
-          style={{
-            color: "orange",
-            fontWeight: "bold",
-            marginTop: "10px",
-          }}
-        >
-          Please fill in all fields before proceeding.
-        </div>
-      )}
+
+      {/* --- MAIN CHART AREA --- */}
       <div
+        className="flex-grow-1 w-100"
         style={{
-          flex: "1 1 auto",
-          width: "100%",
           minHeight: "0",
           position: "relative",
+          backgroundColor: "#050505",
         }}
       >
-        <Line key={stockSymbol} options={options} data={graphData} />
+        <Line
+          key={stockSymbol}
+          options={options}
+          data={graphData}
+          plugins={[verticalLinePlugin]}
+        />
       </div>
+
+      {/* --- METRIC SELECTOR GRID --- */}
       <div
+        className="p-2 d-flex gap-1 flex-wrap justify-content-center"
         style={{
-          display: "flex",
-          gap: "10px",
-          flexWrap: "wrap",
-          justifyContent: "center",
+          flex: "0 0 auto",
+          backgroundColor: "#0a0a0a",
+          borderTop: "1px solid #222",
         }}
       >
         {METRICS.map((g) => {
           const val = latestPoint ? latestPoint[g as keyof OptionPoint] : null;
-
+          const isActive = dataPoint === g;
           return (
             <button
               key={g}
-              className={`btn btn-sm ${dataPoint === g ? "btn-primary" : "btn-outline-secondary"}`}
+              className={`btn btn-sm ${isActive ? "btn-primary" : "btn-dark"}`}
+              style={{
+                fontSize: "0.65rem",
+                border: isActive ? "1px solid #7e7cf3" : "1px solid #333",
+              }}
               onClick={() => setDataPoint(g)}
             >
-              {g.toUpperCase()}:{" "}
-              {typeof val === "number" ? val.toFixed(4) : "N/A"}
+              <span style={{ color: "#888" }}>{g.toUpperCase()}:</span>{" "}
+              <span
+                style={{
+                  color: isActive ? "#fff" : "#00ff00",
+                  fontFamily: "monospace",
+                }}
+              >
+                {typeof val === "number" ? val.toFixed(4) : "—"}
+              </span>
             </button>
           );
         })}
       </div>
-      <div className="mb-2 mx-2">
-        <label>
-          Amount:{" "}
+
+      {/* --- TRADING PANEL --- */}
+      <div
+        className="p-3"
+        style={{
+          flex: "0 0 auto",
+          backgroundColor: "#000",
+          borderTop: "1px solid #333",
+        }}
+      >
+        <div className="d-flex align-items-center gap-3 mb-3">
+          <label
+            className="text-secondary small fw-bold"
+            style={{ letterSpacing: "1px" }}
+          >
+            QTY:
+          </label>
           <input
-            className="search-bar input-small"
+            className="search-bar"
             type="number"
             value={amount}
             min={0}
             onChange={(e) => setAmount(Number(e.target.value))}
             style={{
-              paddingLeft: "5px" /* Overrides the 45px padding */,
-              paddingRight: "25px" /* Pulls the arrows closer to the edge */,
-              textAlign: "center" /* Centers the number between the edges */,
+              width: "80px",
+              backgroundColor: "#111",
+              border: "1px solid #444",
+              color: "#fff",
+              textAlign: "center",
             }}
           />
-        </label>
-      </div>
-      <div className="d-flex gap-2 mb-2 mx-2">
-        <button
-          className="btn-sleek btn-sleek-green"
-          style={{
-            opacity: latestMark <= 0 ? 0.5 : 1,
-            cursor: latestMark <= 0 ? "not-allowed" : "pointer",
-            color: latestMark <= 0 ? "gray" : "green",
-          }}
-          onClick={() => {
-            postData(
-              "openPosition",
-              expectedSymbol,
-              latestMark,
-              amount,
-              activePortfolio,
-            );
-            ModifyTracker("newTracker");
-            setIds((prev) => ({
-              ...prev,
-              [expectedSymbol]:
-                (prev[activePortfolio][expectedSymbol] ?? 0) + amount,
-            }));
-          }}
-          disabled={latestMark <= 0 || isExpired}
-        >
-          Open Position
-        </button>
-        <button
-          className="btn-sleek btn-sleek-red"
-          style={{
-            opacity: latestMark <= 0 ? 0.5 : 1,
-            cursor: latestMark <= 0 ? "not-allowed" : "pointer",
-            color: latestMark <= 0 ? "gray" : "red",
-          }}
-          onClick={() => {
-            postData(
-              "closePosition",
-              expectedSymbol,
-              latestMark,
-              amount,
-              activePortfolio,
-            );
-            setIds((prev) => {
-              const updated = { ...prev };
-              const currentAmount =
-                updated[activePortfolio][expectedSymbol] ?? 0;
-              const newAmount = currentAmount - amount;
-
-              if (newAmount <= 0) {
-                delete updated[activePortfolio][expectedSymbol];
-              } else {
-                updated[activePortfolio][expectedSymbol] = newAmount;
-              }
-
-              return updated;
-            });
-          }}
-          disabled={latestMark <= 0 || isExpired}
-        >
-          Close Position
-        </button>
-        <button
-          className="btn-sleek btn-sleek-red"
-          style={{
-            opacity: latestMark <= 0 ? 0.5 : 1,
-            cursor: latestMark <= 0 ? "not-allowed" : "pointer",
-          }}
-          onClick={() => {
-            postData(
-              "closePosition",
-              stockSymbol,
-              latestMark,
-              portfolioPositions[expectedSymbol],
-              activePortfolio,
-            );
-            setIds((prev) => {
-              const updated = { ...prev };
-              delete updated[activePortfolio][expectedSymbol];
-              return updated;
-            });
-          }}
-          disabled={latestMark <= 0 || currentContracts <= 0}
-        >
-          Sell All
-        </button>
-        {isExpired && (
-          <div
-            style={{
-              color: "red",
-              fontWeight: "bold",
-              marginTop: "10px",
-            }}
-          >
-            The option expiration date has passed. Actions are disabled.
+          <div className="ms-auto text-end">
+            <div className="text-secondary small">LATEST MARK</div>
+            <div
+              className="fw-bold"
+              style={{ color: latestMark > 0 ? "#00ff00" : "#444" }}
+            >
+              {latestMark > 0 ? `$${latestMark.toFixed(2)}` : "N/A"}
+            </div>
           </div>
-        )}
-        {latestMark <= 0 && (
-          <div
-            style={{
-              color: "orange",
-              fontWeight: "bold",
-              marginTop: "10px",
+        </div>
+
+        <div className="d-flex gap-2">
+          <button
+            className="btn btn-success flex-grow-1 fw-bold"
+            style={{ opacity: latestMark <= 0 || isExpired ? 0.5 : 1 }}
+            onClick={() => {
+              postData(
+                "openPosition",
+                expectedSymbol,
+                latestMark,
+                amount,
+                activePortfolio,
+              );
+              ModifyTracker("newTracker");
+              setIds((prev) => ({
+                ...prev,
+                [expectedSymbol]:
+                  (prev[activePortfolio][expectedSymbol] ?? 0) + amount,
+              }));
             }}
+            disabled={latestMark <= 0 || isExpired}
           >
-            No Mark
-          </div>
-        )}
+            BUY / OPEN
+          </button>
+          <button
+            className="btn btn-outline-danger flex-grow-1 fw-bold"
+            style={{ opacity: latestMark <= 0 || isExpired ? 0.5 : 1 }}
+            onClick={() => {
+              postData(
+                "closePosition",
+                expectedSymbol,
+                latestMark,
+                amount,
+                activePortfolio,
+              );
+              setIds((prev) => {
+                const updated = { ...prev };
+                const newAmt =
+                  (updated[activePortfolio][expectedSymbol] ?? 0) - amount;
+                if (newAmt <= 0)
+                  delete updated[activePortfolio][expectedSymbol];
+                else updated[activePortfolio][expectedSymbol] = newAmt;
+                return updated;
+              });
+            }}
+            disabled={latestMark <= 0 || isExpired}
+          >
+            SELL / CLOSE
+          </button>
+          <button
+            className="btn btn-danger fw-bold"
+            onClick={() => {
+              postData(
+                "closePosition",
+                stockSymbol,
+                latestMark,
+                portfolioPositions[expectedSymbol],
+                activePortfolio,
+              );
+              setIds((prev) => {
+                const u = { ...prev };
+                delete u[activePortfolio][expectedSymbol];
+                return u;
+              });
+            }}
+            disabled={latestMark <= 0 || currentContracts <= 0}
+          >
+            EXIT ALL
+          </button>
+        </div>
       </div>
     </div>
   );

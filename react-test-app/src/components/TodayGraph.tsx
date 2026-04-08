@@ -40,6 +40,26 @@ interface TodayStockWSProps {
 
 type Timeframe = "Live" | "1W" | "1M" | "3M" | "1Y" | "3Y" | "All";
 
+export const verticalLinePlugin = {
+  id: "verticalLine",
+  afterDraw: (chart: any) => {
+    if (chart.tooltip?._active?.length) {
+      const x = chart.tooltip._active[0].element.x;
+      const yAxis = chart.scales.y;
+      const ctx = chart.ctx;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(x, yAxis.top);
+      ctx.lineTo(x, yAxis.bottom);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "#333"; // Vertical line color
+      ctx.setLineDash([5, 5]); // Dashed line
+      ctx.stroke();
+      ctx.restore();
+    }
+  },
+};
+
 export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   stockSymbol,
   setActiveCard,
@@ -51,12 +71,6 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
 
   const { ids, setPreviousCard } = useWS();
 
-  const portfolioPositions = ids[activePortfolio] || {};
-  const currentShares = portfolioPositions[stockSymbol] ?? 0;
-  const points = stockPoints[stockSymbol] || [];
-  const latestPoint = points.length > 0 ? points[points.length - 1] : null;
-
-  const latestMark = latestPoint?.Mark ?? 0;
   const [showStats, setShowStats] = useState(false);
   const stats = companyStats[stockSymbol]; // Get stats for current symbol
 
@@ -171,40 +185,82 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
     return {
       responsive: true,
       maintainAspectRatio: false,
+      resizeDelay: 50,
+      animation: {
+        duration: 0, // Instant updates feel more professional for live streams
+      },
+      // Interaction settings for a 'Crosshair' feel
+      interaction: {
+        mode: "index" as const,
+        intersect: false,
+      },
       plugins: {
-        legend: { display: true, position: "top" as const },
+        legend: { display: false },
         title: {
           display: true,
-          text: `${stockSymbol} - ${timeframe}`,
+          text: `NODE_SIGNAL: ${stockSymbol.toUpperCase()} // ${timeframe.toUpperCase()}`,
+          color: "#7e7cf3",
+          align: "start" as const, // Added 'as const'
+          font: {
+            family: "monospace",
+            size: 12,
+            weight: "bold" as const, // Added 'as const' here
+          },
+          padding: { bottom: 10 },
+        },
+        tooltip: {
+          enabled: true,
+          backgroundColor: "#0a0a0a",
+          titleFont: {
+            family: "monospace",
+            size: 12,
+            weight: "bold" as const, // Added 'as const' here too
+          },
+          bodyFont: {
+            family: "monospace",
+            size: 12,
+          },
+          borderColor: "#333",
+          borderWidth: 1,
+          cornerRadius: 0,
+          displayColors: false,
+          padding: 10,
         },
       },
-      resizeDelay: 50,
       scales: {
         x: {
-          type: "time" as const, // Must be 'as const' for TypeScript
+          type: "time" as const,
           time: {
-            // Dynamic units based on timeframe
             unit: timeframe === "Live" ? ("minute" as const) : ("day" as const),
-            timezone: "America/Chicago",
-            tooltipFormat: "MMM dd, yyyy HH:mm",
             displayFormats: {
               minute: "HH:mm",
               hour: "HH:mm",
-              day: "MMM d, yyyy", // 4-digit year fix
-              month: "MMM yyyy", // 4-digit year fix
-              year: "yyyy",
+              day: "MM/dd",
+              month: "MMM yy",
             },
+          },
+          grid: {
+            color: "#111", // Very subtle grid
+            borderColor: "#222",
           },
           ticks: {
             autoSkip: true,
             maxRotation: 0,
+            color: "#555",
+            font: { family: "monospace", size: 10 },
           },
         },
         y: {
           type: "linear" as const,
           beginAtZero: false,
+          grid: {
+            color: "#111",
+            borderColor: "#222",
+          },
           ticks: {
-            callback: (value: any) => `$${value.toFixed(2)}`,
+            color: "#555",
+            font: { family: "monospace", size: 10 },
+            callback: (value: any) => `$${Number(value).toFixed(2)}`,
           },
         },
       },
@@ -228,10 +284,11 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
     <div
       style={{
         padding: "0px",
-        height: "100%", // Parent must have a fixed height (like 100% or 600px)
+        height: "100%",
         display: "flex",
         flexDirection: "column",
-        overflow: "hidden", // Prevents the whole app from scrolling
+        overflow: "hidden",
+        marginTop: "10px", // Maintains the global spacing rule
       }}
     >
       <div
@@ -249,35 +306,43 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
       >
         <div
           style={{
-            flex: "1 1 auto", // Takes up the majority of the space
-            minHeight: "0", // Allows the chart to shrink so it doesn't push buttons out
+            flex: "1 1 auto",
+            minHeight: "0",
             position: "relative",
+            // Added a subtle border to ground the chart in the black void
+            border: "1px solid #1a1a1a",
+            borderRadius: "4px",
+            margin: "0 8px",
           }}
         >
           <Line
             key={`${stockSymbol}-${timeframe}`}
             options={options}
             data={graphData}
-          />{" "}
+            plugins={[verticalLinePlugin]}
+          />
         </div>
+
+        {/* Timeframe Selectors */}
         <div
           className="d-flex flex-wrap gap-2 justify-content-center my-3"
           style={{
-            flex: "0 0 auto", // "Don't grow, don't shrink, just be your natural size"
+            flex: "0 0 auto",
             paddingBottom: "10px",
-            zIndex: 10, // Ensure they aren't covered by a canvas overlap
+            zIndex: 10,
           }}
         >
-          {" "}
           {(["Live", "1W", "1M", "3M", "1Y", "3Y", "All"] as const).map(
             (tf) => {
-              // Logic for the "All" button label to show the earliest date
               const history = historicalStockPoints[stockSymbol] || [];
               const buttonLabel =
                 tf === "All" && history.length > 0
                   ? new Date(history[0].timestamp || 0).toLocaleDateString(
                       undefined,
-                      { year: "numeric", month: "short", day: "numeric" },
+                      {
+                        year: "numeric",
+                        month: "short",
+                      },
                     )
                   : tf;
 
@@ -286,10 +351,16 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                   key={tf}
                   type="button"
                   className={`btn btn-sm ${timeframe === tf ? "btn-primary" : "btn-outline-secondary"}`}
-                  onClick={() => setTimeframe(tf)} // This triggers the useMemo recalculation
+                  onClick={() => setTimeframe(tf)}
                   style={{
-                    minWidth: "50px",
+                    minWidth: "60px",
+                    fontSize: "0.7rem",
+                    letterSpacing: "0.05em",
                     fontWeight: timeframe === tf ? "bold" : "normal",
+                    textTransform: "uppercase",
+                    border: timeframe === tf ? "none" : "1px solid #333",
+                    backgroundColor:
+                      timeframe === tf ? "#7e7cf3" : "transparent",
                   }}
                 >
                   {buttonLabel}
@@ -305,54 +376,61 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
         className="mx-2 mb-2"
         style={{
           flex: showStats ? "1 1 0%" : "0 0 auto",
-          minHeight: "0", // Allows it to be contained
+          minHeight: "0",
           border: "1px solid #333",
-          borderRadius: "8px",
+          borderRadius: "4px", // Switched to 4px to match your terminal style
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
           transition: "flex 0.5s ease",
+          background: "#050505",
         }}
       >
         <button
           className="btn-sleek btn-sleek-dark w-100 d-flex justify-content-between align-items-center"
+          style={{
+            padding: "8px 15px",
+            border: "none",
+            fontSize: "0.75rem",
+            letterSpacing: "0.1em",
+          }}
           onClick={() => setShowStats(!showStats)}
         >
-          <span style={{ fontWeight: 600 }}>Company Overview</span>
-          <span>{showStats ? "▲" : "▼"}</span>
+          <span style={{ fontWeight: 700 }}>{stockSymbol} // FUNDAMENTALS</span>
+          <span style={{ color: "#7e7cf3" }}>
+            {showStats ? "SHRINK_VIEW" : "EXPAND_VIEW"}
+          </span>
         </button>
 
         {showStats && (
           <div
             style={{
-              padding: "15px",
-              background: "#111",
+              padding: "20px",
+              background: "#000000",
               display: "grid",
               gridTemplateColumns: "1fr 1fr",
-              gap: "10px",
+              gap: "15px",
               overflowY: "auto",
             }}
           >
             {stats ? (
               <>
-                <StatRow
-                  label="Overall Health Score"
-                  value={stats.Grade != null ? `${stats.Grade} / 100` : "N/A"}
-                  valueStyle={{
-                    color: getScoreColor(stats.Grade),
-                    fontWeight: "bold",
-                    fontSize: "1.1rem",
-                    textShadow: "0 0 10px rgba(0,0,0,0.5)", // Helps pop against dark background
-                  }}
-                />
-
-                {/* Optional: A visual progress bar for the score */}
-                <div style={{ gridColumn: "span 2", marginBottom: "10px" }}>
+                <div style={{ gridColumn: "span 2", marginBottom: "5px" }}>
+                  <StatRow
+                    label="OVERALL_HEALTH"
+                    value={stats.Grade != null ? `${stats.Grade} / 100` : "N/A"}
+                    valueStyle={{
+                      color: getScoreColor(stats.Grade),
+                      fontWeight: "bold",
+                      fontSize: "1.1rem",
+                    }}
+                  />
                   <div
                     style={{
-                      height: "4px",
+                      height: "2px",
                       background: "#222",
-                      borderRadius: "2px",
+                      marginTop: "8px",
+                      borderRadius: "1px",
                     }}
                   >
                     <div
@@ -360,27 +438,27 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                         width: `${stats.Grade || 0}%`,
                         height: "100%",
                         background: getScoreColor(stats.Grade),
-                        transition: "width 1s ease-in-out",
-                        borderRadius: "2px",
-                        boxShadow: `0 0 8px ${getScoreColor(stats.Grade)}`,
+                        boxShadow: `0 0 10px ${getScoreColor(stats.Grade)}`,
+                        transition: "width 1s ease",
                       }}
                     />
                   </div>
                 </div>
+
                 <StatRow
                   label="Market Cap"
                   value={
-                    stats.MarketCap != null
+                    stats.MarketCap
                       ? `$${stats.MarketCap.toLocaleString()}`
                       : "N/A"
                   }
                 />
                 <StatRow label="Sector" value={`${stats.Sector}`} />
                 <StatRow
-                  label="Intrinsic Value"
+                  label="Intrinsic Price"
                   value={
-                    stats.IntrinsicPrice != null
-                      ? `$${stats.IntrinsicPrice.toFixed(2).toLocaleString()}`
+                    stats.IntrinsicPrice
+                      ? `$${stats.IntrinsicPrice.toFixed(2)}`
                       : "N/A"
                   }
                 />
@@ -431,33 +509,29 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                 />
                 <StatRow
                   label="WACC"
-                  value={
-                    stats.WACC != null ? `${stats.WACC.toFixed(2)}%` : "N/A"
-                  }
+                  value={stats.WACC ? `${stats.WACC.toFixed(2)}%` : "N/A"}
                 />
                 <StatRow
-                  label="Analyst Price Target"
+                  label="ROIC"
                   value={
-                    stats.PriceTarget != null
-                      ? `$${stats.PriceTarget.toFixed(2).toLocaleString()}`
-                      : "N/A"
+                    stats.ROIC ? `${(stats.ROIC * 100).toFixed(2)}%` : "N/A"
                   }
                 />
-                <StatRow
-                  label="Next Earnings Date"
-                  value={`${stats.EarningsDate}`}
-                />
+
                 <div
                   style={{
                     gridColumn: "span 2",
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
+                    display: "grid", // Switched to grid for precise column alignment
+                    gridTemplateColumns: "1fr 1fr", // Two equal columns
                     alignItems: "center",
-                    justifyItems: "center",
+                    justifyItems: "center", // Centers children horizontally within columns
+                    marginTop: "20px",
                     padding: "20px 0",
-                    minHeight: "150px",
+                    borderTop: "1px solid #1a1a1a",
+                    background: "linear-gradient(to bottom, #050505, #000000)", // Subtle depth
                   }}
                 >
+                  {/* Left Column: Sentiment Dial */}
                   <div
                     style={{
                       width: "100%",
@@ -465,15 +539,10 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                       justifyContent: "center",
                     }}
                   >
-                    <SentimentDial
-                      StrongBuy={stats.StrongBuy}
-                      Buy={stats.Buy}
-                      Hold={stats.Hold}
-                      Sell={stats.Sell}
-                      StrongSell={stats.StrongSell}
-                    />
+                    <SentimentDial {...stats} />
                   </div>
 
+                  {/* Right Column: Navigation Action */}
                   <div
                     style={{
                       width: "100%",
@@ -484,23 +553,17 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                     <button
                       className="btn-sleek"
                       style={{
-                        whiteSpace: "nowrap",
-                        fontSize: "0.9rem",
-                        padding: "10px 24px",
-                        boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
+                        fontSize: "0.7rem",
+                        padding: "12px 24px",
+                        letterSpacing: "0.1em",
+                        boxShadow: "0 4px 15px rgba(126, 124, 243, 0.05)", // Very faint glow to match primary theme
                       }}
                       onClick={() => {
                         setActiveCard("financials");
                         setPreviousCard(activeCard);
                       }}
-                      disabled={
-                        stats["AnnualBalance"] == null ||
-                        stats["AnnualIncome"] == null ||
-                        stats["AnnualCash"] == null ||
-                        stats["AnnualEarnings"] == null
-                      }
                     >
-                      See Financials
+                      SEE FINANCIALS
                     </button>
                   </div>
                 </div>
@@ -510,10 +573,11 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                 style={{
                   gridColumn: "span 2",
                   textAlign: "center",
-                  color: "#666",
+                  color: "#444",
+                  fontSize: "0.8rem",
                 }}
               >
-                No statistics available for {stockSymbol}
+                NO_DATA_AVAILABLE_FOR_{stockSymbol}
               </div>
             )}
           </div>

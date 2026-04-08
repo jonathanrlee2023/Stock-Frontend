@@ -29,7 +29,7 @@ export const StockToPortfolioCard: React.FC<StockCardProps> = ({
     stockPoints[activeStock]?.[stockPoints[activeStock].length - 1]?.Mark || 0;
 
   const portfolioHistory = balancePoints[activePortfolio] || [];
-  const currentShares = ids[activePortfolio][activeStock] || 0;
+  const currentShares = ids[activePortfolio]?.[activeStock] ?? 0;
 
   const latestCash =
     portfolioHistory.length > 0
@@ -74,131 +74,180 @@ export const StockToPortfolioCard: React.FC<StockCardProps> = ({
     const calculatedShares = latestMark > 0 ? val / latestMark : 0;
     setAmount(Number(calculatedShares.toFixed(5))); // High precision for shares
   };
+  const inputStyle = {
+    backgroundColor: "#000",
+    border: "1px solid #333",
+    color: "#00ff00",
+    fontSize: "0.9rem",
+    padding: "4px 8px",
+    width: "120px",
+    outline: "none",
+    fontFamily: "monospace",
+  };
   return (
     <div
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "98vh",
-        gap: "10px",
+        height: "94vh", // Maintain full screen
+        backgroundColor: "#000",
+        color: "#fff",
+        overflow: "hidden",
       }}
     >
-      <button
-        className="btn btn-secondary"
-        onClick={() => setActiveCard("newPortfolio")}
+      {/* --- Navigation Bar --- */}
+      <header
+        className="p-2 d-flex align-items-center justify-content-between"
+        style={{ borderBottom: "1px solid #222" }}
       >
-        Back
-      </button>
-      {/* Main content area with graph and positions side by side */}
-      <div
-        style={{
-          display: "flex",
-          flex: 1,
-          gap: "16px",
-          overflow: "hidden",
-          padding: "0 10px",
-        }}
-      >
-        {/* Left side - Graph/Main content area */}
+        <button
+          className="btn btn-sm btn-outline-secondary"
+          onClick={() => setActiveCard("newPortfolio")}
+          style={{ fontSize: "0.7rem", letterSpacing: "1px" }}
+        >
+          ← BACK TO CONFIG
+        </button>
         <div
           style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            minWidth: 0,
+            fontSize: "0.75rem",
+            color: "#666",
+            fontFamily: "monospace",
+            marginRight: "12px",
           }}
+        >
+          ACTIVE_SESSION: {activeStock || "NULL"}
+        </div>
+      </header>
+
+      {/* --- Main Execution Area --- */}
+      <main className="flex-grow-1 d-flex p-3 gap-3" style={{ minHeight: 0 }}>
+        {/* Chart & Stream Section */}
+        <div
+          className="flex-grow-1 d-flex flex-column gap-2"
+          style={{ minWidth: 0 }}
         >
           <SearchBar
             setSearchQuery={setActiveStock}
             searchQuery={activeStock}
-            inputMessage="Enter Stock Symbol..."
+            inputMessage="SYMBOL (e.g. NVDA)"
             onEnter={startStockStream}
             onSearchClick={startStockStream}
             setPreviousID={setPreviousID}
           />
-          <TodayStockWSComponent
-            stockSymbol={activeStock}
-            setActiveCard={setActiveCard}
-            activeCard={activeCard}
-            activePortfolio={activePortfolio}
-          />
-          <div className="d-flex justify-content-between align-items-center mb-2 mx-2">
-            {/* Left Side: Position Actions */}
-            <div
-              className="mb-2 mx-2"
-              style={{ display: "flex", alignItems: "center", gap: "20px" }}
-            >
-              <label>
-                Shares:{" "}
-                <input
-                  className="search-bar input-small"
-                  type="number"
-                  value={amount}
-                  min={0}
-                  step="any"
-                  onChange={handleAmountChange}
-                  style={{
-                    paddingLeft: "5px",
-                    paddingRight: "25px",
-                    textAlign: "center",
-                  }}
-                />
-              </label>
-              <label>
-                Total $:{" "}
-                <input
-                  className="search-bar input-small"
-                  type="number"
-                  value={dollarValue}
-                  min={0}
-                  step="0.01"
-                  onChange={handleDollarChange}
-                  style={{
-                    paddingLeft: "5px",
-                    paddingRight: "25px",
-                    textAlign: "center",
-                  }}
-                />
-              </label>
-              <span>
-                <b>Open Shares:</b> {currentShares ?? 0}
-              </span>
-            </div>
-            <div className="d-flex gap-2">
+
+          <div
+            className="flex-grow-1 rounded"
+            style={{
+              backgroundColor: "#050505",
+              border: "1px solid #111",
+              minHeight: 0, // CRITICAL: allows the flex item to shrink smaller than its content
+              position: "relative", // Helps absolute-positioned charts stay inside
+            }}
+          >
+            <TodayStockWSComponent
+              stockSymbol={activeStock}
+              setActiveCard={setActiveCard}
+              activeCard={activeCard}
+              activePortfolio={activePortfolio}
+            />
+          </div>
+
+          {/* --- Trading Controls Panel --- */}
+          <div
+            className="p-3 mt-2 rounded"
+            style={{
+              backgroundColor: "#0a0a0a",
+              border: "1px solid #222",
+            }}
+          >
+            <div className="d-flex align-items-end justify-content-between">
+              {/* Input Group */}
+              <div className="d-flex gap-4">
+                <div className="d-flex flex-column gap-1">
+                  <label
+                    style={{
+                      fontSize: "10px",
+                      color: "#555",
+                      fontWeight: "800",
+                    }}
+                  >
+                    SHARES
+                  </label>
+                  <input
+                    className="terminal-input"
+                    type="number"
+                    value={amount}
+                    onChange={handleAmountChange}
+                    style={inputStyle}
+                  />
+                </div>
+
+                <div className="d-flex flex-column gap-1">
+                  <label
+                    style={{
+                      fontSize: "10px",
+                      color: "#555",
+                      fontWeight: "800",
+                    }}
+                  >
+                    TOTAL_VALUE ($)
+                  </label>
+                  <input
+                    className="terminal-input"
+                    type="number"
+                    value={dollarValue}
+                    onChange={handleDollarChange}
+                    style={inputStyle}
+                  />
+                </div>
+              </div>
+
+              {/* Live Data Summary */}
+              <div className="text-end" style={{ fontFamily: "monospace" }}>
+                <div style={{ fontSize: "10px", color: "#444" }}>
+                  CURRENT_HOLDINGS
+                </div>
+                <div style={{ fontSize: "1.1rem", color: "#7e7cf3" }}>
+                  {currentShares ?? 0}{" "}
+                  <small style={{ fontSize: "0.6rem" }}>SHRS</small>
+                </div>
+              </div>
+
+              {/* Action Button */}
               <button
-                className="btn-sleek btn-sleek-green"
+                className="btn-sleek btn-sleek-green px-4 py-2"
+                disabled={latestMark <= 0 || amount <= 0}
                 style={{
-                  opacity: latestMark <= 0 ? 0.5 : 1,
-                  cursor: latestMark <= 0 ? "not-allowed" : "pointer",
+                  opacity: latestMark <= 0 || amount <= 0 ? 0.4 : 1,
+                  fontSize: "0.8rem",
+                  fontWeight: "bold",
                 }}
                 onClick={() => {
                   setNewStocks((prev) => {
-                    const existingPosition = prev[activeStock] || {
+                    const existing = prev[activeStock] || {
                       id: activeStock,
                       amount: 0,
                       price: 0,
                       portfolio_id: activePortfolio,
                     };
-
                     return {
                       ...prev,
                       [activeStock]: {
-                        ...existingPosition,
-                        amount: existingPosition.amount + amount,
+                        ...existing,
+                        amount: existing.amount + amount,
                       },
                     };
                   });
                   ModifyTracker("newTracker");
                   setActiveCard("newPortfolio");
                 }}
-                disabled={latestMark <= 0 || amount <= 0}
               >
-                Add Position
+                EXECUTE_ADD
               </button>
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

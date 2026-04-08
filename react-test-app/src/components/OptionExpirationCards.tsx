@@ -101,8 +101,9 @@ export const OptionExpirationCards: React.FC<OptionExpirationCardsProps> = ({
     price: string;
     onClick: (id: string) => void;
   }) => {
-    // Parse the ID for the display string
     const friendlyName = formatFriendlyId(id);
+    const isCall = label === "CALL";
+    const accentColor = isCall ? "#00ff88" : "#ff4444";
 
     return (
       <div
@@ -110,50 +111,63 @@ export const OptionExpirationCards: React.FC<OptionExpirationCardsProps> = ({
         className="position-card"
         style={{
           cursor: "pointer",
-          padding: "10px",
-          borderRadius: "6px",
-          backgroundColor: "#242424",
-          borderLeft:
-            label === "CALL" ? "4px solid #00ff88" : "4px solid #ff4444",
-          transition: "transform 0.1s",
+          padding: "12px",
+          borderRadius: "0px", // Sharp terminal edge
+          backgroundColor: "#0a0a0a",
+          border: "1px solid #1a1a1a",
+          borderLeft: `3px solid ${accentColor}`,
+          transition: "all 0.1s ease",
         }}
-        // Optional: adds a little feedback on hover
-        onMouseEnter={(e) =>
-          (e.currentTarget.style.backgroundColor = "#2a2a2a")
-        }
-        onMouseLeave={(e) =>
-          (e.currentTarget.style.backgroundColor = "#242424")
-        }
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "#111";
+          e.currentTarget.style.borderColor = "#333";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "#0a0a0a";
+          e.currentTarget.style.borderColor = "#1a1a1a";
+        }}
       >
         <div
           style={{
-            fontSize: "13px",
-            fontWeight: "600",
-            color: "#e0e0e0",
-            lineHeight: "1.4",
+            fontSize: "0.75rem",
+            fontWeight: "700",
+            color: "#fff",
+            fontFamily: "monospace",
+            letterSpacing: "0.5px",
           }}
         >
-          {friendlyName}
+          {/* Using a monospace font for the ID/Name looks cleaner */}
+          {friendlyName || id}
         </div>
+
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
-            marginTop: "6px",
+            marginTop: "8px",
             alignItems: "center",
           }}
         >
           <span
             style={{
-              fontSize: "10px",
-              fontWeight: "800",
-              color: label === "CALL" ? "#00ff88" : "#ff4444",
-              letterSpacing: "0.5px",
+              fontSize: "9px",
+              fontWeight: "900",
+              color: accentColor,
+              letterSpacing: "1px",
+              backgroundColor: `${accentColor}15`, // Very faint glow background
+              padding: "1px 4px",
             }}
           >
             {label}
           </span>
-          <span style={{ fontSize: "14px", fontWeight: "700", color: "#fff" }}>
+          <span
+            style={{
+              fontSize: "0.85rem",
+              fontWeight: "700",
+              color: "#fff",
+              fontFamily: "monospace",
+            }}
+          >
             {price}
           </span>
         </div>
@@ -161,83 +175,92 @@ export const OptionExpirationCards: React.FC<OptionExpirationCardsProps> = ({
     );
   };
 
+  // Main List Component
   return (
     <div
       style={{
         display: "flex",
         flexDirection: "column",
         height: "100%",
+        backgroundColor: "#000",
       }}
     >
-      {/* Filter Button Group */}
+      {/* Filter Header */}
       <div
         style={{
           display: "flex",
-          gap: "8px",
-          padding: "12px 16px",
-          background: "#1a1a1a",
+          gap: "1px", // Grid-line gap
+          padding: "8px",
+          background: "#050505",
           position: "sticky",
           top: 0,
           zIndex: 10,
+          borderBottom: "1px solid #1a1a1a",
         }}
       >
-        {(["CALL", "PUT"] as const).map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            style={{
-              flex: 1,
-              padding: "6px 0",
-              borderRadius: "4px",
-              border: "none",
-              cursor: "pointer",
-              fontSize: "12px",
-              fontWeight: "600",
-              backgroundColor: filter === f ? "#444" : "#2a2a2a",
-              color: filter === f ? "#fff" : "#919191",
-              transition: "all 0.2s",
-            }}
-          >
-            {f}
-          </button>
-        ))}
+        {(["CALL", "PUT"] as const).map((f) => {
+          const isActive = filter === f;
+          return (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              style={{
+                flex: 1,
+                padding: "8px 0",
+                borderRadius: "0px",
+                border: `1px solid ${isActive ? "#333" : "transparent"}`,
+                cursor: "pointer",
+                fontSize: "10px",
+                fontWeight: "bold",
+                letterSpacing: "1px",
+                backgroundColor: isActive ? "#1a1a1a" : "transparent",
+                color: isActive ? "#fff" : "#444",
+                transition: "all 0.1s",
+              }}
+            >
+              {f}
+            </button>
+          );
+        })}
       </div>
 
+      {/* Scrollable List */}
       <div
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: "12px",
-          padding: "0 16px 16px 16px",
+          gap: "4px", // Tighter gap for list view
+          padding: "12px",
           overflowY: "auto",
         }}
       >
-        {/* Fix: filteredExpirations is an array, so use .length */}
         {filteredExpirations.length === 0 ? (
           <div
             style={{
-              color: "#666",
-              padding: "16px",
-              fontStyle: "italic",
+              color: "#333",
+              padding: "20px",
+              fontSize: "11px",
+              fontFamily: "monospace",
               textAlign: "center",
             }}
           >
-            {defaultMessage}
+            NO_DATA_RETURNED
           </div>
         ) : (
-          /* Fix: Removed the extra curly braces that were causing the syntax error */
           filteredExpirations.map(([ticker, expirationData]) => (
             <React.Fragment key={ticker}>
               <div
                 style={{
-                  color: "#777",
-                  fontSize: "11px",
+                  color: "#7e7cf3", // Using your brand purple for headers
+                  fontSize: "9px",
                   fontWeight: "bold",
-                  marginTop: "8px",
-                  letterSpacing: "1px",
+                  marginTop: "12px",
+                  marginBottom: "4px",
+                  letterSpacing: "2px",
+                  fontFamily: "monospace",
                 }}
               >
-                {ticker.toUpperCase()}
+                {ticker.toUpperCase()} // OPTIONS
               </div>
 
               {filter === "CALL" &&
