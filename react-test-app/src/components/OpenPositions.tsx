@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useWS } from "./WSContest";
 import { usePriceStream } from "./PriceContext";
 import { get } from "http";
+import { COLORS } from "../constants/Colors";
 
 interface IdCardProps {
   setActiveID: (query: string) => void;
@@ -104,12 +105,12 @@ export const IdCards: React.FC<IdCardProps> = ({
 
   const priceColor = (id: string): string => {
     const points = id.length > 6 ? optionPoints[id] : stockPoints[id];
-    if (!points || points.length < 2) return "#ffffff"; // Default color
+    if (!points || points.length < 2) return COLORS.mainFontColor; // Default color
     const latest = points.at(-1)?.Mark || 0;
     const previous = historicalStockPoints[id]?.at(-1)?.close || 0;
-    if (latest > previous) return "rgb(38, 154, 25)";
-    if (latest < previous) return "rgb(155, 0, 0)";
-    return "#ffffff"; // Default color
+    if (latest > previous) return COLORS.green.positive;
+    if (latest < previous) return COLORS.red.negative;
+    return COLORS.mainFontColor; // Default color
   };
 
   const formatDisplayId = (id: string): string => {
@@ -156,15 +157,16 @@ export const IdCards: React.FC<IdCardProps> = ({
             style={{
               padding: "12px 16px",
               cursor: "pointer",
-              backgroundColor: "#050505",
-              borderBottom: "1px solid #1a1a1a" /* Thin separator */,
+              backgroundColor: COLORS.dynamic.background,
+              borderBottom: "1px solid " + COLORS.dynamic.bottomBorder,
               transition: "background-color 0.2s ease",
             }}
             onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "#111")
+              (e.currentTarget.style.backgroundColor = COLORS.dynamic.hover)
             }
             onMouseLeave={(e) =>
-              (e.currentTarget.style.backgroundColor = "#050505")
+              (e.currentTarget.style.backgroundColor =
+                COLORS.dynamic.background)
             }
           >
             {/* Ticker / ID Row */}
@@ -180,7 +182,7 @@ export const IdCards: React.FC<IdCardProps> = ({
                 style={{
                   fontSize: "0.85rem",
                   fontWeight: "800",
-                  color: "#ffffff" /* Brighter for readability */,
+                  color: COLORS.mainFontColor /* Brighter for readability */,
                   fontFamily: "monospace",
                 }}
               >
@@ -202,7 +204,7 @@ export const IdCards: React.FC<IdCardProps> = ({
             <div
               style={{
                 fontSize: "0.7rem",
-                color: "#666",
+                color: COLORS.infoTextColor,
                 textTransform: "uppercase",
                 letterSpacing: "0.05em",
               }}

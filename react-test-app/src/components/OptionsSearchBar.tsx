@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { COLORS } from "../constants/Colors";
 interface OptionsSearchBarProps {
   setSearchQuery: (query: string) => void; // Function to update search query
   searchQuery: string; // Prop to hold the current search query
@@ -41,11 +42,11 @@ const OptionsSearchBar: React.FC<OptionsSearchBarProps> = ({
         type="text"
         className="search-bar search-bar-small flex-grow-1"
         style={{
-          border: "1px solid #222",
+          border: "1px solid " + COLORS.borderColor,
           borderRight: "none",
           borderRadius: "0",
-          backgroundColor: "#050505",
-          color: "#fff",
+          backgroundColor: COLORS.cardBackground,
+          color: COLORS.mainFontColor,
           height: "32px", // Explicit height to match button
           fontSize: "0.75rem",
           paddingLeft: "10px",
@@ -60,8 +61,8 @@ const OptionsSearchBar: React.FC<OptionsSearchBarProps> = ({
         style={{
           height: "40px", // Match input height
           padding: "0 12px",
-          backgroundColor: "#0a0a0a",
-          border: "1px solid #222",
+          backgroundColor: COLORS.cardBackground,
+          border: "1px solid " + COLORS.borderColor,
           borderRadius: "0",
           cursor: "pointer",
           display: "flex",
@@ -71,12 +72,12 @@ const OptionsSearchBar: React.FC<OptionsSearchBarProps> = ({
         }}
         onClick={handleSearchClick}
         onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = "#7e7cf3";
-          e.currentTarget.style.backgroundColor = "#111";
+          e.currentTarget.style.borderColor = COLORS.secondaryTextColor;
+          e.currentTarget.style.backgroundColor = COLORS.dynamic.hover;
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = "#222";
-          e.currentTarget.style.backgroundColor = "#0a0a0a";
+          e.currentTarget.style.borderColor = COLORS.borderColor;
+          e.currentTarget.style.backgroundColor = COLORS.cardBackground;
         }}
       >
         <span
@@ -84,7 +85,7 @@ const OptionsSearchBar: React.FC<OptionsSearchBarProps> = ({
             fontSize: "0.6rem",
             fontFamily: "monospace",
             fontWeight: "900", // Extra heavy for that "system label" feel
-            color: "#7e7cf3",
+            color: COLORS.secondaryTextColor,
             letterSpacing: "1.5px",
           }}
         >

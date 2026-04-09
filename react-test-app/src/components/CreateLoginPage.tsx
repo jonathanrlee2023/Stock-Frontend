@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { COLORS } from "../constants/Colors";
 
 const Register: React.FC<{ onBackToLogin: () => void }> = ({
   onBackToLogin,
@@ -37,11 +38,15 @@ const Register: React.FC<{ onBackToLogin: () => void }> = ({
     <div className="container-fluid d-flex justify-content-center align-items-center vh-100 login-container">
       <div
         className="card p-4 login-card"
-        style={{ width: "380px", border: "1px solid #333" }}
+        style={{
+          width: "380px",
+          border: `1px solid ${COLORS.borderColor}`,
+          boxShadow: `0 4px 8px ${COLORS.loginShadowColor}`,
+        }}
       >
         <h3
           className="card-title text-center mb-4"
-          style={{ letterSpacing: "0.1em" }}
+          style={{ letterSpacing: "0.1em", color: COLORS.mainFontColor }}
         >
           Initialize Account
         </h3>
@@ -51,7 +56,7 @@ const Register: React.FC<{ onBackToLogin: () => void }> = ({
           <div className="mb-3">
             <label
               className="form-label small text-uppercase fw-bold"
-              style={{ color: "#7e7cf3" }}
+              style={{ color: COLORS.secondaryTextColor }}
             >
               Set Username
             </label>
@@ -68,9 +73,9 @@ const Register: React.FC<{ onBackToLogin: () => void }> = ({
           <div className="mb-3">
             <label
               className="form-label small text-uppercase fw-bold"
-              style={{ color: "#7e7cf3" }}
+              style={{ color: COLORS.secondaryTextColor }}
             >
-              Secret Key
+              SET PASSWORD
             </label>
             <input
               type="password"
@@ -87,9 +92,9 @@ const Register: React.FC<{ onBackToLogin: () => void }> = ({
           <div className="mb-4">
             <label
               className="form-label small text-uppercase fw-bold"
-              style={{ color: "#7e7cf3" }}
+              style={{ color: COLORS.secondaryTextColor }}
             >
-              Verify Key
+              CONFIRM PASSWORD
             </label>
             <input
               type="password"

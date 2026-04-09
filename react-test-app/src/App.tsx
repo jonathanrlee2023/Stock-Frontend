@@ -11,6 +11,7 @@ import { FinancialsCard } from "./components/FinancialsCard";
 import { PortfolioCards } from "./components/PortfoliosListCard";
 import { NewPortfolioCard } from "./components/NewPortfolioCard";
 import StockToPortfolioCard from "./components/StockToPortfolioCard";
+import { COLORS } from "./constants/Colors";
 
 const App: React.FC = () => {
   const [activeCard, setActiveCard] = useState<string>("home"); // State to track the active screen
@@ -23,7 +24,7 @@ const App: React.FC = () => {
     <div
       className="container-fluid p-0"
       style={{
-        backgroundColor: "#000000",
+        backgroundColor: COLORS.cardBackground,
         height: "100vh",
         width: "100vw",
         overflow: "hidden",
@@ -34,7 +35,7 @@ const App: React.FC = () => {
         className="d-flex justify-content-between align-items-center"
         style={{
           height: "50px",
-          borderBottom: "1px solid #9e9e9e",
+          borderBottom: "1px solid " + COLORS.headerBottomBorder,
           padding: "0 20px",
           flexShrink: 0,
         }}
@@ -44,7 +45,7 @@ const App: React.FC = () => {
             fontSize: "0.9rem",
             margin: "0",
             letterSpacing: "0.25em",
-            color: "#ffffff",
+            color: COLORS.mainFontColor,
             fontWeight: 900,
           }}
         >
@@ -70,15 +71,24 @@ const App: React.FC = () => {
                 color:
                   activeCard === item.id ||
                   (item.id === "home" && activeCard === "home")
-                    ? "#ffffff"
-                    : "#666666",
+                    ? COLORS.mainFontColor
+                    : COLORS.infoTextColor,
                 borderBottom:
                   activeCard === item.id
-                    ? "2px solid #7e7cf3"
+                    ? "2px solid " + COLORS.secondaryTextColor
                     : "2px solid transparent",
                 transition: "all 0.2s ease",
                 padding: "0 4px",
                 height: "100%",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = COLORS.mainFontColor;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color =
+                  activeCard === item.id
+                    ? COLORS.mainFontColor
+                    : COLORS.infoTextColor;
               }}
             >
               {item.label}

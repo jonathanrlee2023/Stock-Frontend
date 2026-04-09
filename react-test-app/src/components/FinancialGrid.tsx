@@ -5,6 +5,7 @@ import {
   CashFlowStatement,
   EarningsReport,
 } from "./PriceContext";
+import { COLORS } from "../constants/Colors";
 
 interface GridProps {
   data: any[]; // The active slice from CompanyStats
@@ -31,8 +32,8 @@ export const FinancialGrid: React.FC<GridProps> = ({ data, type }) => {
       className="text-end"
       style={{
         padding: "10px 15px",
-        borderBottom: "1px solid #111",
-        color: "#ccc",
+        borderBottom: "1px solid " + COLORS.headerBottomBorder,
+        color: COLORS.mainFontColor,
       }}
     >
       {formatValue(value)}
@@ -44,8 +45,8 @@ export const FinancialGrid: React.FC<GridProps> = ({ data, type }) => {
       className="text-end"
       style={{
         padding: "10px 15px",
-        borderBottom: "1px solid #111",
-        color: "#7e7cf3",
+        borderBottom: "1px solid " + COLORS.headerBottomBorder,
+        color: COLORS.secondaryTextColor,
       }}
     >
       {(value ? value * 100 : 0).toFixed(2)}%
@@ -60,8 +61,8 @@ export const FinancialGrid: React.FC<GridProps> = ({ data, type }) => {
         width: "100%", // Ensure it takes full container width
         overflowY: "auto",
         overflowX: "auto", // Explicitly enable horizontal scroll
-        backgroundColor: "#050505",
-        border: "1px solid #222",
+        backgroundColor: COLORS.cardBackground,
+        border: "1px solid " + COLORS.borderColor,
       }}
     >
       <table
@@ -78,13 +79,13 @@ export const FinancialGrid: React.FC<GridProps> = ({ data, type }) => {
           className="sticky-top"
           style={{
             zIndex: 10,
-            backgroundColor: "#050505",
-            borderBottom: "2px solid #333",
+            backgroundColor: COLORS.cardBackground,
+            borderBottom: "2px solid " + COLORS.borderColor,
           }}
         >
           <tr>
             <th
-              style={{ color: "#7e7cf3", padding: "12px 15px" }}
+              style={{ color: COLORS.secondaryTextColor, padding: "12px 15px" }}
               className="text-start"
             >
               PERIOD_END
@@ -422,8 +423,8 @@ export const FinancialGrid: React.FC<GridProps> = ({ data, type }) => {
                     className="text-end"
                     style={{
                       padding: "10px 15px",
-                      borderBottom: "1px solid #111",
-                      color: "#7e7cf3",
+                      borderBottom: "1px solid " + COLORS.headerBottomBorder,
+                      color: COLORS.mainFontColor,
                     }}
                   >
                     {((row as BalanceSheet).nwcRatio || 0).toFixed(2)}
@@ -501,8 +502,8 @@ export const FinancialGrid: React.FC<GridProps> = ({ data, type }) => {
                     className="text-end"
                     style={{
                       padding: "10px 15px",
-                      borderBottom: "1px solid #111",
-                      color: "#ccc",
+                      borderBottom: "1px solid " + COLORS.headerBottomBorder,
+                      color: COLORS.mainFontColor,
                     }}
                   >
                     {((row as CashFlowStatement).FCF_per_share || 0).toFixed(2)}
@@ -517,8 +518,8 @@ export const FinancialGrid: React.FC<GridProps> = ({ data, type }) => {
                     className="text-end"
                     style={{
                       padding: "10px 15px",
-                      borderBottom: "1px solid #111",
-                      color: "#ccc",
+                      borderBottom: "1px solid " + COLORS.headerBottomBorder,
+                      color: COLORS.mainFontColor,
                     }}
                   >
                     {(row as EarningsReport).reportedDate || "—"}
@@ -529,8 +530,8 @@ export const FinancialGrid: React.FC<GridProps> = ({ data, type }) => {
                     className="text-end"
                     style={{
                       padding: "10px 15px",
-                      borderBottom: "1px solid #111",
-                      color: "#fff",
+                      borderBottom: "1px solid " + COLORS.headerBottomBorder,
+                      color: COLORS.mainFontColor,
                     }}
                   >
                     {(row as EarningsReport).reportedEPS?.toFixed(2) || "—"}
@@ -541,8 +542,8 @@ export const FinancialGrid: React.FC<GridProps> = ({ data, type }) => {
                     className="text-end"
                     style={{
                       padding: "10px 15px",
-                      borderBottom: "1px solid #111",
-                      color: "#888",
+                      borderBottom: "1px solid" + COLORS.headerBottomBorder,
+                      color: COLORS.mainFontColor,
                     }}
                   >
                     {(row as EarningsReport).estimatedEPS?.toFixed(2) || "—"}
@@ -553,12 +554,12 @@ export const FinancialGrid: React.FC<GridProps> = ({ data, type }) => {
                     className="text-end"
                     style={{
                       padding: "10px 15px",
-                      borderBottom: "1px solid #111",
+                      borderBottom: "1px solid " + COLORS.headerBottomBorder,
                       fontWeight: "bold",
                       color:
                         (row as EarningsReport).surprisePercentage! > 0
-                          ? "#4ade80"
-                          : "#f87171",
+                          ? COLORS.green.positive
+                          : COLORS.red.negative,
                     }}
                   >
                     {(row as EarningsReport).surprisePercentage?.toFixed(2)}%
@@ -569,8 +570,8 @@ export const FinancialGrid: React.FC<GridProps> = ({ data, type }) => {
                     className="text-end"
                     style={{
                       padding: "10px 15px",
-                      borderBottom: "1px solid #111",
-                      color: "#666",
+                      borderBottom: "1px solid " + COLORS.headerBottomBorder,
+                      color: COLORS.mainFontColor,
                       fontSize: "0.65rem",
                     }}
                   >

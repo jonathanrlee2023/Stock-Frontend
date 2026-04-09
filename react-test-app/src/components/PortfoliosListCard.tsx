@@ -1,6 +1,7 @@
 import React, { useCallback } from "react";
 import { usePriceStream } from "./PriceContext";
 import { useWS } from "./WSContest";
+import { COLORS } from "../constants/Colors";
 
 interface PortfolioCardsProps {
   setActiveCard: (query: string) => void;
@@ -69,12 +70,30 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
           cursor: "pointer",
           padding: "12px",
           borderRadius: "4px",
-          backgroundColor: isActive ? "#161b22" : "transparent",
-          border: isActive ? "1px solid #30363d" : "1px solid transparent",
-          borderLeft: isActive ? "3px solid #7e7cf3" : "3px solid #333",
+          backgroundColor: isActive ? COLORS.dynamic.hover : "transparent",
+          border: isActive
+            ? "1px solid " + COLORS.borderColor
+            : "1px solid transparent",
+          borderLeft: isActive
+            ? "3px solid " + COLORS.secondaryTextColor
+            : "3px solid" + COLORS.borderColor,
           marginBottom: "8px",
           transition: "all 0.15s ease",
           position: "relative",
+        }}
+        onMouseEnter={(e) => {
+          if (!isActive) {
+            e.currentTarget.style.backgroundColor = COLORS.dynamic.hover;
+          } else {
+            e.currentTarget.style.backgroundColor = COLORS.borderColor;
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isActive) {
+            e.currentTarget.style.backgroundColor = "transparent";
+          } else {
+            e.currentTarget.style.backgroundColor = COLORS.dynamic.hover;
+          }
         }}
       >
         <div className="d-flex justify-content-between align-items-start">
@@ -83,12 +102,18 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
               style={{
                 fontSize: "12px",
                 fontWeight: "bold",
-                color: isActive ? "#fff" : "#ccc",
+                color: COLORS.mainFontColor,
               }}
             >
               {portfolioNames[id] || `SYS_PORTFOLIO_${id}`}
             </span>
-            <span style={{ fontSize: "10px", color: "#666", marginTop: "2px" }}>
+            <span
+              style={{
+                fontSize: "10px",
+                color: COLORS.infoTextColor,
+                marginTop: "2px",
+              }}
+            >
               ID: {id.toString().padStart(4, "0")}
             </span>
           </div>
@@ -97,7 +122,11 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
           {isActive && (
             <div className="status-indicator">
               <span
-                style={{ fontSize: "8px", color: "#7e7cf3", fontWeight: "900" }}
+                style={{
+                  fontSize: "8px",
+                  color: COLORS.secondaryTextColor,
+                  fontWeight: "900",
+                }}
               >
                 ● LIVE
               </span>
@@ -107,7 +136,13 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
 
         <div className="mt-3 d-flex justify-content-between align-items-end">
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <span style={{ fontSize: "9px", color: "#555", fontWeight: "800" }}>
+            <span
+              style={{
+                fontSize: "9px",
+                color: COLORS.infoTextColor,
+                fontWeight: "800",
+              }}
+            >
               EQUITY
             </span>
             <span
@@ -115,7 +150,7 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
                 fontSize: "14px",
                 fontFamily: "monospace",
                 fontWeight: "700",
-                color: isActive ? "#00ff00" : "#fff",
+                color: isActive ? COLORS.green.positive : COLORS.mainFontColor,
               }}
             >
               ${balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -129,7 +164,7 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
               style={{
                 background: "none",
                 border: "none",
-                color: "#444",
+                color: COLORS.infoTextColor,
                 fontSize: "10px",
                 padding: "0",
               }}
@@ -168,14 +203,16 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
           style={{
             margin: 0,
             fontSize: "0.75rem",
-            color: "#888",
+            color: COLORS.infoTextColor,
             textTransform: "uppercase",
             letterSpacing: "1.5px",
             fontWeight: "800",
           }}
         >
           Portfolios{" "}
-          <span style={{ color: "#7e7cf3" }}>[{portfolioIds.length}]</span>
+          <span style={{ color: COLORS.secondaryTextColor }}>
+            [{portfolioIds.length}]
+          </span>
         </h3>
       </div>
 
@@ -186,13 +223,13 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
           padding: "12px",
           overflowY: "auto",
           flex: 1,
-          backgroundColor: "#050505",
+          backgroundColor: COLORS.cardBackground,
         }}
       >
         {portfolioIds.length === 0 ? (
           <div
             style={{
-              color: "#444",
+              color: COLORS.infoTextColor,
               textAlign: "center",
               fontSize: "0.8rem",
               marginTop: "40px",
@@ -228,8 +265,8 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
       <div
         className="p-3"
         style={{
-          borderTop: "1px solid #222",
-          backgroundColor: "#0f0f0f",
+          borderTop: `1px solid ${COLORS.cardSoftBorder}`,
+          backgroundColor: COLORS.cardBackground,
         }}
       >
         <button
@@ -238,8 +275,8 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
             fontSize: "0.7rem",
             fontWeight: "bold",
             letterSpacing: "1px",
-            backgroundColor: "#1a1a1a",
-            border: "1px solid #333",
+            backgroundColor: COLORS.cardBackground,
+            border: "1px solid" + COLORS.borderColor,
           }}
           onClick={() => {
             const nextId = (lastPortfolioId || 0) + 1;

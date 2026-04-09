@@ -1,4 +1,5 @@
 import React from "react";
+import { COLORS } from "../constants/Colors";
 
 interface SentimentDialProps {
   StrongBuy: number | null;
@@ -40,11 +41,11 @@ const SentimentDial: React.FC<SentimentDialProps> = ({
   const rotation = (score / 100) * 180 - 90;
 
   const getColor = (val: number) => {
-    if (val > 70) return "#00c805"; // Strong Buy Green
-    if (val > 55) return "#94d82d"; // Buy Green
-    if (val > 40) return "#fcc419"; // Hold Amber
-    if (val > 25) return "#ff922b"; // Sell Orange
-    return "#ff5252"; // Strong Sell Red
+    if (val > 70) return COLORS.green.strongBuy; // Strong Buy Green
+    if (val > 55) return COLORS.green.buy; // Buy Green
+    if (val > 40) return COLORS.yellow.hold; // Hold Amber
+    if (val > 25) return COLORS.red.sell; // Sell Orange
+    return COLORS.red.strongSell; // Strong Sell Red
   };
 
   const getLabel = (val: number) => {
@@ -69,7 +70,7 @@ const SentimentDial: React.FC<SentimentDialProps> = ({
         <path
           d={`M ${cx - r},${cy} A ${r},${r} 0 0,1 ${cx + r},${cy}`}
           fill="none"
-          stroke="#1a1a1a"
+          stroke={COLORS.infoTextColor}
           strokeWidth={strokeWidth / 2}
         />
 
@@ -116,7 +117,13 @@ const SentimentDial: React.FC<SentimentDialProps> = ({
         />
 
         {/* Pivot Hub - Square or Hexagonal style */}
-        <rect x={cx - 4} y={cy - 4} width="8" height="8" fill="#fff" />
+        <rect
+          x={cx - 4}
+          y={cy - 4}
+          width="8"
+          height="8"
+          fill=COLORS.mainFontColor
+        />
         <rect x={cx - 2} y={cy - 2} width="4" height="4" fill="#000" />
       </svg>
 

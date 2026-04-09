@@ -4,6 +4,7 @@ import { TodayStockWSComponent } from "./TodayGraph";
 import { Position, usePriceStream } from "./PriceContext";
 import { OptionExpirationCards } from "./OptionExpirationCards";
 import { useWS } from "./WSContest";
+import { COLORS } from "../constants/Colors";
 
 interface StockCardProps {
   setActiveCard: (query: string) => void;
@@ -75,9 +76,9 @@ export const StockToPortfolioCard: React.FC<StockCardProps> = ({
     setAmount(Number(calculatedShares.toFixed(5))); // High precision for shares
   };
   const inputStyle = {
-    backgroundColor: "#000",
-    border: "1px solid #333",
-    color: "#00ff00",
+    backgroundColor: COLORS.appBackground,
+    border: "1px solid " + COLORS.borderColor,
+    color: COLORS.mainFontColor,
     fontSize: "0.9rem",
     padding: "4px 8px",
     width: "120px",
@@ -90,15 +91,15 @@ export const StockToPortfolioCard: React.FC<StockCardProps> = ({
         display: "flex",
         flexDirection: "column",
         height: "94vh", // Maintain full screen
-        backgroundColor: "#000",
-        color: "#fff",
+        backgroundColor: COLORS.appBackground,
+        color: COLORS.mainFontColor,
         overflow: "hidden",
       }}
     >
       {/* --- Navigation Bar --- */}
       <header
         className="p-2 d-flex align-items-center justify-content-between"
-        style={{ borderBottom: "1px solid #222" }}
+        style={{ borderBottom: "1px solid " + COLORS.borderColor }}
       >
         <button
           className="btn btn-sm btn-outline-secondary"
@@ -110,12 +111,12 @@ export const StockToPortfolioCard: React.FC<StockCardProps> = ({
         <div
           style={{
             fontSize: "0.75rem",
-            color: "#666",
+            color: COLORS.infoTextColor,
             fontFamily: "monospace",
             marginRight: "12px",
           }}
         >
-          ACTIVE_SESSION: {activeStock || "NULL"}
+          ACTIVE SESSION: {activeStock || "NULL"}
         </div>
       </header>
 
@@ -138,8 +139,8 @@ export const StockToPortfolioCard: React.FC<StockCardProps> = ({
           <div
             className="flex-grow-1 rounded"
             style={{
-              backgroundColor: "#050505",
-              border: "1px solid #111",
+              backgroundColor: COLORS.cardBackground,
+              border: "1px solid " + COLORS.borderColor,
               minHeight: 0, // CRITICAL: allows the flex item to shrink smaller than its content
               position: "relative", // Helps absolute-positioned charts stay inside
             }}
@@ -156,8 +157,8 @@ export const StockToPortfolioCard: React.FC<StockCardProps> = ({
           <div
             className="p-3 mt-2 rounded"
             style={{
-              backgroundColor: "#0a0a0a",
-              border: "1px solid #222",
+              backgroundColor: COLORS.cardBackground,
+              border: "1px solid " + COLORS.borderColor,
             }}
           >
             <div className="d-flex align-items-end justify-content-between">
@@ -167,7 +168,7 @@ export const StockToPortfolioCard: React.FC<StockCardProps> = ({
                   <label
                     style={{
                       fontSize: "10px",
-                      color: "#555",
+                      color: COLORS.infoTextColor,
                       fontWeight: "800",
                     }}
                   >
@@ -186,11 +187,11 @@ export const StockToPortfolioCard: React.FC<StockCardProps> = ({
                   <label
                     style={{
                       fontSize: "10px",
-                      color: "#555",
+                      color: COLORS.infoTextColor,
                       fontWeight: "800",
                     }}
                   >
-                    TOTAL_VALUE ($)
+                    TOTAL VALUE ($)
                   </label>
                   <input
                     className="terminal-input"
@@ -204,10 +205,16 @@ export const StockToPortfolioCard: React.FC<StockCardProps> = ({
 
               {/* Live Data Summary */}
               <div className="text-end" style={{ fontFamily: "monospace" }}>
-                <div style={{ fontSize: "10px", color: "#444" }}>
-                  CURRENT_HOLDINGS
+                <div style={{ fontSize: "10px", color: COLORS.infoTextColor }}>
+                  CURRENT HOLDINGS
                 </div>
-                <div style={{ fontSize: "1.1rem", color: "#7e7cf3" }}>
+                <div
+                  style={{
+                    fontSize: "1.1rem",
+                    color: COLORS.secondaryTextColor,
+                    fontWeight: "bold",
+                  }}
+                >
                   {currentShares ?? 0}{" "}
                   <small style={{ fontSize: "0.6rem" }}>SHRS</small>
                 </div>
@@ -242,7 +249,7 @@ export const StockToPortfolioCard: React.FC<StockCardProps> = ({
                   setActiveCard("newPortfolio");
                 }}
               >
-                EXECUTE_ADD
+                ADD POSITION
               </button>
             </div>
           </div>

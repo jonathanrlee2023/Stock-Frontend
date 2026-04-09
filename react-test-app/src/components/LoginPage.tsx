@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { COLORS } from "../constants/Colors";
 
 interface LoginProps {
   onLogin: (userId: number) => void;
@@ -38,13 +39,13 @@ const Login: React.FC<LoginProps> = ({ onLogin, onGoToRegister }) => {
         className="card p-4 login-card"
         style={{
           width: "380px",
-          border: "1px solid #333",
-          boxShadow: "0 4px 8px rgba(255, 255, 255, 0.5)",
+          border: `1px solid ${COLORS.borderColor}`,
+          boxShadow: `0 4px 8px ${COLORS.loginShadowColor}`,
         }}
       >
         <h3
           className="card-title text-center mb-4"
-          style={{ letterSpacing: "0.15em", color: "#ffffff" }}
+          style={{ letterSpacing: "0.15em", color: COLORS.mainFontColor }}
         >
           Quantae Divitiae
         </h3>
@@ -54,7 +55,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onGoToRegister }) => {
           <div className="mb-4">
             <label
               className="form-label small text-uppercase fw-bold"
-              style={{ color: "#7e7cf3" }}
+              style={{ color: COLORS.secondaryTextColor }}
             >
               Username
             </label>
@@ -75,7 +76,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onGoToRegister }) => {
           <div className="mb-4">
             <label
               className="form-label small text-uppercase fw-bold"
-              style={{ color: "#7e7cf3" }}
+              style={{ color: COLORS.secondaryTextColor }}
             >
               Password
             </label>

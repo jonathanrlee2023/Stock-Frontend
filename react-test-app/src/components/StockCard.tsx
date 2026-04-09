@@ -5,6 +5,7 @@ import { usePriceStream } from "./PriceContext";
 import { OptionExpirationCards } from "./OptionExpirationCards";
 import { useWS } from "./WSContest";
 import { postData } from "./OptionGraph";
+import { COLORS } from "../constants/Colors";
 
 interface StockCardProps {
   setActiveCard: (query: string) => void;
@@ -83,7 +84,7 @@ export const StockCard: React.FC<StockCardProps> = ({
         flexDirection: "column",
         height: "94%" /* Fills space below header */,
         width: "100%",
-        backgroundColor: "#000000",
+        backgroundColor: COLORS.appBackground,
         padding: "0 20px 15px 20px",
         marginTop: "10px" /* Consistent gap with HomePage */,
         overflow: "hidden",
@@ -123,7 +124,7 @@ export const StockCard: React.FC<StockCardProps> = ({
             style={{
               flex: 1,
               minHeight: 0,
-              border: "1px solid #1a1a1a",
+              border: "1px solid " + COLORS.cardSoftBorder,
               borderRadius: "4px",
               marginBottom: "15px",
             }}
@@ -140,8 +141,8 @@ export const StockCard: React.FC<StockCardProps> = ({
           <div
             className="d-flex justify-content-between align-items-center p-3"
             style={{
-              background: "#050505",
-              border: "1px solid #333",
+              background: COLORS.cardBackground,
+              border: "1px solid " + COLORS.borderColor,
               borderRadius: "4px",
             }}
           >
@@ -150,7 +151,7 @@ export const StockCard: React.FC<StockCardProps> = ({
                 <span
                   style={{
                     fontSize: "0.6rem",
-                    color: "#666",
+                    color: COLORS.infoTextColor,
                     marginBottom: "4px",
                   }}
                 >
@@ -165,7 +166,7 @@ export const StockCard: React.FC<StockCardProps> = ({
                   style={{
                     width: "80px",
                     textAlign: "center",
-                    borderBottom: "1px solid #444",
+                    borderBottom: "1px solid " + COLORS.borderColor,
                   }}
                 />
               </div>
@@ -173,7 +174,7 @@ export const StockCard: React.FC<StockCardProps> = ({
                 <span
                   style={{
                     fontSize: "0.6rem",
-                    color: "#666",
+                    color: COLORS.infoTextColor,
                     marginBottom: "4px",
                   }}
                 >
@@ -188,7 +189,7 @@ export const StockCard: React.FC<StockCardProps> = ({
                   style={{
                     width: "100px",
                     textAlign: "center",
-                    borderBottom: "1px solid #444",
+                    borderBottom: "1px solid " + COLORS.borderColor,
                   }}
                 />
               </div>
@@ -196,7 +197,7 @@ export const StockCard: React.FC<StockCardProps> = ({
                 <span
                   style={{
                     fontSize: "0.6rem",
-                    color: "#666",
+                    color: COLORS.infoTextColor,
                     marginBottom: "4px",
                   }}
                 >
@@ -206,7 +207,7 @@ export const StockCard: React.FC<StockCardProps> = ({
                   style={{
                     fontSize: "1rem",
                     fontWeight: "bold",
-                    color: "#ffffff",
+                    color: COLORS.mainFontColor,
                   }}
                 >
                   {currentShares ?? 0}
@@ -216,12 +217,7 @@ export const StockCard: React.FC<StockCardProps> = ({
 
             <div className="d-flex gap-2">
               <button
-                className="btn-sleek"
-                style={{
-                  backgroundColor: "#003300",
-                  color: "#00ff00",
-                  borderColor: "#00ff00",
-                }}
+                className="btn-sleek btn-sleek-green"
                 onClick={() => {
                   postData(
                     "openPosition",
@@ -257,12 +253,7 @@ export const StockCard: React.FC<StockCardProps> = ({
                 BUY
               </button>
               <button
-                className="btn-sleek"
-                style={{
-                  backgroundColor: "#330000",
-                  color: "#ff4444",
-                  borderColor: "#ff4444",
-                }}
+                className="btn-sleek btn-sleek-red"
                 onClick={() => {
                   postData(
                     "closePosition",
@@ -296,8 +287,7 @@ export const StockCard: React.FC<StockCardProps> = ({
                 SELL
               </button>
               <button
-                className="btn-sleek"
-                style={{ border: "1px solid #444", color: "#666" }}
+                className="btn-sleek btn-sleek-red"
                 onClick={() => {
                   postData(
                     "closePosition",
@@ -338,7 +328,7 @@ export const StockCard: React.FC<StockCardProps> = ({
           <div
             style={{
               fontSize: "0.65rem",
-              color: "#7e7cf3",
+              color: COLORS.secondaryTextColor,
               letterSpacing: "0.2em",
               marginBottom: "10px",
               paddingLeft: "5px",
@@ -351,8 +341,8 @@ export const StockCard: React.FC<StockCardProps> = ({
             style={{
               flex: 1,
               overflowY: "auto",
-              background: "#050505",
-              border: "1px solid #1a1a1a",
+              background: COLORS.cardBackground,
+              border: `1px solid ${COLORS.cardSoftBorder}`,
               borderRadius: "4px",
             }}
           >

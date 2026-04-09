@@ -14,6 +14,7 @@ import {
 import { useWS } from "./WSContest"; // adjust import
 import "chartjs-adapter-date-fns";
 import { BalancePoint, StockPoint, usePriceStream } from "./PriceContext";
+import { COLORS } from "../constants/Colors";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -92,8 +93,8 @@ export const BalanceWSComponent: React.FC<BalanceWSProps> = ({
     const lastPoint = filteredPoints[filteredPoints.length - 1];
     const balanceLineColor =
       lastPoint && lastPoint.Balance < previousPortfolioBalance
-        ? "rgba(200, 0, 0, 0.8)"
-        : "rgba(0, 150, 0, 0.8)";
+        ? COLORS.red.negative
+        : COLORS.green.positive;
 
     return {
       datasets: [
@@ -149,8 +150,8 @@ export const BalanceWSComponent: React.FC<BalanceWSProps> = ({
 
   const balanceColor =
     latestBalance < previousPortfolioBalance
-      ? "rgba(200, 0, 0, 0.8)"
-      : "rgba(0, 150, 0, 0.8)";
+      ? COLORS.red.negative
+      : COLORS.green.positive;
 
   let change = latestBalance - previousPortfolioBalance;
   let changePercent =
@@ -187,7 +188,7 @@ export const BalanceWSComponent: React.FC<BalanceWSProps> = ({
             letterSpacing: "0.05em",
           }}
         >
-          <span style={{ color: "#666" }}>
+          <span style={{ color: COLORS.mainFontColor }}>
             TOTAL BALANCE:{" "}
             <span style={{ color: balanceColor, fontWeight: "bold" }}>
               $
@@ -196,9 +197,9 @@ export const BalanceWSComponent: React.FC<BalanceWSProps> = ({
               })}
             </span>
           </span>
-          <span style={{ color: "#666" }}>
+          <span style={{ color: COLORS.mainFontColor }}>
             CASH:{" "}
-            <span style={{ color: "#ffffff", fontWeight: "bold" }}>
+            <span style={{ color: COLORS.mainFontColor, fontWeight: "bold" }}>
               $
               {latestCash.toLocaleString(undefined, {
                 minimumFractionDigits: 2,

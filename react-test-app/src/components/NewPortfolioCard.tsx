@@ -1,6 +1,7 @@
 import React, { Dispatch, SetStateAction, useState } from "react";
 import { usePriceStream, Position } from "./PriceContext";
 import { useWS } from "./WSContest";
+import { COLORS } from "../constants/Colors";
 
 interface NewPortfolioCardProps {
   setActiveCard: (query: string) => void;
@@ -71,12 +72,14 @@ export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
           cursor: "pointer",
           padding: "12px",
           borderRadius: "8px",
-          backgroundColor: "#2a2a2a",
-          borderLeft: "4px solid #00ff88",
+          backgroundColor: COLORS.cardBackground,
+          borderLeft: "4px solid " + COLORS.green.button,
           marginBottom: "10px",
           // 1. Added smooth transition for transform and shadow
           transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-          border: isStaged ? "1px solid #7e7cf3" : "1px solid #333",
+          border: isStaged
+            ? "1px solid " + COLORS.secondaryTextColor
+            : "1px solid " + COLORS.borderColor,
           boxShadow: isStaged ? "0 0 10px rgba(126, 124, 243, 0.1)" : "none",
         }}
         onMouseEnter={(e) => {
@@ -97,7 +100,13 @@ export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
             alignItems: "center",
           }}
         >
-          <div style={{ fontSize: "14px", fontWeight: "700", color: "#fff" }}>
+          <div
+            style={{
+              fontSize: "14px",
+              fontWeight: "700",
+              color: COLORS.mainFontColor,
+            }}
+          >
             {id}
           </div>
         </div>
@@ -111,12 +120,20 @@ export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
         >
           <div style={{ display: "flex", flexDirection: "column" }}>
             <span
-              style={{ fontSize: "10px", color: "#888", fontWeight: "800" }}
+              style={{
+                fontSize: "10px",
+                color: COLORS.infoTextColor,
+                fontWeight: "800",
+              }}
             >
               Price:
             </span>
             <span
-              style={{ fontSize: "15px", fontWeight: "700", color: "#fff" }}
+              style={{
+                fontSize: "15px",
+                fontWeight: "700",
+                color: COLORS.mainFontColor,
+              }}
             >
               $
               {latestPrice.toLocaleString(undefined, {
@@ -132,12 +149,20 @@ export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
             }}
           >
             <span
-              style={{ fontSize: "10px", color: "#888", fontWeight: "800" }}
+              style={{
+                fontSize: "10px",
+                color: COLORS.infoTextColor,
+                fontWeight: "800",
+              }}
             >
               Shares:
             </span>
             <span
-              style={{ fontSize: "13px", fontWeight: "600", color: "#bbb" }}
+              style={{
+                fontSize: "13px",
+                fontWeight: "600",
+                color: COLORS.infoTextColor,
+              }}
             >
               {newStocks[id].amount}
             </span>
@@ -160,14 +185,14 @@ export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
       <div
         style={{
           padding: "20px",
-          borderBottom: "1px solid #222",
-          backgroundColor: "#111",
+          borderBottom: "1px solid " + COLORS.borderColor,
+          backgroundColor: COLORS.cardBackground,
         }}
       >
         <div
           style={{
             fontSize: "10px",
-            color: "#7e7cf3",
+            color: COLORS.secondaryTextColor,
             fontWeight: "900",
             marginBottom: "4px",
           }}
@@ -180,7 +205,7 @@ export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
           style={{
             margin: 0,
             fontSize: "1.2rem",
-            color: "#fff",
+            color: COLORS.mainFontColor,
             fontWeight: "700",
           }}
         >
@@ -191,14 +216,14 @@ export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
       <div
         style={{
           padding: "20px",
-          backgroundColor: "#0a0a0a",
-          borderBottom: "1px solid #1a1a1a",
+          backgroundColor: COLORS.cardBackground,
+          borderBottom: "1px solid " + COLORS.cardSoftBorder,
         }}
       >
         <label
           style={{
             fontSize: "10px",
-            color: "#555",
+            color: COLORS.infoTextColor,
             fontWeight: "800",
             display: "block",
             marginBottom: "8px",
@@ -215,16 +240,18 @@ export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
             width: "100%",
             padding: "12px",
             borderRadius: "4px",
-            background: "#000",
-            border: "1px solid #333",
-            color: "#00ff00", // Terminal green input
+            background: COLORS.appBackground,
+            border: "1px solid " + COLORS.borderColor,
+            color: COLORS.mainFontColor, // Terminal green input
             fontFamily: "'JetBrains Mono', monospace",
             fontSize: "0.9rem",
             outline: "none",
             transition: "border-color 0.2s",
           }}
-          onFocus={(e) => (e.target.style.borderColor = "#7e7cf3")}
-          onBlur={(e) => (e.target.style.borderColor = "#333")}
+          onFocus={(e) =>
+            (e.target.style.borderColor = COLORS.secondaryTextColor)
+          }
+          onBlur={(e) => (e.target.style.borderColor = COLORS.borderColor)}
         />
       </div>
 
@@ -238,9 +265,9 @@ export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
             <h4
               style={{
                 fontSize: "11px",
-                color: "#444",
+                color: COLORS.infoTextColor,
                 marginBottom: "12px",
-                borderBottom: "1px solid #222",
+                borderBottom: "1px solid " + COLORS.borderColor,
               }}
             >
               EXISTING_POSITIONS
@@ -264,9 +291,9 @@ export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
           <h4
             style={{
               fontSize: "11px",
-              color: "#7e7cf3",
+              color: COLORS.secondaryTextColor,
               marginBottom: "12px",
-              borderBottom: "1px solid #222",
+              borderBottom: "1px solid " + COLORS.borderColor,
             }}
           >
             STAGED_FOR_COMMIT
@@ -274,11 +301,11 @@ export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
           {newTickerSymbols.length === 0 ? (
             <div
               style={{
-                color: "#333",
+                color: COLORS.borderColor,
                 textAlign: "center",
                 fontSize: "0.8rem",
                 padding: "20px",
-                border: "1px dashed #222",
+                border: "1px dashed " + COLORS.cardSoftBorder,
               }}
             >
               NO NEW ASSETS SELECTED
@@ -302,7 +329,10 @@ export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
       {/* --- Footer Controls --- */}
       <footer
         className="d-flex gap-2 p-3"
-        style={{ backgroundColor: "#0a0a0a", borderTop: "1px solid #222" }}
+        style={{
+          backgroundColor: COLORS.cardBackground,
+          borderTop: "1px solid " + COLORS.borderColor,
+        }}
       >
         <button
           className="btn-sleek btn-outline-danger flex-grow-1"
@@ -326,7 +356,11 @@ export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
 
         <button
           className="btn-sleek flex-grow-1"
-          style={{ padding: "10px", backgroundColor: "#7e7cf3", color: "#fff" }}
+          style={{
+            padding: "10px",
+            backgroundColor: COLORS.secondaryTextColor,
+            color: COLORS.mainFontColor,
+          }}
           onClick={() => {
             const positionsArray = Object.values(newStocks);
             PostData(activePortfolio, tempPortfolioName, positionsArray);

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { CompanyStats, usePriceStream } from "./PriceContext";
 import { FinancialGrid } from "./FinancialGrid";
+import { COLORS } from "../constants/Colors";
 import { useWS } from "./WSContest";
 
 type Period = "Annual" | "Quarterly";
@@ -35,7 +36,7 @@ export const FinancialsCard: React.FC<FinancialsCardProps> = ({
         display: "flex",
         flexDirection: "column",
         height: "94%",
-        backgroundColor: "#000",
+        backgroundColor: COLORS.appBackground,
         padding: "0 10px 10px 10px",
         marginTop: "10px",
       }}
@@ -44,9 +45,9 @@ export const FinancialsCard: React.FC<FinancialsCardProps> = ({
       <div
         className="d-flex justify-content-between align-items-center"
         style={{
-          background: "#050505",
+          background: COLORS.cardBackground,
           padding: "12px 20px",
-          borderBottom: "1px solid #333",
+          borderBottom: "1px solid" + COLORS.borderColor,
           borderRadius: "4px 4px 0 0",
         }}
       >
@@ -59,7 +60,7 @@ export const FinancialsCard: React.FC<FinancialsCardProps> = ({
               style={{
                 padding: "2px 8px",
                 fontSize: "0.7rem",
-                border: "1px solid #333",
+                border: "1px solid" + COLORS.borderColor,
                 background: "transparent",
               }}
             >
@@ -74,7 +75,7 @@ export const FinancialsCard: React.FC<FinancialsCardProps> = ({
               style={{
                 fontWeight: "800",
                 letterSpacing: "-0.02em",
-                color: "#fff",
+                color: COLORS.mainFontColor,
               }}
             >
               {stats.Symbol}
@@ -82,7 +83,7 @@ export const FinancialsCard: React.FC<FinancialsCardProps> = ({
             <span
               style={{
                 fontSize: "0.6rem",
-                color: "#666",
+                color: COLORS.infoTextColor,
                 fontFamily: "monospace",
                 textTransform: "uppercase",
               }}
@@ -98,10 +99,10 @@ export const FinancialsCard: React.FC<FinancialsCardProps> = ({
           <div
             className="d-flex gap-1"
             style={{
-              background: "#111",
+              background: COLORS.cardBackground,
               padding: "2px",
               borderRadius: "4px",
-              border: "1px solid #222",
+              border: "1px solid" + COLORS.borderColor,
             }}
           >
             {["Annual", "Quarterly"].map((p) => (
@@ -116,8 +117,10 @@ export const FinancialsCard: React.FC<FinancialsCardProps> = ({
                   transition: "all 0.2s",
                   fontWeight: "700",
                   letterSpacing: "0.05em",
-                  backgroundColor: period === p ? "#7e7cf3" : "transparent",
-                  color: period === p ? "#000" : "#555",
+                  backgroundColor:
+                    period === p ? COLORS.secondaryTextColor : "transparent",
+                  color:
+                    period === p ? COLORS.appBackground : COLORS.infoTextColor,
                 }}
               >
                 {p.toUpperCase()}
@@ -125,7 +128,13 @@ export const FinancialsCard: React.FC<FinancialsCardProps> = ({
             ))}
           </div>
 
-          <div style={{ width: "1px", height: "16px", background: "#333" }} />
+          <div
+            style={{
+              width: "1px",
+              height: "16px",
+              background: COLORS.borderColor,
+            }}
+          />
 
           {/* Report Type Selector */}
           <div className="d-flex gap-4">
@@ -139,12 +148,24 @@ export const FinancialsCard: React.FC<FinancialsCardProps> = ({
                   transition: "all 0.2s",
                   letterSpacing: "0.12em",
                   fontWeight: "bold",
-                  color: reportType === r ? "#fff" : "#444",
+                  color:
+                    reportType === r
+                      ? COLORS.mainFontColor
+                      : COLORS.infoTextColor,
                   borderBottom:
                     reportType === r
-                      ? "2px solid #7e7cf3"
+                      ? "2px solid" + COLORS.secondaryTextColor
                       : "2px solid transparent",
                   paddingBottom: "4px",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = COLORS.mainFontColor;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color =
+                    reportType === r
+                      ? COLORS.mainFontColor
+                      : COLORS.infoTextColor;
                 }}
               >
                 {r.toUpperCase()}
@@ -158,8 +179,8 @@ export const FinancialsCard: React.FC<FinancialsCardProps> = ({
       <div
         className="flex-grow-1 d-flex flex-column overflow-hidden"
         style={{
-          background: "#050505",
-          border: "1px solid #1a1a1a",
+          background: COLORS.cardBackground,
+          border: "1px solid" + COLORS.cardSoftBorder,
           borderTop: "none", // Seamless connection to header
           borderRadius: "0 0 4px 4px",
         }}

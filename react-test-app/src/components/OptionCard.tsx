@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import OptionsSearchBar from "./OptionsSearchBar";
 import { OptionWSComponent } from "./OptionGraph";
+import { COLORS } from "../constants/Colors";
 
 interface OptionCardProps {
   setActiveCard: (query: string) => void;
@@ -25,7 +26,7 @@ export const OptionCard: React.FC<OptionCardProps> = ({
       style={{
         width: "100%",
         height: "100vh",
-        backgroundColor: "#000000",
+        backgroundColor: COLORS.appBackground,
         display: "flex",
         flexDirection: "column",
         overflow: "hidden", // Prevents the main body from scrolling
@@ -35,8 +36,8 @@ export const OptionCard: React.FC<OptionCardProps> = ({
       <header
         className="d-flex align-items-center gap-3 p-2"
         style={{
-          borderBottom: "1px solid #222",
-          backgroundColor: "#050505",
+          borderBottom: "1px solid " + COLORS.cardSoftBorder,
+          backgroundColor: COLORS.cardBackground,
           zIndex: 10,
         }}
       >
@@ -47,7 +48,7 @@ export const OptionCard: React.FC<OptionCardProps> = ({
             fontSize: "0.65rem",
             textTransform: "uppercase",
             letterSpacing: "1px",
-            borderColor: "#444",
+            borderColor: COLORS.borderColor,
           }}
         >
           ← ESC
@@ -78,8 +79,8 @@ export const OptionCard: React.FC<OptionCardProps> = ({
           <div
             className="d-flex gap-1 align-items-center px-2"
             style={{
-              borderLeft: "1px solid #333",
-              borderRight: "1px solid #333",
+              borderLeft: "1px solid " + COLORS.borderColor,
+              borderRight: "1px solid " + COLORS.borderColor,
             }}
           >
             <OptionsSearchBar

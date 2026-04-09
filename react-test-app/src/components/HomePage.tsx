@@ -1,3 +1,4 @@
+import { COLORS } from "../constants/Colors";
 import { BalanceWSComponent } from "./Balance";
 import { IdCards } from "./OpenPositions";
 
@@ -20,7 +21,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         flexDirection: "column",
         height: "94vh" /* Fill the space below the header */,
         width: "100%",
-        backgroundColor: "#000000",
+        backgroundColor: COLORS.appBackground,
         padding: "0 20px 15px 20px",
         marginTop: "10px" /* The gap between the header and the content */,
         marginBottom: "10px" /* The gap between the content and the footer */,
@@ -52,8 +53,8 @@ export const HomePage: React.FC<HomePageProps> = ({
               margin: "0",
               display: "flex",
               flexDirection: "column",
-              background: "#000000",
-              border: "1px solid #1a1a1a",
+              background: COLORS.appBackground,
+              border: "1px solid " + COLORS.cardSoftBorder,
               borderRadius: "4px",
               overflow: "hidden",
             }}
@@ -77,7 +78,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             className="card-title"
             style={{
               fontSize: "0.65rem",
-              color: "#7e7cf3",
+              color: COLORS.secondaryTextColor,
               letterSpacing: "0.15em",
               marginBottom: "10px",
               paddingLeft: "5px",
@@ -90,8 +91,8 @@ export const HomePage: React.FC<HomePageProps> = ({
             style={{
               flex: 1,
               overflowY: "auto",
-              background: "#050505",
-              border: "1px solid #1a1a1a",
+              background: COLORS.cardBackground,
+              border: "1px solid " + COLORS.cardSoftBorder,
               borderRadius: "4px",
             }}
           >

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useWS } from "./WSContest";
 import { OptionExpiration, usePriceStream } from "./PriceContext";
+import { COLORS } from "../constants/Colors";
 
 interface OptionExpirationCardsProps {
   setActiveID: (query: string) => void;
@@ -103,7 +104,7 @@ export const OptionExpirationCards: React.FC<OptionExpirationCardsProps> = ({
   }) => {
     const friendlyName = formatFriendlyId(id);
     const isCall = label === "CALL";
-    const accentColor = isCall ? "#00ff88" : "#ff4444";
+    const accentColor = isCall ? COLORS.green.positive : COLORS.red.negative;
 
     return (
       <div
@@ -113,25 +114,25 @@ export const OptionExpirationCards: React.FC<OptionExpirationCardsProps> = ({
           cursor: "pointer",
           padding: "12px",
           borderRadius: "0px", // Sharp terminal edge
-          backgroundColor: "#0a0a0a",
-          border: "1px solid #1a1a1a",
+          backgroundColor: COLORS.cardBackground,
+          border: "1px solid " + COLORS.cardSoftBorder,
           borderLeft: `3px solid ${accentColor}`,
           transition: "all 0.1s ease",
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = "#111";
-          e.currentTarget.style.borderColor = "#333";
+          e.currentTarget.style.backgroundColor = COLORS.dynamic.hover;
+          e.currentTarget.style.borderColor = COLORS.dynamic.bottomBorder;
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "#0a0a0a";
-          e.currentTarget.style.borderColor = "#1a1a1a";
+          e.currentTarget.style.backgroundColor = COLORS.dynamic.background;
+          e.currentTarget.style.borderColor = COLORS.dynamic.bottomBorder;
         }}
       >
         <div
           style={{
             fontSize: "0.75rem",
             fontWeight: "700",
-            color: "#fff",
+            color: COLORS.mainFontColor,
             fontFamily: "monospace",
             letterSpacing: "0.5px",
           }}
@@ -164,7 +165,7 @@ export const OptionExpirationCards: React.FC<OptionExpirationCardsProps> = ({
             style={{
               fontSize: "0.85rem",
               fontWeight: "700",
-              color: "#fff",
+              color: COLORS.mainFontColor,
               fontFamily: "monospace",
             }}
           >
@@ -182,7 +183,7 @@ export const OptionExpirationCards: React.FC<OptionExpirationCardsProps> = ({
         display: "flex",
         flexDirection: "column",
         height: "100%",
-        backgroundColor: "#000",
+        backgroundColor: COLORS.appBackground,
       }}
     >
       {/* Filter Header */}
@@ -191,11 +192,11 @@ export const OptionExpirationCards: React.FC<OptionExpirationCardsProps> = ({
           display: "flex",
           gap: "1px", // Grid-line gap
           padding: "8px",
-          background: "#050505",
+          background: COLORS.cardBackground,
           position: "sticky",
           top: 0,
           zIndex: 10,
-          borderBottom: "1px solid #1a1a1a",
+          borderBottom: `1px solid ${COLORS.cardSoftBorder}`,
         }}
       >
         {(["CALL", "PUT"] as const).map((f) => {
@@ -208,14 +209,28 @@ export const OptionExpirationCards: React.FC<OptionExpirationCardsProps> = ({
                 flex: 1,
                 padding: "8px 0",
                 borderRadius: "0px",
-                border: `1px solid ${isActive ? "#333" : "transparent"}`,
+                border: `1px solid ${isActive ? COLORS.borderColor : "transparent"}`,
                 cursor: "pointer",
                 fontSize: "10px",
                 fontWeight: "bold",
                 letterSpacing: "1px",
-                backgroundColor: isActive ? "#1a1a1a" : "transparent",
-                color: isActive ? "#fff" : "#444",
+                backgroundColor: isActive
+                  ? COLORS.cardBackground
+                  : "transparent",
+                color: isActive ? COLORS.mainFontColor : COLORS.infoTextColor,
                 transition: "all 0.1s",
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.backgroundColor = COLORS.dynamic.hover;
+                  e.currentTarget.style.color = COLORS.mainFontColor;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.backgroundColor = "transparent";
+                  e.currentTarget.style.color = COLORS.infoTextColor;
+                }
               }}
             >
               {f}
@@ -237,7 +252,7 @@ export const OptionExpirationCards: React.FC<OptionExpirationCardsProps> = ({
         {filteredExpirations.length === 0 ? (
           <div
             style={{
-              color: "#333",
+              color: COLORS.infoTextColor,
               padding: "20px",
               fontSize: "11px",
               fontFamily: "monospace",
@@ -251,7 +266,7 @@ export const OptionExpirationCards: React.FC<OptionExpirationCardsProps> = ({
             <React.Fragment key={ticker}>
               <div
                 style={{
-                  color: "#7e7cf3", // Using your brand purple for headers
+                  color: COLORS.secondaryTextColor,
                   fontSize: "9px",
                   fontWeight: "bold",
                   marginTop: "12px",

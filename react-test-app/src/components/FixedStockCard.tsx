@@ -6,6 +6,7 @@ import { FixedOptionWSComponent } from "./FixedOptionGraph";
 import { useWS } from "./WSContest";
 import { OptionExpirationCards } from "./OptionExpirationCards";
 import { postData } from "./OptionGraph";
+import { COLORS } from "../constants/Colors";
 interface FixedStockCardProps {
   setActiveCard: (query: string) => void;
   setFixedID: (query: string) => void;
@@ -83,7 +84,7 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
         flexDirection: "column",
         height: "95%", // Use full height
         backgroundColor: "#000",
-        color: "#fff",
+        color: COLORS.mainFontColor,
         overflow: "hidden",
       }}
     >
@@ -104,11 +105,14 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
           style={{
             fontFamily: "monospace",
             fontSize: "0.75rem",
-            color: "#666",
+            color: COLORS.infoTextColor,
             marginRight: "12px",
           }}
         >
-          ACTIVE_TICKER: <span style={{ color: "#7e7cf3" }}>{activeStock}</span>
+          ACTIVE_TICKER:{" "}
+          <span style={{ color: COLORS.secondaryTextColor }}>
+            {activeStock}
+          </span>
         </div>
       </header>
 
@@ -123,8 +127,8 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
           <div
             className="flex-grow-1 rounded-sm"
             style={{
-              backgroundColor: "#050505",
-              border: "1px solid #111",
+              backgroundColor: COLORS.cardBackground,
+              border: `1px solid ${COLORS.cardSoftBorder}`,
               minHeight: 0,
             }}
           >
@@ -139,7 +143,10 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
           {/* Trade Execution Bar */}
           <div
             className="mt-3 p-3"
-            style={{ backgroundColor: "#0a0a0a", border: "1px solid #222" }}
+            style={{
+              backgroundColor: COLORS.cardBackground,
+              border: `1px solid ${COLORS.cardSoftBorder}`,
+            }}
           >
             <div className="d-flex align-items-end justify-content-between">
               <div className="d-flex gap-4">
@@ -148,7 +155,7 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
                   <label
                     style={{
                       fontSize: "9px",
-                      color: "#555",
+                      color: COLORS.infoTextColor,
                       fontWeight: "800",
                     }}
                   >
@@ -161,9 +168,9 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
                     onChange={handleAmountChange}
                     style={{
                       width: "90px",
-                      backgroundColor: "#000",
-                      border: "1px solid #333",
-                      color: "#00ff88",
+                      backgroundColor: COLORS.appBackground,
+                      border: `1px solid ${COLORS.borderColor}`,
+                      color: COLORS.mainFontColor,
                       fontFamily: "monospace",
                     }}
                   />
@@ -174,7 +181,7 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
                   <label
                     style={{
                       fontSize: "9px",
-                      color: "#555",
+                      color: COLORS.infoTextColor,
                       fontWeight: "800",
                     }}
                   >
@@ -187,9 +194,9 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
                     onChange={handleDollarChange}
                     style={{
                       width: "120px",
-                      backgroundColor: "#000",
-                      border: "1px solid #333",
-                      color: "#7e7cf3",
+                      backgroundColor: COLORS.appBackground,
+                      border: `1px solid ${COLORS.borderColor}`,
+                      color: COLORS.mainFontColor,
                       fontFamily: "monospace",
                     }}
                   />
@@ -200,12 +207,14 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
                   <span
                     style={{
                       fontSize: "0.7rem",
-                      color: "#444",
+                      color: COLORS.infoTextColor,
                       fontFamily: "monospace",
                     }}
                   >
                     OPEN_POSITION:{" "}
-                    <span style={{ color: "#fff" }}>{currentShares ?? 0}</span>{" "}
+                    <span style={{ color: COLORS.mainFontColor }}>
+                      {currentShares ?? 0}
+                    </span>{" "}
                     SHRS
                   </span>
                 </div>
@@ -284,8 +293,7 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
                   CLOSE_POS
                 </button>
                 <button
-                  className="btn-sleek"
-                  style={{ borderColor: "#333", color: "#666" }}
+                  className="btn-sleek btn-sleek-red"
                   onClick={() => {
                     postData(
                       "closePosition",
@@ -321,8 +329,8 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
             width: "300px",
             display: "flex",
             flexDirection: "column",
-            backgroundColor: "#050505",
-            border: "1px solid #222",
+            backgroundColor: COLORS.cardBackground,
+            border: `1px solid ${COLORS.cardSoftBorder}`,
             flexShrink: 0,
           }}
         >
@@ -330,10 +338,10 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
             style={{
               fontSize: "0.7rem",
               letterSpacing: "2px",
-              color: "#444",
+              color: COLORS.infoTextColor,
               fontWeight: "bold",
               padding: "12px 16px",
-              borderBottom: "1px solid #1a1a1a",
+              borderBottom: `1px solid ${COLORS.cardSoftBorder}`,
             }}
           >
             CHAIN_EXPIRATIONS

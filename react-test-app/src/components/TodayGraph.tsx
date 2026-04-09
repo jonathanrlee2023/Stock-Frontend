@@ -20,6 +20,7 @@ import {
 } from "./PriceContext";
 import { postData } from "./OptionGraph";
 import SentimentDial from "./SentimentDial";
+import { COLORS } from "../constants/Colors";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -152,9 +153,9 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
           fill: false,
           borderColor: isLive
             ? upOrDown
-              ? "#22c55e"
-              : "#ef4444" // Green if up, Red if down
-            : "#00bb10", // Neutral Blue/Purple for History
+              ? COLORS.green.positive
+              : COLORS.red.negative // Green if up, Red if down
+            : COLORS.neutralStockHistory, // Neutral Blue/Purple for History
           tension: isLive ? 0 : 0.1, // Smooth lines look better on long history
           pointRadius: isLive ? 3 : 0, // Hide points on long history for performance
         },
@@ -175,8 +176,14 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
         fontSize: "0.9rem",
       }}
     >
-      <span style={{ color: "#888" }}>{label}</span>
-      <span style={{ color: "#fff", textAlign: "right", ...valueStyle }}>
+      <span style={{ color: COLORS.infoTextColor }}>{label}</span>
+      <span
+        style={{
+          color: COLORS.mainFontColor,
+          textAlign: "right",
+          ...valueStyle,
+        }}
+      >
         {value}
       </span>
     </div>
@@ -199,7 +206,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
         title: {
           display: true,
           text: `NODE_SIGNAL: ${stockSymbol.toUpperCase()} // ${timeframe.toUpperCase()}`,
-          color: "#7e7cf3",
+          color: COLORS.secondaryTextColor,
           align: "start" as const, // Added 'as const'
           font: {
             family: "monospace",
@@ -210,7 +217,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
         },
         tooltip: {
           enabled: true,
-          backgroundColor: "#0a0a0a",
+          backgroundColor: COLORS.cardBackground,
           titleFont: {
             family: "monospace",
             size: 12,
@@ -220,7 +227,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
             family: "monospace",
             size: 12,
           },
-          borderColor: "#333",
+          borderColor: COLORS.cardSoftBorder,
           borderWidth: 1,
           cornerRadius: 0,
           displayColors: false,
@@ -240,13 +247,13 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
             },
           },
           grid: {
-            color: "#111", // Very subtle grid
-            borderColor: "#222",
+            color: COLORS.cardSoftBorder, // Very subtle grid
+            borderColor: COLORS.cardSoftBorder,
           },
           ticks: {
             autoSkip: true,
             maxRotation: 0,
-            color: "#555",
+            color: COLORS.infoTextColor,
             font: { family: "monospace", size: 10 },
           },
         },
@@ -254,11 +261,11 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
           type: "linear" as const,
           beginAtZero: false,
           grid: {
-            color: "#111",
-            borderColor: "#222",
+            color: COLORS.cardSoftBorder,
+            borderColor: COLORS.cardSoftBorder,
           },
           ticks: {
-            color: "#555",
+            color: COLORS.infoTextColor,
             font: { family: "monospace", size: 10 },
             callback: (value: any) => `$${Number(value).toFixed(2)}`,
           },
@@ -268,7 +275,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   }, [stockSymbol, timeframe]);
 
   const getScoreColor = (score: number | null | undefined): string => {
-    if (score === null || score === undefined) return "#666";
+    if (score === null || score === undefined) return COLORS.infoTextColor;
 
     // Clamp score between 0 and 100
     const normalizedScore = Math.min(Math.max(score, 0), 100);
@@ -310,7 +317,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
             minHeight: "0",
             position: "relative",
             // Added a subtle border to ground the chart in the black void
-            border: "1px solid #1a1a1a",
+            border: "1px solid " + COLORS.cardSoftBorder,
             borderRadius: "4px",
             margin: "0 8px",
           }}
@@ -358,9 +365,14 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                     letterSpacing: "0.05em",
                     fontWeight: timeframe === tf ? "bold" : "normal",
                     textTransform: "uppercase",
-                    border: timeframe === tf ? "none" : "1px solid #333",
+                    border:
+                      timeframe === tf
+                        ? "none"
+                        : "1px solid " + COLORS.cardSoftBorder,
                     backgroundColor:
-                      timeframe === tf ? "#7e7cf3" : "transparent",
+                      timeframe === tf
+                        ? COLORS.secondaryTextColor
+                        : "transparent",
                   }}
                 >
                   {buttonLabel}
@@ -377,13 +389,13 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
         style={{
           flex: showStats ? "1 1 0%" : "0 0 auto",
           minHeight: "0",
-          border: "1px solid #333",
+          border: "1px solid " + COLORS.cardSoftBorder,
           borderRadius: "4px", // Switched to 4px to match your terminal style
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
           transition: "flex 0.5s ease",
-          background: "#050505",
+          background: COLORS.cardBackground,
         }}
       >
         <button
@@ -397,7 +409,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
           onClick={() => setShowStats(!showStats)}
         >
           <span style={{ fontWeight: 700 }}>{stockSymbol} // FUNDAMENTALS</span>
-          <span style={{ color: "#7e7cf3" }}>
+          <span style={{ color: COLORS.secondaryTextColor }}>
             {showStats ? "SHRINK_VIEW" : "EXPAND_VIEW"}
           </span>
         </button>
@@ -406,7 +418,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
           <div
             style={{
               padding: "20px",
-              background: "#000000",
+              background: COLORS.appBackground,
               display: "grid",
               gridTemplateColumns: "1fr 1fr",
               gap: "15px",
@@ -428,7 +440,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                   <div
                     style={{
                       height: "2px",
-                      background: "#222",
+                      background: COLORS.cardBackground,
                       marginTop: "8px",
                       borderRadius: "1px",
                     }}
@@ -527,8 +539,8 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                     justifyItems: "center", // Centers children horizontally within columns
                     marginTop: "20px",
                     padding: "20px 0",
-                    borderTop: "1px solid #1a1a1a",
-                    background: "linear-gradient(to bottom, #050505, #000000)", // Subtle depth
+                    borderTop: "1px solid " + COLORS.cardSoftBorder,
+                    background: `linear-gradient(to bottom, ${COLORS.cardBackground}, ${COLORS.appBackground})`, // Subtle depth
                   }}
                 >
                   {/* Left Column: Sentiment Dial */}
@@ -556,7 +568,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                         fontSize: "0.7rem",
                         padding: "12px 24px",
                         letterSpacing: "0.1em",
-                        boxShadow: "0 4px 15px rgba(126, 124, 243, 0.05)", // Very faint glow to match primary theme
+                        boxShadow: "0 4px 15px" + COLORS.cardBackground, // Very faint glow to match primary theme
                       }}
                       onClick={() => {
                         setActiveCard("financials");
@@ -573,7 +585,7 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
                 style={{
                   gridColumn: "span 2",
                   textAlign: "center",
-                  color: "#444",
+                  color: COLORS.infoTextColor,
                   fontSize: "0.8rem",
                 }}
               >

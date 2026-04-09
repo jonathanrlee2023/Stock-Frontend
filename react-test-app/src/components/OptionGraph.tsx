@@ -16,6 +16,7 @@ import "chartjs-adapter-date-fns";
 import { OptionPoint, usePriceStream } from "./PriceContext";
 import { verticalLinePlugin } from "./TodayGraph";
 import { formatFriendlyId } from "./OptionExpirationCards";
+import { COLORS } from "../constants/Colors";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -263,7 +264,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           display: true,
           text: `METRIC_STREAM: ${dataPoint.toUpperCase()}_HIST // ${formatFriendlyId(expectedSymbol)}`,
           align: "start" as const,
-          color: "#7e7cf3", // Brand Purple
+          color: COLORS.secondaryTextColor,
           font: {
             family: "monospace",
             size: 11,
@@ -273,8 +274,8 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
         },
         tooltip: {
           enabled: true,
-          backgroundColor: "#0a0a0a",
-          borderColor: "#333",
+          backgroundColor: COLORS.cardBackground,
+          borderColor: COLORS.borderColor,
           borderWidth: 1,
           cornerRadius: 0,
           titleFont: { family: "monospace", size: 12, weight: "bold" as const },
@@ -295,22 +296,22 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
             },
           },
           grid: {
-            color: "#111",
-            borderColor: "#222",
+            color: COLORS.cardSoftBorder,
+            borderColor: COLORS.cardSoftBorder,
           },
           ticks: {
-            color: "#444",
+            color: COLORS.infoTextColor,
             font: { family: "monospace", size: 9 },
             maxRotation: 0,
           },
         },
         y: {
           grid: {
-            color: "#111",
-            borderColor: "#222",
+            color: COLORS.cardSoftBorder,
+            borderColor: COLORS.cardSoftBorder,
           },
           ticks: {
-            color: "#444",
+            color: COLORS.infoTextColor,
             font: { family: "monospace", size: 9 },
             // If the metric is a small decimal (like Theta), force 4 decimal places
             callback: (value: any) =>
@@ -341,8 +342,8 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           className={`btn-sleek ${isPending ? "btn-loading" : ""}`}
           style={{
             minWidth: "120px",
-            backgroundColor: "#7e7cf3",
-            color: "#fff",
+            backgroundColor: COLORS.secondaryTextColor,
+            color: COLORS.mainFontColor,
           }}
           onClick={() =>
             startOptionStream(stockSymbol, strikePrice, day, month, year, type)
@@ -409,7 +410,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
         style={{
           minHeight: "0",
           position: "relative",
-          backgroundColor: "#050505",
+          backgroundColor: COLORS.cardBackground,
         }}
       >
         <Line
@@ -438,14 +439,16 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
               className={`btn btn-sm ${isActive ? "btn-primary" : "btn-dark"}`}
               style={{
                 fontSize: "0.65rem",
-                border: isActive ? "1px solid #7e7cf3" : "1px solid #333",
+                border: isActive
+                  ? "1px solid COLORS.secondaryTextColor"
+                  : "1px solid #333",
               }}
               onClick={() => setDataPoint(g)}
             >
               <span style={{ color: "#888" }}>{g.toUpperCase()}:</span>{" "}
               <span
                 style={{
-                  color: isActive ? "#fff" : "#00ff00",
+                  color: isActive ? COLORS.mainFontColor : "#00ff00",
                   fontFamily: "monospace",
                 }}
               >
@@ -482,7 +485,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
               width: "80px",
               backgroundColor: "#111",
               border: "1px solid #444",
-              color: "#fff",
+              color: COLORS.mainFontColor,
               textAlign: "center",
             }}
           />

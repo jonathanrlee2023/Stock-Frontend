@@ -5,6 +5,7 @@ import { useButtons } from "./ButtonContext";
 import { usePriceStream } from "./PriceContext";
 import "../../App.css";
 import { useWS } from "./WSContest";
+import { COLORS } from "../constants/Colors";
 
 interface SearchBarProps {
   setSearchQuery: (query: string) => void; // Function to update search query
@@ -70,7 +71,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     <div
       className="d-flex justify-content-center align-items-center px-3 py-2"
       style={{
-        backgroundColor: "#050505",
+        backgroundColor: COLORS.cardBackground,
         borderBottom: "1px solid #1a1a1a",
       }}
     >
@@ -196,7 +197,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         style={{
           height: "38px",
           borderRadius: "2px",
-          backgroundColor: "#1a1a1a",
+          backgroundColor: COLORS.cardBackground,
           border: "1px solid #333",
           fontSize: "0.7rem",
           fontWeight: "bold",

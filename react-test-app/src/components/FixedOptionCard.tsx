@@ -4,6 +4,7 @@ import { TodayStockWSComponent } from "./TodayGraph";
 import { usePriceStream } from "./PriceContext";
 import { FixedOptionWSComponent } from "./FixedOptionGraph";
 import { useWS } from "./WSContest";
+import { COLORS } from "../constants/Colors";
 interface FixedOptionCardProps {
   setActiveCard: (query: string) => void;
   fixedID: string;
@@ -24,14 +25,14 @@ export const StockCard: React.FC<FixedOptionCardProps> = ({
         height: "100vh", // Use full viewport height
         display: "flex",
         flexDirection: "column",
-        backgroundColor: "#000000",
+        backgroundColor: COLORS.appBackground,
         overflow: "hidden",
       }}
     >
       {/* --- Utility Navigation Bar --- */}
       <div
         className="d-flex align-items-center p-2 gap-2"
-        style={{ borderBottom: "1px solid #1a1a1a" }}
+        style={{ borderBottom: "1px solid " + COLORS.cardSoftBorder }}
       >
         {/* Return to Previous Card */}
         {previousCard && (
@@ -42,7 +43,7 @@ export const StockCard: React.FC<FixedOptionCardProps> = ({
               padding: "4px 12px",
               fontSize: "0.8rem",
               backgroundColor: "transparent",
-              border: "1px solid #333",
+              border: "1px solid " + COLORS.borderColor,
             }}
           >
             ← ESC
@@ -53,11 +54,12 @@ export const StockCard: React.FC<FixedOptionCardProps> = ({
             marginLeft: "auto",
             fontFamily: "monospace",
             fontSize: "0.75rem",
-            color: "#7e7cf3",
+            color: COLORS.secondaryTextColor,
             marginRight: "12px",
           }}
         >
-          ID_NODE: <span style={{ color: "#fff" }}>{fixedID}</span>
+          ID_NODE:{" "}
+          <span style={{ color: COLORS.mainFontColor }}>{fixedID}</span>
         </div>
       </div>
 

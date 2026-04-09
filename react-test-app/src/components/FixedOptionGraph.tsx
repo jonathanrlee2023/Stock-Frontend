@@ -17,6 +17,7 @@ import { OptionPoint, usePriceStream } from "./PriceContext";
 import { OptionMetric } from "./OptionGraph";
 import { verticalLinePlugin } from "./TodayGraph";
 import { formatFriendlyId } from "./OptionExpirationCards";
+import { COLORS } from "../constants/Colors";
 
 ChartJS.register(
   CategoryScale,
@@ -235,7 +236,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
           display: true,
           text: `METRIC_STREAM: ${dataPoint.toUpperCase()}_HIST // ${formatFriendlyId(optionID)}`,
           align: "start" as const,
-          color: "#7e7cf3", // Brand Purple
+          color: COLORS.secondaryTextColor, // Brand Purple
           font: {
             family: "monospace",
             size: 11,
@@ -245,8 +246,8 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
         },
         tooltip: {
           enabled: true,
-          backgroundColor: "#0a0a0a",
-          borderColor: "#333",
+          backgroundColor: COLORS.cardBackground,
+          borderColor: COLORS.borderColor,
           borderWidth: 1,
           cornerRadius: 0,
           titleFont: { family: "monospace", size: 12, weight: "bold" as const },
@@ -388,7 +389,10 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
       {/* --- Metrics Selector (Grid) --- */}
       <div
         className="p-2 d-flex gap-1 flex-wrap justify-content-center"
-        style={{ backgroundColor: "#050505", borderBottom: "1px solid #222" }}
+        style={{
+          backgroundColor: COLORS.cardBackground,
+          borderBottom: "1px solid" + COLORS.cardSoftBorder,
+        }}
       >
         {METRICS.map((g) => {
           const val = latestPoint ? latestPoint[g as keyof OptionPoint] : null;
@@ -402,9 +406,11 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
                 padding: "4px 10px",
                 fontSize: "0.65rem",
                 fontFamily: "monospace",
-                backgroundColor: isActive ? "#7e7cf3" : "#111",
-                color: isActive ? "#000" : "#666",
-                border: `1px solid ${isActive ? "#7e7cf3" : "#333"}`,
+                backgroundColor: isActive
+                  ? COLORS.secondaryTextColor
+                  : COLORS.cardBackground,
+                color: isActive ? COLORS.appBackground : COLORS.infoTextColor,
+                border: `1px solid ${isActive ? COLORS.secondaryTextColor : COLORS.cardSoftBorder}`,
                 fontWeight: isActive ? "bold" : "normal",
                 borderRadius: "2px",
                 transition: "all 0.1s ease",
@@ -420,7 +426,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
       {/* --- Execution & Tracking Bar --- */}
       <div
         className="p-3 d-flex flex-column gap-3"
-        style={{ backgroundColor: "#0a0a0a" }}
+        style={{ backgroundColor: COLORS.cardBackground }}
       >
         <div className="d-flex align-items-center justify-content-between">
           {/* Left: Input & Trade Actions */}
@@ -429,7 +435,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
               <label
                 style={{
                   fontSize: "9px",
-                  color: "#555",
+                  color: COLORS.infoTextColor,
                   fontWeight: "bold",
                   marginBottom: "2px",
                 }}
@@ -443,9 +449,9 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
                 onChange={(e) => setAmount(Number(e.target.value))}
                 style={{
                   width: "80px",
-                  backgroundColor: "#000",
-                  border: "1px solid #333",
-                  color: "#00ff88",
+                  backgroundColor: COLORS.cardBackground,
+                  border: `1px solid ${COLORS.borderColor}`,
+                  color: COLORS.green.button,
                   fontSize: "0.9rem",
                   fontFamily: "monospace",
                   padding: "2px 5px",
@@ -543,7 +549,10 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
           <div className="d-flex gap-2 align-self-end">
             <button
               className="btn-sleek"
-              style={{ color: "#7e7cf3", borderColor: "#333" }}
+              style={{
+                color: COLORS.secondaryTextColor,
+                borderColor: COLORS.borderColor,
+              }}
               onClick={() => {
                 ModifyTracker("newTracker");
                 const symbol = formatOptionSymbol(
@@ -564,7 +573,6 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
             </button>
             <button
               className="btn-sleek"
-              style={{ color: "#666", borderColor: "#222" }}
               onClick={() => {
                 ModifyTracker("closeTracker");
                 const symbol = formatOptionSymbol(

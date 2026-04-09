@@ -100,7 +100,7 @@ td:last-child {
 }
 
 .btn-sleek:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   background: #f0f0f0 !important;
   box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2) !important;
 }
@@ -130,16 +130,34 @@ td:last-child {
   box-shadow: 0 4px 15px rgba(255, 62, 62, 0.3) !important;
 }
 
+.btn-sleek-red:hover {
+  transform: translateY(-1px);
+  background: #ff6161 !important;
+  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2) !important;
+}
+
 .btn-sleek-green {
-  background: #00ff88 !important;
+  background: #00ff55 !important;
   color: #000000 !important;
   box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3) !important;
+}
+
+.btn-sleek-green:hover {
+  transform: translateY(-1px);
+  background: #7bff72 !important;
+  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2) !important;
 }
 
 .btn-sleek-dark {
   background: #111111 !important;
   color: #ffffff !important;
   border: 1px solid #333 !important;
+}
+
+.btn-sleek-dark:hover {
+  transform: translateY(-1px);
+  background: #1a1a1a !important;
+  box-shadow: 0 8px 20px #2e2e2e !important;
 }
 
 /* --- Precision Inputs --- */
