@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { COLORS } from "../constants/Colors";
+import { MetalText } from "./MetalText";
 
 interface LoginProps {
   onLogin: (userId: number) => void;
@@ -43,13 +44,11 @@ const Login: React.FC<LoginProps> = ({ onLogin, onGoToRegister }) => {
           boxShadow: `0 4px 8px ${COLORS.loginShadowColor}`,
         }}
       >
-        <h3
+        <MetalText
+          children="QUANTAE DIVITIAE"
           className="card-title text-center mb-4"
-          style={{ letterSpacing: "0.15em", color: COLORS.mainFontColor }}
-        >
-          Quantae Divitiae
-        </h3>
-
+          fontSize="1.5rem"
+        />
         <form onSubmit={handleSubmit}>
           {/* Username Field */}
           <div className="mb-4">

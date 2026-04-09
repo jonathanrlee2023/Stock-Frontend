@@ -7,19 +7,27 @@ import { PriceStreamProvider } from "./components/PriceContext";
 import { WSProvider } from "./components/WSContest";
 import Login from "./components/LoginPage";
 import Register from "./components/CreateLoginPage";
+import { MetalFilter } from "./components/MetalFilter";
+import { Meta } from "react-router-dom";
 
 const Main = () => {
   const [userId, setUserId] = useState<number | null>(null);
   const [isRegistering, setIsRegistering] = useState(false);
 
   if (!userId) {
-    return isRegistering ? (
-      <Register onBackToLogin={() => setIsRegistering(false)} />
-    ) : (
-      <Login
-        onLogin={(id) => setUserId(id)}
-        onGoToRegister={() => setIsRegistering(true)}
-      />
+    return (
+      <>
+        {/* Render the filter here so Login/Register can see it */}
+        <MetalFilter />
+        {isRegistering ? (
+          <Register onBackToLogin={() => setIsRegistering(false)} />
+        ) : (
+          <Login
+            onLogin={(id) => setUserId(id)}
+            onGoToRegister={() => setIsRegistering(true)}
+          />
+        )}
+      </>
     );
   }
 
@@ -28,6 +36,7 @@ const Main = () => {
     <ButtonsProvider>
       <PriceStreamProvider>
         <WSProvider clientId={`STOCK_CLIENT_${userId}`}>
+          <MetalFilter />
           <App />
         </WSProvider>
       </PriceStreamProvider>

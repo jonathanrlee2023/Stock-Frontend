@@ -122,7 +122,7 @@ const SentimentDial: React.FC<SentimentDialProps> = ({
           y={cy - 4}
           width="8"
           height="8"
-          fill=COLORS.mainFontColor
+          fill={COLORS.mainFontColor}
         />
         <rect x={cx - 2} y={cy - 2} width="4" height="4" fill="#000" />
       </svg>

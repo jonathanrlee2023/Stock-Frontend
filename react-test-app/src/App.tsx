@@ -12,7 +12,7 @@ import { PortfolioCards } from "./components/PortfoliosListCard";
 import { NewPortfolioCard } from "./components/NewPortfolioCard";
 import StockToPortfolioCard from "./components/StockToPortfolioCard";
 import { COLORS } from "./constants/Colors";
-
+import { MetalText } from "./components/MetalText";
 const App: React.FC = () => {
   const [activeCard, setActiveCard] = useState<string>("home"); // State to track the active screen
   const [fixedID, setFixedID] = useState<string>("");
@@ -40,17 +40,11 @@ const App: React.FC = () => {
           flexShrink: 0,
         }}
       >
-        <h1
-          style={{
-            fontSize: "0.9rem",
-            margin: "0",
-            letterSpacing: "0.25em",
-            color: COLORS.mainFontColor,
-            fontWeight: 900,
-          }}
-        >
-          QUANTAE DIVITIAE
-        </h1>
+        <MetalText
+          children="QUANTAE DIVITIAE"
+          className="card-title text-center mb-4 mt-4"
+          fontSize="1.5rem"
+        />
 
         <nav className="d-flex gap-4" style={{ height: "100%" }}>
           {[
