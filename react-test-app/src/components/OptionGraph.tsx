@@ -68,8 +68,6 @@ export const postData = async (
 ) => {
   const data = { id: ID, price, amount, portfolio_id };
 
-  console.log(data);
-
   try {
     const response = await fetch(`http://localhost:8080/${openOrClose}`, {
       method: "POST",

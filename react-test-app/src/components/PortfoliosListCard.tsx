@@ -17,7 +17,6 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
   const { balancePoints } = usePriceStream();
   const { ids, setIds, setPortfolioNames } = useWS();
   const { portfolioNames } = useWS();
-  console.log("Rendering PortfolioCards with portfolios:", portfolioNames);
 
   const portfolioIds = Object.keys(portfolioNames).map(Number);
 

@@ -47,7 +47,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onGoToRegister }) => {
         <MetalText
           children="QUANTAE DIVITIAE"
           className="card-title text-center mb-4"
-          fontSize="1.5rem"
+          fontSize="2rem"
         />
         <form onSubmit={handleSubmit}>
           {/* Username Field */}

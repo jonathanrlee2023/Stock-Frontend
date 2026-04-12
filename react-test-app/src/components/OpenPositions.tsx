@@ -45,7 +45,6 @@ export const IdCards: React.FC<IdCardProps> = ({
   activePortfolio,
 }) => {
   const { ids, setPreviousID } = useWS();
-  console.log(ids);
   const portfolioIds = ids[activePortfolio];
   const previousIdsRef = useRef<Record<string, number>>({});
   const {
