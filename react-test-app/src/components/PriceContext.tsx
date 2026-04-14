@@ -76,6 +76,7 @@ export type CompanyStats = {
   EarningsDate: string | null;
   Grade: number | null;
   Sector: string | null;
+  Industry: string | null;
   AnnualIncome: IncomeStatement[] | null;
   AnnualBalance: BalanceSheet[] | null;
   AnnualCash: CashFlowStatement[] | null;

@@ -88,7 +88,7 @@ export const FinancialsCard: React.FC<FinancialsCardProps> = ({
                 textTransform: "uppercase",
               }}
             >
-              {stats.Sector} // DATA_GRID
+              {stats.Sector} // {stats.Industry}
             </span>
           </h2>
         </div>
