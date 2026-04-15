@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
-import { usePriceStream } from "./PriceContext";
-import { useWS } from "./WSContest";
+import { useBalanceContext } from "./Contexts/BalanceContext";
+import { useWS } from "./Contexts/WSContest";
 import { COLORS } from "../constants/Colors";
 
 interface PortfolioCardsProps {
@@ -14,7 +14,7 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
   setActivePortfolio,
   activePortfolio,
 }) => {
-  const { balancePoints } = usePriceStream();
+  const { balancePoints } = useBalanceContext();
   const { ids, setIds, setPortfolioNames } = useWS();
   const { portfolioNames } = useWS();
 

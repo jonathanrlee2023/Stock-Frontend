@@ -1,9 +1,5 @@
-import { useState } from "react";
-import SearchBar from "./SearchBar";
-import { TodayStockWSComponent } from "./TodayGraph";
-import { usePriceStream } from "./PriceContext";
 import { FixedOptionWSComponent } from "./FixedOptionGraph";
-import { useWS } from "./WSContest";
+import { useWS } from "./Contexts/WSContest";
 import { COLORS } from "../constants/Colors";
 interface FixedOptionCardProps {
   setActiveCard: (query: string) => void;
@@ -16,7 +12,7 @@ export const StockCard: React.FC<FixedOptionCardProps> = ({
   fixedID,
   activePortfolio,
 }) => {
-  const { previousCard, previousID } = useWS();
+  const { previousCard } = useWS();
   return (
     <div
       className="bg-black text-white"

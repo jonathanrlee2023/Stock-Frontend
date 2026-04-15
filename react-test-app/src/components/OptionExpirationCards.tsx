@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useWS } from "./WSContest";
-import { OptionExpiration, usePriceStream } from "./PriceContext";
+import { useWS } from "./Contexts/WSContest";
+import { OptionExpiration } from "./Contexts/OptionContext";
+import { useOptionContext } from "./Contexts/OptionContext";
+import { useStreamActionsContext } from "./Contexts/StreamActionsContext";
 import { COLORS } from "../constants/Colors";
 
 interface OptionExpirationCardsProps {
@@ -57,8 +59,9 @@ export const OptionExpirationCards: React.FC<OptionExpirationCardsProps> = ({
   optionExpirations,
   prevCard,
 }) => {
-  const { optionPoints, startOptionStream } = usePriceStream();
-  const { previousCard, setPreviousCard } = useWS();
+  const { optionPoints } = useOptionContext();
+  const { startOptionStream } = useStreamActionsContext();
+  const { setPreviousCard } = useWS();
   const [filter, setFilter] = useState<"CALL" | "PUT">("CALL");
 
   const handleCardClick = (id: string) => {

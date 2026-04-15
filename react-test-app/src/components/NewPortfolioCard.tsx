@@ -1,6 +1,7 @@
 import React, { Dispatch, SetStateAction, useState } from "react";
-import { usePriceStream, Position } from "./PriceContext";
-import { useWS } from "./WSContest";
+import { Position } from "./Contexts/StreamActionsContext";
+import { useStockContext } from "./Contexts/StockContext";
+import { useWS } from "./Contexts/WSContest";
 import { COLORS } from "../constants/Colors";
 
 interface NewPortfolioCardProps {
@@ -47,8 +48,8 @@ export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
   activePortfolio,
   tempPortfolioName,
 }) => {
-  const { stockPoints } = usePriceStream();
-  const { ids, setIds, setPortfolioNames } = useWS();
+  const { stockPoints } = useStockContext();
+  const { ids } = useWS();
   const portfolioIds = ids[activePortfolio];
   const tickerSymbols = Object.keys(portfolioIds);
   const newTickerSymbols = Object.keys(newStocks);

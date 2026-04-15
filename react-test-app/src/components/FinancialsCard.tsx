@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { CompanyStats, usePriceStream } from "./PriceContext";
+import { CompanyStats, useCompanyContext } from "./Contexts/CompanyContext";
 import { FinancialGrid } from "./FinancialGrid";
 import { COLORS } from "../constants/Colors";
-import { useWS } from "./WSContest";
+import { useWS } from "./Contexts/WSContest";
 
 type Period = "Annual" | "Quarterly";
 type ReportType = "Income" | "Balance" | "Cash" | "Earnings";
@@ -24,7 +24,7 @@ export const FinancialsCard: React.FC<FinancialsCardProps> = ({
 }) => {
   const [period, setPeriod] = useState<Period>("Annual");
   const [reportType, setReportType] = useState<ReportType>("Income");
-  const { companyStats } = usePriceStream();
+  const { companyStats } = useCompanyContext();
   const { previousID, previousCard } = useWS();
 
   const stats = companyStats[previousID];

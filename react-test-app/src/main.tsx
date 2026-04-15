@@ -3,12 +3,15 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "bootstrap/dist/css/bootstrap.css";
 import { ButtonsProvider } from "./components/ButtonContext";
-import { PriceStreamProvider } from "./components/PriceContext";
-import { WSProvider } from "./components/WSContest";
+import { StockProvider } from "./components/Contexts/StockContext";
+import { BalanceProvider } from "./components/Contexts/BalanceContext";
+import { OptionProvider } from "./components/Contexts/OptionContext";
+import { CompanyProvider } from "./components/Contexts/CompanyContext";
+import { StreamActionsProvider } from "./components/Contexts/StreamActionsContext";
+import { WSProvider } from "./components/Contexts/WSContest";
 import Login from "./components/LoginPage";
 import Register from "./components/CreateLoginPage";
 import { MetalFilter } from "./components/MetalFilter";
-import { Meta } from "react-router-dom";
 
 const Main = () => {
   const [userId, setUserId] = useState<number | null>(null);
@@ -34,12 +37,20 @@ const Main = () => {
   // Once logged in, render the app with all Contexts
   return (
     <ButtonsProvider>
-      <PriceStreamProvider>
-        <WSProvider clientId={`STOCK_CLIENT_${userId}`}>
-          <MetalFilter />
-          <App />
-        </WSProvider>
-      </PriceStreamProvider>
+      <StockProvider>
+        <OptionProvider>
+          <BalanceProvider>
+            <CompanyProvider>
+              <StreamActionsProvider>
+                <WSProvider clientId={`STOCK_CLIENT_${userId}`}>
+                  <MetalFilter />
+                  <App />
+                </WSProvider>
+              </StreamActionsProvider>
+            </CompanyProvider>
+          </BalanceProvider>
+        </OptionProvider>
+      </StockProvider>
     </ButtonsProvider>
   );
 };

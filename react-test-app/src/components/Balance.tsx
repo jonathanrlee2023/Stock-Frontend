@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -11,9 +11,9 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { useWS } from "./WSContest"; // adjust import
+import { useWS } from "./Contexts/WSContest"; // adjust import
 import "chartjs-adapter-date-fns";
-import { BalancePoint, StockPoint, usePriceStream } from "./PriceContext";
+import { BalancePoint, useBalanceContext } from "./Contexts/BalanceContext";
 import { COLORS } from "../constants/Colors";
 ChartJS.register(
   CategoryScale,
@@ -33,7 +33,7 @@ interface BalanceWSProps {
 export const BalanceWSComponent: React.FC<BalanceWSProps> = ({
   activePortfolio,
 }) => {
-  const { balancePoints } = usePriceStream();
+  const { balancePoints } = useBalanceContext();
   const { previousBalance } = useWS();
   const previousPortfolioBalance = previousBalance[activePortfolio] || 0;
   const portfolioHistory = balancePoints[activePortfolio] || [];

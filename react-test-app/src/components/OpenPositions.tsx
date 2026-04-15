@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useWS } from "./WSContest";
-import { usePriceStream } from "./PriceContext";
-import { get } from "http";
+import { useWS } from "./Contexts/WSContest";
+import { useStockContext } from "./Contexts/StockContext";
+import { useOptionContext } from "./Contexts/OptionContext";
+import { useStreamActionsContext } from "./Contexts/StreamActionsContext";
 import { COLORS } from "../constants/Colors";
 
 interface IdCardProps {
@@ -47,13 +48,9 @@ export const IdCards: React.FC<IdCardProps> = ({
   const { ids, setPreviousID } = useWS();
   const portfolioIds = ids[activePortfolio];
   const previousIdsRef = useRef<Record<string, number>>({});
-  const {
-    stockPoints,
-    optionPoints,
-    startStockStream,
-    startOptionStream,
-    historicalStockPoints,
-  } = usePriceStream();
+  const { stockPoints, historicalStockPoints } = useStockContext();
+  const { optionPoints } = useOptionContext();
+  const { startStockStream, startOptionStream } = useStreamActionsContext();
   useEffect(() => {
     previousIdsRef.current = portfolioIds; // just track the latest ids
   }, [ids]);

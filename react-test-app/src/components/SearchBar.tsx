@@ -2,9 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { on } from "process";
 import { useButtons } from "./ButtonContext";
-import { usePriceStream } from "./PriceContext";
+import { useStreamActionsContext } from "./Contexts/StreamActionsContext";
 import "../../App.css";
-import { useWS } from "./WSContest";
+import { useWS } from "./Contexts/WSContest";
 import { COLORS } from "../constants/Colors";
 
 interface SearchBarProps {
@@ -27,7 +27,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [showDropdown, setShowDropdown] = useState(false); // Track visibility
   const searchContainerRef = useRef<HTMLDivElement>(null); // To detect clicks outside
   const { buttons, setButtons } = useButtons();
-  const { pendingRequests, startStockStream } = usePriceStream();
+  const { pendingRequests } = useStreamActionsContext();
   const { previousID } = useWS();
 
   useEffect(() => {

@@ -1,12 +1,14 @@
 import { useState } from "react";
 import SearchBar from "./SearchBar";
 import { TodayStockWSComponent } from "./TodayGraph";
-import { usePriceStream } from "./PriceContext";
-import { FixedOptionWSComponent } from "./FixedOptionGraph";
-import { useWS } from "./WSContest";
+import { useOptionContext } from "./Contexts/OptionContext";
+import { useStreamActionsContext } from "./Contexts/StreamActionsContext";
+import { useStockContext } from "./Contexts/StockContext";
+import { useWS } from "./Contexts/WSContest";
 import { OptionExpirationCards } from "./OptionExpirationCards";
 import { postData } from "./OptionGraph";
 import { COLORS } from "../constants/Colors";
+import { useBalanceContext } from "./Contexts/BalanceContext";
 interface FixedStockCardProps {
   setActiveCard: (query: string) => void;
   setFixedID: (query: string) => void;
@@ -25,8 +27,10 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
   const [dollarValue, setDollarValue] = useState<number>(0); // Cash
 
   const [activeStock, setActiveStock] = useState<string>(previousID || ""); // Persistent state for search query
-  const { optionExpirations, startStockStream, balancePoints, stockPoints } =
-    usePriceStream();
+  const { stockPoints } = useStockContext();
+  const { optionExpirations } = useOptionContext();
+  const { balancePoints } = useBalanceContext();
+  const { startStockStream } = useStreamActionsContext();
 
   const latestMark =
     stockPoints[activeStock]?.[stockPoints[activeStock].length - 1]?.Mark || 0;

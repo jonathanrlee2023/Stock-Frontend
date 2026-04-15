@@ -4,7 +4,7 @@ import {
   BalanceSheet,
   CashFlowStatement,
   EarningsReport,
-} from "./PriceContext";
+} from "./Contexts/CompanyContext";
 import { COLORS } from "../constants/Colors";
 
 interface GridProps {
@@ -285,7 +285,7 @@ export const FinancialGrid: React.FC<GridProps> = ({ data, type }) => {
                   <DataCell value={(row as IncomeStatement).totalRevenue} />
                   <DataCell value={(row as IncomeStatement).costOfRevenue} />
                   <DataCell
-                    value={(row as IncomeStatement).costOfGoodsAndServices}
+                    value={(row as IncomeStatement).costOfGoodsAndServicesSold}
                   />
 
                   {/* Operating Items */}

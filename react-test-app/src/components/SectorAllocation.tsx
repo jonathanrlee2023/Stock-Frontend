@@ -1,6 +1,8 @@
 // components/PortfolioAllocationChart.tsx
 import React, { act, useMemo, useState } from "react";
-import { usePriceStream } from "./PriceContext";
+import { useCompanyContext } from "./Contexts/CompanyContext";
+import { useStockContext } from "./Contexts/StockContext";
+import { useBalanceContext } from "./Contexts/BalanceContext";
 import {
   ResponsiveContainer,
   PieChart,
@@ -9,7 +11,7 @@ import {
   Sector,
   Tooltip,
 } from "recharts";
-import { useWS } from "./WSContest";
+import { useWS } from "./Contexts/WSContest";
 import { COLORS } from "../constants/Colors";
 
 const renderActiveShape = (props: any) => {
@@ -97,7 +99,9 @@ export const SectorAllocation: React.FC<SectorAllocationProps> = ({
 }) => {
   const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
   const { ids } = useWS();
-  const { companyStats, stockPoints, balancePoints } = usePriceStream();
+  const { companyStats } = useCompanyContext();
+  const { stockPoints } = useStockContext();
+  const { balancePoints } = useBalanceContext();
   const currentBalance = balancePoints[activePortfolio]?.slice(-1)[0];
   const balance = currentBalance?.Balance || 0;
   const cash = currentBalance?.Cash || 0;
@@ -151,13 +155,14 @@ export const SectorAllocation: React.FC<SectorAllocationProps> = ({
   }, [ids, activePortfolio, companyStats, stockPoints, balance, cash]);
   return (
     <div
-      className="card chart-card bg-black text-light p-3"
+      className="card chart-card text-light p-3"
       style={{
         flex: 1, // ADD THIS: Tells the card to grow
         height: "100%", // ADD THIS: Ensures it fills the flex item
         border: "1px solid " + COLORS.cardSoftBorder,
         borderRadius: "0",
         fontFamily: "monospace",
+        backgroundColor: COLORS.cardBackground,
         boxShadow: "inset 0px 0px 15px rgba(0,0,0,0.8)",
         display: "flex", // ADD THIS: To make internal card-body flex
         flexDirection: "column",

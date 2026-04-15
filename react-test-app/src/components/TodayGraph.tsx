@@ -11,13 +11,17 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { useWS } from "./WSContest"; // adjust import
+import { useWS } from "./Contexts/WSContest"; // adjust import
 import "chartjs-adapter-date-fns";
 import {
-  StockPoint,
   HistoricalStockPoint,
-  usePriceStream,
-} from "./PriceContext";
+  StockPoint,
+  useStockContext,
+} from "./Contexts/StockContext";
+import { useBalanceContext } from "./Contexts/BalanceContext";
+import { useOptionContext } from "./Contexts/OptionContext";
+import { useCompanyContext } from "./Contexts/CompanyContext";
+import { useStreamActionsContext } from "./Contexts/StreamActionsContext";
 import { postData } from "./OptionGraph";
 import SentimentDial from "./SentimentDial";
 import { COLORS } from "../constants/Colors";
@@ -68,7 +72,10 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   activePortfolio,
 }) => {
   const [timeframe, setTimeframe] = useState<Timeframe>("Live");
-  const { stockPoints, historicalStockPoints, companyStats } = usePriceStream();
+
+  const { stockPoints, historicalStockPoints } = useStockContext();
+  const { companyStats } = useCompanyContext();
+  const { optionPoints } = useOptionContext();
 
   const { ids, setPreviousCard } = useWS();
 

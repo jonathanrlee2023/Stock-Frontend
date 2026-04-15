@@ -11,9 +11,10 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { useWS } from "./WSContest"; // adjust import
+import { useWS } from "./Contexts/WSContest"; // adjust import
 import "chartjs-adapter-date-fns";
-import { OptionPoint, usePriceStream } from "./PriceContext";
+import { OptionPoint, useOptionContext } from "./Contexts/OptionContext";
+import { useStreamActionsContext } from "./Contexts/StreamActionsContext";
 import { verticalLinePlugin } from "./TodayGraph";
 import { formatFriendlyId } from "./OptionExpirationCards";
 import { COLORS } from "../constants/Colors";
@@ -110,7 +111,8 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
   type,
   activePortfolio,
 }) => {
-  const { pendingRequests, optionPoints, startOptionStream } = usePriceStream();
+  const { pendingRequests, startOptionStream } = useStreamActionsContext();
+  const { optionPoints } = useOptionContext();
   const ModifyTracker = async (action: string) => {
     let data: { id: string } = { id: "" };
 

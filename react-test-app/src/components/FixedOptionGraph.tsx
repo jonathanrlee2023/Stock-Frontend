@@ -11,9 +11,9 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { useWS } from "./WSContest"; // adjust import
+import { useWS } from "./Contexts/WSContest"; // adjust import
 import "chartjs-adapter-date-fns";
-import { OptionPoint, usePriceStream } from "./PriceContext";
+import { OptionPoint, useOptionContext } from "./Contexts/OptionContext";
 import { OptionMetric } from "./OptionGraph";
 import { verticalLinePlugin } from "./TodayGraph";
 import { formatFriendlyId } from "./OptionExpirationCards";
@@ -130,7 +130,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
   optionID,
   activePortfolio,
 }) => {
-  const { optionPoints } = usePriceStream();
+  const { optionPoints } = useOptionContext();
   const { ids, setIds, setTrackers } = useWS();
 
   // Parse optionID once per render

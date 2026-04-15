@@ -6,14 +6,14 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { BalancePoint, useBalanceContext } from "./BalanceContext";
+import { CompanyStats, useCompanyContext } from "./CompanyContext";
+import { OptionPoint, useOptionContext } from "./OptionContext";
 import {
-  usePriceStream,
-  OptionPoint,
-  StockPoint,
-  CompanyStats,
   HistoricalStockPoint,
-  BalancePoint,
-} from "./PriceContext";
+  StockPoint,
+  useStockContext,
+} from "./StockContext";
 
 interface WSContextValue {
   sendMessage: (msg: any) => void;
@@ -54,14 +54,10 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
   const [portfolioNames, setPortfolioNames] =
     useState<Record<number, string>>("");
 
-  const {
-    updateStockPoint,
-    updateOptionPoint,
-    updateCompanyStats,
-    updateHistoricalStockPoint,
-    updateOptionExpirations,
-    updateBalancePoint,
-  } = usePriceStream();
+  const { updateBalancePoint } = useBalanceContext();
+  const { updateCompanyStats } = useCompanyContext();
+  const { updateOptionExpirations, updateOptionPoint } = useOptionContext();
+  const { updateStockPoint, updateHistoricalStockPoint } = useStockContext();
 
   useEffect(() => {
     ws.current = new WebSocket(`ws://localhost:8080/connect?id=${clientId}`);
