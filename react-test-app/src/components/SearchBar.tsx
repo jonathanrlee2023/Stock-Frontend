@@ -11,8 +11,8 @@ interface SearchBarProps {
   setSearchQuery: (query: string) => void; // Function to update search query
   searchQuery: string; // Prop to hold the current search query
   inputMessage: string;
-  onEnter: (input: string) => void; // NEW
-  onSearchClick: (input: string) => void;
+  onEnter: (input: string, clientID: string) => void; // NEW
+  onSearchClick: (input: string, clientID: string) => void;
   setPreviousID: (query: string) => void;
 }
 
@@ -28,7 +28,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const searchContainerRef = useRef<HTMLDivElement>(null); // To detect clicks outside
   const { buttons, setButtons } = useButtons();
   const { pendingRequests } = useStreamActionsContext();
-  const { previousID } = useWS();
+  const { clientID } = useWS();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -48,7 +48,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const handleSelectRecent = (value: string) => {
     setInputValue(value);
     setSearchQuery(value);
-    onSearchClick(value);
+    onSearchClick(value, clientID);
     setPreviousID(value);
     setShowDropdown(false);
   };
@@ -58,7 +58,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   const handleSearchClick = async () => {
     setSearchQuery(inputValue);
-    onSearchClick(inputValue);
+    onSearchClick(inputValue, clientID);
     setPreviousID(inputValue);
     setShowDropdown(false); // Close after searching
 

@@ -45,7 +45,7 @@ export const IdCards: React.FC<IdCardProps> = ({
   defaultMessage,
   activePortfolio,
 }) => {
-  const { ids, setPreviousID } = useWS();
+  const { ids, setPreviousID, clientID } = useWS();
   const portfolioIds = ids[activePortfolio];
   const previousIdsRef = useRef<Record<string, number>>({});
   const { stockPoints, historicalStockPoints } = useStockContext();
@@ -67,6 +67,7 @@ export const IdCards: React.FC<IdCardProps> = ({
           optionParts.month,
           optionParts.year,
           optionParts.type,
+          clientID,
         );
         setActiveCard("fixedOption");
       } else {
@@ -74,7 +75,7 @@ export const IdCards: React.FC<IdCardProps> = ({
         return; // Exit early if parsing fails
       }
     } else {
-      startStockStream(id);
+      startStockStream(id, clientID);
       setPreviousID(id);
       setActiveCard("fixedStock");
     }

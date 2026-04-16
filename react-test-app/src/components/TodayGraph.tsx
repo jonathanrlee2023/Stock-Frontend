@@ -1,4 +1,4 @@
-import React, { act, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -18,11 +18,8 @@ import {
   StockPoint,
   useStockContext,
 } from "./Contexts/StockContext";
-import { useBalanceContext } from "./Contexts/BalanceContext";
 import { useOptionContext } from "./Contexts/OptionContext";
 import { useCompanyContext } from "./Contexts/CompanyContext";
-import { useStreamActionsContext } from "./Contexts/StreamActionsContext";
-import { postData } from "./OptionGraph";
 import SentimentDial from "./SentimentDial";
 import { COLORS } from "../constants/Colors";
 ChartJS.register(
@@ -75,7 +72,6 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
 
   const { stockPoints, historicalStockPoints } = useStockContext();
   const { companyStats } = useCompanyContext();
-  const { optionPoints } = useOptionContext();
 
   const { ids, setPreviousCard } = useWS();
 
@@ -148,6 +144,8 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
         (a, b) => a.timestamp - b.timestamp,
       );
     }
+
+    console.log(displayPoints);
 
     return {
       datasets: [

@@ -33,15 +33,16 @@ interface WSContextValue {
   setPortfolioNames: React.Dispatch<
     React.SetStateAction<Record<number, string>>
   >;
+  clientID: string;
 }
 const WSContext = createContext<WSContextValue | undefined>(undefined);
 
 interface Props {
   children: ReactNode;
-  clientId: string;
+  clientID: string;
 }
 
-export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
+export const WSProvider = ({ children, clientID }: Props): JSX.Element => {
   const ws = useRef<WebSocket | null>(null);
   const [lastMessage, setLastMessage] = useState<any>(null);
   const [ids, setIds] = useState<Record<number, Record<string, number>>>({});
@@ -60,16 +61,30 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
   const { updateStockPoint, updateHistoricalStockPoint } = useStockContext();
 
   useEffect(() => {
-    ws.current = new WebSocket(`ws://localhost:8080/connect?id=${clientId}`);
+    ws.current = new WebSocket(`ws://localhost:8080/connect?id=${clientID}`);
 
     ws.current.onopen = () => {
-      console.log(`Websocket connected ${clientId}`);
+      console.log(`Websocket connected ${clientID}`);
     };
 
     ws.current.onmessage = (event) => {
       const parsed = JSON.parse(event.data);
       setLastMessage(parsed);
 
+      if (parsed.type === "TICKER_UPDATE") {
+        if (parsed.stocks) {
+          parsed.stocks.forEach((stk: StockPoint) => {
+            updateStockPoint(stk.Symbol, stk);
+          });
+        }
+
+        if (parsed.options) {
+          parsed.options.forEach((opt: OptionPoint) => {
+            updateOptionPoint(opt.Symbol, opt);
+          });
+        }
+        return;
+      }
       if (parsed.openIdList !== undefined && parsed.prevBalance !== undefined) {
         setIds(parsed.openIdList);
         setTrackers(parsed.trackerIdList ?? []);
@@ -102,29 +117,6 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
         updateStockPoint(parsed.Symbol, parsed.Quote as StockPoint);
       }
 
-      // 2) Batch array of OptionPoint or StockPoint
-      if (Array.isArray(parsed)) {
-        const first = parsed[0] as any;
-        if (first?.IV !== undefined) {
-          (parsed as OptionPoint[]).forEach((opt) =>
-            updateOptionPoint(opt.Symbol, opt as OptionPoint),
-          );
-          return;
-        } else {
-          (parsed as StockPoint[]).forEach((stk) =>
-            updateStockPoint(stk.Symbol, {
-              Symbol: stk.Symbol,
-              BidPrice: stk.BidPrice,
-              AskPrice: stk.AskPrice,
-              LastPrice: stk.LastPrice,
-              Mark: stk.Mark,
-              timestamp: stk.timestamp,
-            }),
-          );
-          return;
-        }
-      }
-
       // 3) Single object (e.g. balance or lone stock point)
       if (parsed.symbol) {
         updateStockPoint(parsed.symbol, {
@@ -147,11 +139,11 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
       console.log("Websocket connection closed");
     };
 
-    // Cleanup on unmount or clientId change
+    // Cleanup on unmount or clientID change
     return () => {
       ws.current?.close();
     };
-  }, [clientId]);
+  }, [clientID]);
 
   const sendMessage = (msg: any) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
@@ -175,6 +167,7 @@ export const WSProvider = ({ children, clientId }: Props): JSX.Element => {
         setPreviousID,
         portfolioNames,
         setPortfolioNames,
+        clientID,
       }}
     >
       {children}

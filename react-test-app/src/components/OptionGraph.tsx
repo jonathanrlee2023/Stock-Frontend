@@ -66,8 +66,9 @@ export const postData = async (
   price: number,
   amount: number,
   portfolio_id: number,
+  clientID: string,
 ) => {
-  const data = { id: ID, price, amount, portfolio_id };
+  const data = { id: ID, price, amount, portfolio_id, client_id: clientID };
 
   try {
     const response = await fetch(`http://localhost:8080/${openOrClose}`, {
@@ -113,6 +114,8 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
 }) => {
   const { pendingRequests, startOptionStream } = useStreamActionsContext();
   const { optionPoints } = useOptionContext();
+  const { ids, setIds, setTrackers, clientID } = useWS();
+
   const ModifyTracker = async (action: string) => {
     let data: { id: string } = { id: "" };
 
@@ -153,7 +156,6 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
     type,
     strikePrice,
   );
-  const { ids, setIds, setTrackers } = useWS();
   const portfolioPositions = ids[activePortfolio] || {};
   const currentContracts = portfolioPositions[expectedSymbol] ?? 0;
   const isPending = pendingRequests.has(expectedSymbol);
@@ -346,7 +348,15 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
             color: COLORS.mainFontColor,
           }}
           onClick={() =>
-            startOptionStream(stockSymbol, strikePrice, day, month, year, type)
+            startOptionStream(
+              stockSymbol,
+              strikePrice,
+              day,
+              month,
+              year,
+              type,
+              clientID,
+            )
           }
           disabled={fieldMissing || isExpired}
         >
@@ -511,6 +521,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
                 latestMark,
                 amount,
                 activePortfolio,
+                clientID,
               );
               ModifyTracker("newTracker");
               setIds((prev) => ({
@@ -533,6 +544,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
                 latestMark,
                 amount,
                 activePortfolio,
+                clientID,
               );
               setIds((prev) => {
                 const updated = { ...prev };
@@ -557,6 +569,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
                 latestMark,
                 portfolioPositions[expectedSymbol],
                 activePortfolio,
+                clientID,
               );
               setIds((prev) => {
                 const u = { ...prev };

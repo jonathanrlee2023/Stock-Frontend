@@ -23,7 +23,7 @@ export const StockCard: React.FC<StockCardProps> = ({
   activeCard,
   activePortfolio,
 }) => {
-  const { ids, setIds, setTrackers, previousID, setPreviousID } = useWS();
+  const { ids, setIds, clientID, previousID, setPreviousID } = useWS();
   const [amount, setAmount] = useState<number>(0);
   const [dollarValue, setDollarValue] = useState<number>(0); // Cash
 
@@ -230,6 +230,7 @@ export const StockCard: React.FC<StockCardProps> = ({
                     latestMark,
                     amount,
                     activePortfolio,
+                    clientID,
                   );
                   ModifyTracker("newTracker");
                   setIds((prev) => {
@@ -266,6 +267,7 @@ export const StockCard: React.FC<StockCardProps> = ({
                     latestMark,
                     amount,
                     activePortfolio,
+                    clientID,
                   );
                   setIds((prev) => {
                     const updated = { ...prev };
@@ -300,6 +302,7 @@ export const StockCard: React.FC<StockCardProps> = ({
                     latestMark,
                     currentShares,
                     activePortfolio,
+                    clientID,
                   );
                   setIds((prev) => {
                     const updated = { ...prev };

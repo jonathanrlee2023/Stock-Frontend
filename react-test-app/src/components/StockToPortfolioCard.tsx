@@ -24,7 +24,7 @@ export const StockToPortfolioCard: React.FC<StockCardProps> = ({
   setNewStocks,
   activePortfolio,
 }) => {
-  const { ids, previousID, setPreviousID } = useWS();
+  const { ids, previousID, setPreviousID, clientID } = useWS();
   const [amount, setAmount] = useState<number>(0);
   const [dollarValue, setDollarValue] = useState<number>(0); // Cash
 
@@ -243,6 +243,7 @@ export const StockToPortfolioCard: React.FC<StockCardProps> = ({
                       amount: 0,
                       price: 0,
                       portfolio_id: activePortfolio,
+                      client_id: clientID,
                     };
                     return {
                       ...prev,

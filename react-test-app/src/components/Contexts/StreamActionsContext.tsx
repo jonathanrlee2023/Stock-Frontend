@@ -9,9 +9,10 @@ export type Position = {
   price: number;
   amount: number;
   portfolio_id: number;
+  client_id: string;
 };
 interface StreamActionsContextValue {
-  startStockStream: (symbol: string) => Promise<void>;
+  startStockStream: (symbol: string, clientID: string) => Promise<void>;
   startOptionStream: (
     stockSymbol: string,
     strikePrice: string,
@@ -19,6 +20,7 @@ interface StreamActionsContextValue {
     month: string,
     year: string,
     type: string,
+    clientID: string,
   ) => Promise<void>;
   pendingRequests: Set<string>;
 }
@@ -64,6 +66,7 @@ export const StreamActionsProvider: React.FC<{ children: React.ReactNode }> = ({
       month: string,
       year: string,
       type: string,
+      clientID: string,
     ) => {
       const cleanSymbol = stockSymbol.toUpperCase().trim();
 
@@ -89,7 +92,7 @@ export const StreamActionsProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         const baseUrl = "http://localhost:8080";
         const response = await fetch(
-          `${baseUrl}/startOptionStream?symbol=${stockSymbol}&price=${strikePrice}&day=${day}&month=${month}&year=${year}&type=${type}`,
+          `${baseUrl}/startOptionStream?symbol=${stockSymbol}&price=${strikePrice}&day=${day}&month=${month}&year=${year}&type=${type}&clientID=${clientID}`,
           {
             signal: controller.signal,
           },
@@ -117,7 +120,7 @@ export const StreamActionsProvider: React.FC<{ children: React.ReactNode }> = ({
     [optionPoints, pendingRequests],
   );
   const startStockStream = useCallback(
-    async (symbol: string) => {
+    async (symbol: string, clientID: string) => {
       const cleanSymbol = symbol.toUpperCase().trim();
 
       if (
@@ -138,7 +141,7 @@ export const StreamActionsProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         const baseUrl = "http://localhost:8080";
         const response = await fetch(
-          `${baseUrl}/startStockStream?symbol=${cleanSymbol}`,
+          `${baseUrl}/startStockStream?symbol=${cleanSymbol}&clientID=${clientID}`,
           {
             signal: controller.signal,
           },

@@ -1,8 +1,6 @@
 import { useState } from "react";
-import SearchBar from "./SearchBar";
 import { TodayStockWSComponent } from "./TodayGraph";
 import { useOptionContext } from "./Contexts/OptionContext";
-import { useStreamActionsContext } from "./Contexts/StreamActionsContext";
 import { useStockContext } from "./Contexts/StockContext";
 import { useWS } from "./Contexts/WSContest";
 import { OptionExpirationCards } from "./OptionExpirationCards";
@@ -22,7 +20,7 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
   activeCard,
   activePortfolio,
 }) => {
-  const { ids, setIds, setTrackers, previousID, setPreviousID } = useWS();
+  const { ids, setIds, previousID, clientID } = useWS();
   const [amount, setAmount] = useState<number>(0);
   const [dollarValue, setDollarValue] = useState<number>(0); // Cash
 
@@ -30,7 +28,6 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
   const { stockPoints } = useStockContext();
   const { optionExpirations } = useOptionContext();
   const { balancePoints } = useBalanceContext();
-  const { startStockStream } = useStreamActionsContext();
 
   const latestMark =
     stockPoints[activeStock]?.[stockPoints[activeStock].length - 1]?.Mark || 0;
@@ -235,6 +232,7 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
                       latestMark,
                       amount,
                       activePortfolio,
+                      clientID,
                     );
                     ModifyTracker("newTracker");
                     setIds((prev) => {
@@ -271,6 +269,7 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
                       latestMark,
                       amount,
                       activePortfolio,
+                      clientID,
                     );
                     setIds((prev) => {
                       const updated = { ...prev };
@@ -305,6 +304,7 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
                       latestMark,
                       currentShares,
                       activePortfolio,
+                      clientID,
                     );
                     setIds((prev) => {
                       const updated = { ...prev };

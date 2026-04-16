@@ -41,8 +41,9 @@ export const postData = async (
   price: number,
   amount: number,
   portfolio_id: number,
+  clientID: string,
 ) => {
-  const data = { id: ID, price, amount, portfolio_id };
+  const data = { id: ID, price, amount, portfolio_id, client_id: clientID };
 
   try {
     const response = await fetch(`http://localhost:8080/${openOrClose}`, {
@@ -131,7 +132,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
   activePortfolio,
 }) => {
   const { optionPoints } = useOptionContext();
-  const { ids, setIds, setTrackers } = useWS();
+  const { ids, setIds, setTrackers, clientID } = useWS();
 
   // Parse optionID once per render
   const parsedData = React.useMemo(() => parseOptionId(optionID), [optionID]);
@@ -469,6 +470,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
                     latestMark,
                     amount,
                     activePortfolio,
+                    clientID,
                   );
                   ModifyTracker("newTracker");
                   setIds((prev) => {
@@ -501,6 +503,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
                     latestMark,
                     amount,
                     activePortfolio,
+                    clientID,
                   );
                   setIds((prev) => {
                     const updated = { ...prev };
@@ -517,7 +520,13 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
                     return updated;
                   });
                 }}
-                disabled={latestMark <= 0 || isExpired}
+                disabled={
+                  latestMark <= 0 ||
+                  isExpired ||
+                  amount <= 0 ||
+                  amount > currentContracts ||
+                  (currentContracts ?? 0) <= 0
+                }
               >
                 CLOSE
               </button>
@@ -531,6 +540,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
                     latestMark,
                     currentContracts,
                     activePortfolio,
+                    clientID,
                   );
                   setIds((prev) => {
                     const updated = { ...prev };

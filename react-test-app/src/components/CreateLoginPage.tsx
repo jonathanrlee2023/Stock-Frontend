@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { COLORS } from "../constants/Colors";
 
-const Register: React.FC<{ onBackToLogin: () => void }> = ({
-  onBackToLogin,
-}) => {
+interface LoginProps {
+  onLogin: (userId: number) => void;
+  onBackToLogin: () => void;
+}
+const Register: React.FC<LoginProps> = ({ onLogin, onBackToLogin }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

@@ -15,8 +15,18 @@ interface NewPortfolioCardProps {
   tempPortfolioName: string;
 }
 
-const PostData = async (PID: number, name: string, positions: Position[]) => {
-  const data = { id: PID, name: name, positions: positions };
+const PostData = async (
+  PID: number,
+  name: string,
+  clientID: string,
+  positions: Position[],
+) => {
+  const data = {
+    id: PID,
+    name: name,
+    clientID: clientID,
+    positions: positions,
+  };
 
   try {
     const response = await fetch(`http://localhost:8080/newPortfolio`, {
@@ -49,7 +59,7 @@ export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
   tempPortfolioName,
 }) => {
   const { stockPoints } = useStockContext();
-  const { ids } = useWS();
+  const { ids, clientID } = useWS();
   const portfolioIds = ids[activePortfolio];
   const tickerSymbols = Object.keys(portfolioIds);
   const newTickerSymbols = Object.keys(newStocks);
@@ -364,7 +374,12 @@ export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
           }}
           onClick={() => {
             const positionsArray = Object.values(newStocks);
-            PostData(activePortfolio, tempPortfolioName, positionsArray);
+            PostData(
+              activePortfolio,
+              tempPortfolioName,
+              clientID,
+              positionsArray,
+            );
             // ... rest of your save logic
             setActiveCard("home");
           }}

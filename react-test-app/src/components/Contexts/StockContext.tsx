@@ -55,7 +55,7 @@ export const StockProvider: React.FC<{ children: React.ReactNode }> = ({
     (symbol: string, point: HistoricalStockPoint[]) => {
       setHistoricalStockPoints((prev) => ({
         ...prev,
-        [symbol]: [...(prev[symbol] || []).slice(-1920), ...point],
+        [symbol]: point,
       }));
     },
     [],

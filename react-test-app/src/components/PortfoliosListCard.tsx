@@ -15,7 +15,7 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
   activePortfolio,
 }) => {
   const { balancePoints } = useBalanceContext();
-  const { ids, setIds, setPortfolioNames } = useWS();
+  const { clientID, setIds, setPortfolioNames } = useWS();
   const { portfolioNames } = useWS();
 
   const portfolioIds = Object.keys(portfolioNames).map(Number);
@@ -25,16 +25,19 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
     portfolioIds.length > 0 ? Math.max(...portfolioIds) : 0;
 
   const deletePortfolio = useCallback(
-    async (pid: number) => {
+    async (pid: number, clientID: string) => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
 
       try {
         const baseUrl = "http://localhost:8080";
-        const response = await fetch(`${baseUrl}/deletePortfolio?id=${pid}`, {
-          method: "DELETE",
-          signal: controller.signal,
-        });
+        const response = await fetch(
+          `${baseUrl}/deletePortfolio?id=${pid}&client_id=${clientID}`,
+          {
+            method: "DELETE",
+            signal: controller.signal,
+          },
+        );
 
         if (!response.ok) throw new Error(`Server error: ${response.status}`);
       } catch (err: any) {
@@ -169,7 +172,7 @@ export const PortfolioCards: React.FC<PortfolioCardsProps> = ({
               }}
               onClick={(e) => {
                 e.stopPropagation();
-                // Your existing delete logic here
+                deletePortfolio(id, clientID);
               }}
             >
               ×

@@ -61,7 +61,7 @@ export const OptionExpirationCards: React.FC<OptionExpirationCardsProps> = ({
 }) => {
   const { optionPoints } = useOptionContext();
   const { startOptionStream } = useStreamActionsContext();
-  const { setPreviousCard } = useWS();
+  const { setPreviousCard, clientID } = useWS();
   const [filter, setFilter] = useState<"CALL" | "PUT">("CALL");
 
   const handleCardClick = (id: string) => {
@@ -74,6 +74,7 @@ export const OptionExpirationCards: React.FC<OptionExpirationCardsProps> = ({
         optionParts.month,
         optionParts.year,
         optionParts.type,
+        clientID,
       );
       setActiveCard("fixedOption");
       setActiveID(id);

@@ -12,6 +12,7 @@ import { WSProvider } from "./components/Contexts/WSContest";
 import Login from "./components/LoginPage";
 import Register from "./components/CreateLoginPage";
 import { MetalFilter } from "./components/MetalFilter";
+import { on } from "events";
 
 const Main = () => {
   const [userId, setUserId] = useState<number | null>(null);
@@ -23,7 +24,10 @@ const Main = () => {
         {/* Render the filter here so Login/Register can see it */}
         <MetalFilter />
         {isRegistering ? (
-          <Register onBackToLogin={() => setIsRegistering(false)} />
+          <Register
+            onBackToLogin={() => setIsRegistering(false)}
+            onLogin={(id) => setUserId(id)}
+          />
         ) : (
           <Login
             onLogin={(id) => setUserId(id)}
@@ -42,7 +46,7 @@ const Main = () => {
           <BalanceProvider>
             <CompanyProvider>
               <StreamActionsProvider>
-                <WSProvider clientId={`STOCK_CLIENT_${userId}`}>
+                <WSProvider clientID={`STOCK_CLIENT_${userId}`}>
                   <MetalFilter />
                   <App />
                 </WSProvider>
