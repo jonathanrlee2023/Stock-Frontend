@@ -13,8 +13,12 @@ import { NewPortfolioCard } from "./components/NewPortfolioCard";
 import StockToPortfolioCard from "./components/StockToPortfolioCard";
 import { COLORS } from "./constants/Colors";
 import { MetalText } from "./components/MetalText";
+import NewsTicker from "./components/ScrollingNews";
+import { useWS } from "./components/Contexts/WSContest";
 const App: React.FC = () => {
+  const { previousID } = useWS();
   const [activeCard, setActiveCard] = useState<string>("home"); // State to track the active screen
+  const [activeStock, setActiveStock] = useState<string>(previousID || ""); // Persistent state for search query
   const [fixedID, setFixedID] = useState<string>("");
   const [activePortfolio, setActivePortfolio] = useState<number>(1);
   const [newStocks, setNewStocks] = useState<Record<string, Position>>({});
@@ -30,23 +34,47 @@ const App: React.FC = () => {
         overflow: "hidden",
       }}
     >
-      {/* 1. PERSISTENT HEADER LIVES HERE */}
+      {/* 1. PERSISTENT HEADER */}
       <div
-        className="d-flex justify-content-between align-items-center"
+        className="d-flex align-items-center" // Removed justify-content-between
         style={{
           height: "50px",
           borderBottom: "1px solid " + COLORS.headerBottomBorder,
           padding: "0 20px",
           flexShrink: 0,
+          position: "relative", // Needed for absolute centering
         }}
       >
-        <MetalText
-          children="QUANTAE DIVITIAE"
-          className="card-title text-center mb-4 mt-4"
-          fontSize="1.5rem"
-        />
+        {/* LEFT: Logo */}
+        <div style={{ flex: "0 0 200px" }}>
+          {" "}
+          {/* Fixed width keeps center stable */}
+          <MetalText
+            children="QUANTAE DIVITIAE"
+            className="card-title mb-0"
+            fontSize="1.2rem"
+          />
+        </div>
 
-        <nav className="d-flex gap-4" style={{ height: "100%" }}>
+        {/* MIDDLE: The News Ticker */}
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            justifyContent: "center",
+            overflow: "hidden",
+            height: "100%",
+            padding: "0 40px",
+          }}
+        >
+          <NewsTicker activeCard={activeCard} activeStock={activeStock} />
+        </div>
+
+        {/* RIGHT: Navigation */}
+        <nav
+          className="d-flex gap-4"
+          style={{ height: "100%", flex: "0 0 auto" }}
+        >
           {[
             { id: "home", label: "DASHBOARD" },
             { id: "stock", label: "STOCKS" },
@@ -60,11 +88,10 @@ const App: React.FC = () => {
                 display: "flex",
                 alignItems: "center",
                 cursor: "pointer",
-                fontSize: "0.75rem",
+                fontSize: "0.7rem",
                 fontWeight: 700,
                 color:
-                  activeCard === item.id ||
-                  (item.id === "home" && activeCard === "home")
+                  activeCard === item.id
                     ? COLORS.mainFontColor
                     : COLORS.infoTextColor,
                 borderBottom:
@@ -104,6 +131,7 @@ const App: React.FC = () => {
           <HomePage
             setActiveCard={setActiveCard}
             setFixedID={setFixedID}
+            setActiveStock={setActiveStock}
             activeCard={activeCard}
             activePortfolio={activePortfolio}
           />
@@ -118,8 +146,10 @@ const App: React.FC = () => {
           <StockCard
             setActiveCard={setActiveCard}
             setFixedID={setFixedID}
+            setActiveStock={setActiveStock}
             activeCard="stock"
             activePortfolio={activePortfolio}
+            activeStock={activeStock}
           />
         )}
         {activeCard === "fixedStock" && (
@@ -128,6 +158,7 @@ const App: React.FC = () => {
             setFixedID={setFixedID}
             activeCard="fixedStock"
             activePortfolio={activePortfolio}
+            activeStock={activeStock}
           />
         )}
         {activeCard === "fixedOption" && (

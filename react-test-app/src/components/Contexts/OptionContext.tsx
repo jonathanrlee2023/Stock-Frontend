@@ -16,17 +16,18 @@ export type OptionPoint = {
   Vega: number;
 };
 
-export type OptionExpiration = {
+export type InitialCompanyData = {
   Call: string[];
   Put: string[];
   PriceHistory: HistoricalStockPoint[];
   Quote: StockPoint;
+  News: Record<string, string>;
 };
 interface OptionContextValue {
   optionPoints: Record<string, OptionPoint[]>;
-  optionExpirations: Record<string, OptionExpiration>;
+  optionExpirations: Record<string, InitialCompanyData>;
   updateOptionPoint: (symbol: string, point: OptionPoint) => void;
-  updateOptionExpirations: (symbol: string, exp: OptionExpiration) => void;
+  updateOptionExpirations: (symbol: string, exp: InitialCompanyData) => void;
 }
 
 const OptionContext = createContext<OptionContextValue | undefined>(undefined);
@@ -38,7 +39,7 @@ export const OptionProvider: React.FC<{ children: React.ReactNode }> = ({
     Record<string, OptionPoint[]>
   >({});
   const [optionExpirations, setOptionExpirations] = useState<
-    Record<string, OptionExpiration>
+    Record<string, InitialCompanyData>
   >({});
 
   const updateOptionPoint = useCallback(
@@ -52,7 +53,7 @@ export const OptionProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   const updateOptionExpirations = useCallback(
-    (symbol: string, exp: OptionExpiration) => {
+    (symbol: string, exp: InitialCompanyData) => {
       setOptionExpirations((prev) => ({
         ...prev,
         [symbol]: exp,

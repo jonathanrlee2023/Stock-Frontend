@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useWS } from "./Contexts/WSContest";
-import { OptionExpiration } from "./Contexts/OptionContext";
+import { InitialCompanyData } from "./Contexts/OptionContext";
 import { useOptionContext } from "./Contexts/OptionContext";
 import { useStreamActionsContext } from "./Contexts/StreamActionsContext";
 import { COLORS } from "../constants/Colors";
@@ -10,7 +10,7 @@ interface OptionExpirationCardsProps {
   setActiveCard: (query: string) => void;
   stock: string;
   defaultMessage: string;
-  optionExpirations: Record<string, OptionExpiration>;
+  optionExpirations: Record<string, InitialCompanyData>;
   prevCard: string;
 }
 interface OptionParts {

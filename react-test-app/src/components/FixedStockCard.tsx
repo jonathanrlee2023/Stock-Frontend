@@ -12,6 +12,7 @@ interface FixedStockCardProps {
   setFixedID: (query: string) => void;
   activeCard: string;
   activePortfolio: number;
+  activeStock: string;
 }
 
 export const StockCard: React.FC<FixedStockCardProps> = ({
@@ -19,12 +20,12 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
   setFixedID,
   activeCard,
   activePortfolio,
+  activeStock,
 }) => {
   const { ids, setIds, previousID, clientID } = useWS();
   const [amount, setAmount] = useState<number>(0);
   const [dollarValue, setDollarValue] = useState<number>(0); // Cash
 
-  const [activeStock, setActiveStock] = useState<string>(previousID || ""); // Persistent state for search query
   const { stockPoints } = useStockContext();
   const { optionExpirations } = useOptionContext();
   const { balancePoints } = useBalanceContext();

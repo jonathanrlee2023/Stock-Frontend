@@ -1,0 +1,79 @@
+/* NewsTicker.css */
+
+.ticker-wrap {
+  width: 100%;
+  overflow: hidden;
+  background: #0c0c0c;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  /* Frame the ticker with the white outline */
+  border-left: 1px solid #fff;
+  border-right: 1px solid #fff;
+  box-sizing: border-box;
+}
+
+.ticker-wrap .mx-auto {
+  font-family: inherit;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+
+.ticker {
+  display: flex;
+  width: 100%;
+}
+
+.ticker__group {
+  display: flex;
+  flex-shrink: 0;
+  animation: scroll-left var(--ticker-duration, 60s) linear infinite;
+}
+
+.ticker__item {
+  /* FONT MATCHING: inherit pulls the font from your Dashboard/Body */
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+
+  /* Reset Button Styles */
+  background: none;
+  border: none;
+  color: #fff;
+  padding: 0 50px; /* Adjust spacing between headlines */
+  white-space: nowrap;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  outline: none;
+  transition: color 0.2s ease;
+}
+
+/* On hover, pause the ticker so users can actually click the links easily */
+.ticker:hover .ticker__group {
+  color: blue;
+  animation-play-state: paused;
+}
+
+.ticker__item:hover {
+  color: blue;
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    /* Moves exactly one group width to the left */
+    transform: translateX(-100%);
+  }
+}
+.ticker__tag {
+  font-weight: bold;
+  margin-right: 10px;
+  padding: 2px 6px;
+  border: 1px solid currentColor; /* Small box around the tag */
+  font-size: 10px;
+}

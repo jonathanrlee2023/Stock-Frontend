@@ -13,21 +13,23 @@ import { COLORS } from "../constants/Colors";
 interface StockCardProps {
   setActiveCard: (query: string) => void;
   setFixedID: (query: string) => void;
+  setActiveStock: (query: string) => void;
   activeCard: string;
   activePortfolio: number;
+  activeStock: string;
 }
 
 export const StockCard: React.FC<StockCardProps> = ({
   setActiveCard,
   setFixedID,
+  setActiveStock,
   activeCard,
   activePortfolio,
+  activeStock,
 }) => {
   const { ids, setIds, clientID, previousID, setPreviousID } = useWS();
   const [amount, setAmount] = useState<number>(0);
   const [dollarValue, setDollarValue] = useState<number>(0); // Cash
-
-  const [activeStock, setActiveStock] = useState<string>(previousID || ""); // Persistent state for search query
   const { stockPoints } = useStockContext();
   const { optionExpirations } = useOptionContext();
   const { balancePoints } = useBalanceContext();

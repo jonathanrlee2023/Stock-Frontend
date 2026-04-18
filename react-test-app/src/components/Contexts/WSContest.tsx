@@ -55,7 +55,7 @@ export const WSProvider = ({ children, clientID }: Props): JSX.Element => {
   const [portfolioNames, setPortfolioNames] =
     useState<Record<number, string>>("");
 
-  const { updateBalancePoint } = useBalanceContext();
+  const { updateBalancePoint, updateNews } = useBalanceContext();
   const { updateCompanyStats } = useCompanyContext();
   const { updateOptionExpirations, updateOptionPoint } = useOptionContext();
   const { updateStockPoint, updateHistoricalStockPoint } = useStockContext();
@@ -85,6 +85,13 @@ export const WSProvider = ({ children, clientID }: Props): JSX.Element => {
         }
         return;
       }
+
+      if (parsed.GlobalNews !== undefined) {
+        console.log(parsed);
+        updateNews(parsed);
+        return;
+      }
+
       if (parsed.openIdList !== undefined && parsed.prevBalance !== undefined) {
         setIds(parsed.openIdList);
         setTrackers(parsed.trackerIdList ?? []);
@@ -104,11 +111,13 @@ export const WSProvider = ({ children, clientID }: Props): JSX.Element => {
       }
 
       if (parsed.Call !== undefined) {
+        console.log(parsed.News);
         updateOptionExpirations(parsed.Symbol, {
           Call: parsed.Call,
           Put: parsed.Put,
           Quote: parsed.Quote,
           PriceHistory: parsed.PriceHistory,
+          News: parsed.News,
         });
         updateHistoricalStockPoint(
           parsed.Symbol,

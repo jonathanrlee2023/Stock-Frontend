@@ -7,6 +7,7 @@ import { SectorAllocation } from "./SectorAllocation";
 interface HomePageProps {
   setActiveCard: (query: string) => void;
   setFixedID: (query: string) => void;
+  setActiveStock: (query: string) => void;
   activeCard: string;
   activePortfolio: number;
 }
@@ -14,6 +15,7 @@ interface HomePageProps {
 export const HomePage: React.FC<HomePageProps> = ({
   setActiveCard,
   setFixedID,
+  setActiveStock,
   activePortfolio,
 }) => {
   const [view, setView] = useState<"balance" | "sector">("balance");
@@ -156,6 +158,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <IdCards
               setActiveCard={setActiveCard}
               setActiveID={setFixedID}
+              setActiveStock={setActiveStock}
               defaultMessage="NO OPEN POSITIONS"
               activePortfolio={activePortfolio}
             />

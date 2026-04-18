@@ -8,6 +8,7 @@ import { COLORS } from "../constants/Colors";
 interface IdCardProps {
   setActiveID: (query: string) => void;
   setActiveCard: (query: string) => void;
+  setActiveStock: (query: string) => void;
   defaultMessage: string;
   activePortfolio: number;
 }
@@ -41,6 +42,7 @@ export const ParseOptionId = (optionId: string): OptionParts | null => {
 
 export const IdCards: React.FC<IdCardProps> = ({
   setActiveID,
+  setActiveStock,
   setActiveCard,
   defaultMessage,
   activePortfolio,
@@ -70,6 +72,7 @@ export const IdCards: React.FC<IdCardProps> = ({
           clientID,
         );
         setActiveCard("fixedOption");
+        setActiveID(id);
       } else {
         console.error("Failed to parse option ID:", id);
         return; // Exit early if parsing fails
@@ -78,9 +81,8 @@ export const IdCards: React.FC<IdCardProps> = ({
       startStockStream(id, clientID);
       setPreviousID(id);
       setActiveCard("fixedStock");
+      setActiveStock(id);
     }
-
-    setActiveID(id);
   };
   const getLatestPrice = (id: string): string => {
     if (id.length > 6) {
