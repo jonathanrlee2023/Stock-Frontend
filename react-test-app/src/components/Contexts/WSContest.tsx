@@ -12,6 +12,7 @@ import { OptionPoint, useOptionContext } from "./OptionContext";
 import {
   HistoricalStockPoint,
   StockPoint,
+  BacktestPayload,
   useStockContext,
 } from "./StockContext";
 
@@ -58,7 +59,11 @@ export const WSProvider = ({ children, clientID }: Props): JSX.Element => {
   const { updateBalancePoint, updateNews } = useBalanceContext();
   const { updateCompanyStats } = useCompanyContext();
   const { updateOptionExpirations, updateOptionPoint } = useOptionContext();
-  const { updateStockPoint, updateHistoricalStockPoint } = useStockContext();
+  const {
+    updateStockPoint,
+    updateHistoricalStockPoint,
+    updateBacktestPayload,
+  } = useStockContext();
 
   useEffect(() => {
     ws.current = new WebSocket(`ws://localhost:8080/connect?id=${clientID}`);
@@ -89,6 +94,11 @@ export const WSProvider = ({ children, clientID }: Props): JSX.Element => {
       if (parsed.GlobalNews !== undefined) {
         console.log(parsed);
         updateNews(parsed);
+        return;
+      }
+
+      if (parsed.Benchmark !== undefined) {
+        updateBacktestPayload(parsed as BacktestPayload);
         return;
       }
 

@@ -2,85 +2,39 @@ import { Dispatch, SetStateAction, useState } from "react";
 import SearchBar from "./SearchBar";
 import { TodayStockWSComponent } from "./TodayGraph";
 import { useStockContext } from "./Contexts/StockContext";
-import { useBalanceContext } from "./Contexts/BalanceContext";
-import { useOptionContext } from "./Contexts/OptionContext";
-import {
-  Position,
-  useStreamActionsContext,
-} from "./Contexts/StreamActionsContext";
+import { useStreamActionsContext } from "./Contexts/StreamActionsContext";
 import { useWS } from "./Contexts/WSContest";
 import { COLORS } from "../constants/Colors";
 
 interface StockCardProps {
   setActiveCard: (query: string) => void;
-  setNewStocks: Dispatch<SetStateAction<Record<string, Position>>>;
+  weight: Record<string, number>;
+  setWeight: Dispatch<SetStateAction<Record<string, number>>>;
   activeCard: string;
-  activePortfolio: number;
 }
 
 export const StockToPortfolioCard: React.FC<StockCardProps> = ({
   setActiveCard,
+  weight,
+  setWeight,
   activeCard,
-  setNewStocks,
-  activePortfolio,
 }) => {
-  const { ids, previousID, setPreviousID, clientID } = useWS();
-  const [amount, setAmount] = useState<number>(0);
-  const [dollarValue, setDollarValue] = useState<number>(0); // Cash
-
+  const { previousID, setPreviousID } = useWS();
   const [activeStock, setActiveStock] = useState<string>(previousID || ""); // Persistent state for search query
   const { stockPoints } = useStockContext();
-  const { balancePoints } = useBalanceContext();
   const { startStockStream } = useStreamActionsContext();
 
   const latestMark =
     stockPoints[activeStock]?.[stockPoints[activeStock].length - 1]?.Mark || 0;
 
-  const portfolioHistory = balancePoints[activePortfolio] || [];
-  const currentShares = ids[activePortfolio]?.[activeStock] ?? 0;
-
-  const latestCash =
-    portfolioHistory.length > 0
-      ? portfolioHistory[portfolioHistory.length - 1].Cash
-      : 0;
-
-  const ModifyTracker = async (action: string) => {
-    let data: { id: string } = { id: "" };
-    data.id = activeStock || "";
-
-    try {
-      const response = await fetch(`http://localhost:8080/${action}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const result = await response.text();
-      console.log("Server response:", result);
-    } catch (error) {
-      console.error("POST request failed:", error);
-    }
-  };
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleWeightChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const val = Number(e.target.value);
-    setAmount(val);
-    // Calculate dollar value: Shares * Price
-    setDollarValue(Number((val * latestMark).toFixed(2)));
-  };
+    if (isNaN(val)) return;
 
-  // Handler for Dollar changes
-  const handleDollarChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const val = Number(e.target.value);
-    setDollarValue(val);
-    // Calculate shares: Cash / Price (Check for division by zero)
-    const calculatedShares = latestMark > 0 ? val / latestMark : 0;
-    setAmount(Number(calculatedShares.toFixed(5))); // High precision for shares
+    setWeight((prev) => ({
+      ...prev,
+      [activeStock]: val, // Store as decimal (e.g., 0.20)
+    }));
   };
   const inputStyle = {
     backgroundColor: COLORS.appBackground,
@@ -110,10 +64,10 @@ export const StockToPortfolioCard: React.FC<StockCardProps> = ({
       >
         <button
           className="btn btn-sm btn-outline-secondary"
-          onClick={() => setActiveCard("newPortfolio")}
+          onClick={() => setActiveCard("BacktestSelection")}
           style={{ fontSize: "0.7rem", letterSpacing: "1px" }}
         >
-          ← BACK TO CONFIG
+          ← BACK TO SELECTION
         </button>
         <div
           style={{
@@ -178,82 +132,28 @@ export const StockToPortfolioCard: React.FC<StockCardProps> = ({
                       fontWeight: "800",
                     }}
                   >
-                    SHARES
+                    WEIGHTING (AS A DECIMAL)
                   </label>
                   <input
                     className="terminal-input"
                     type="number"
-                    value={amount}
-                    onChange={handleAmountChange}
-                    style={inputStyle}
-                  />
-                </div>
-
-                <div className="d-flex flex-column gap-1">
-                  <label
-                    style={{
-                      fontSize: "10px",
-                      color: COLORS.infoTextColor,
-                      fontWeight: "800",
-                    }}
-                  >
-                    TOTAL VALUE ($)
-                  </label>
-                  <input
-                    className="terminal-input"
-                    type="number"
-                    value={dollarValue}
-                    onChange={handleDollarChange}
+                    value={weight[activeStock] || 0}
+                    onChange={handleWeightChange}
                     style={inputStyle}
                   />
                 </div>
               </div>
-
-              {/* Live Data Summary */}
-              <div className="text-end" style={{ fontFamily: "monospace" }}>
-                <div style={{ fontSize: "10px", color: COLORS.infoTextColor }}>
-                  CURRENT HOLDINGS
-                </div>
-                <div
-                  style={{
-                    fontSize: "1.1rem",
-                    color: COLORS.secondaryTextColor,
-                    fontWeight: "bold",
-                  }}
-                >
-                  {currentShares ?? 0}{" "}
-                  <small style={{ fontSize: "0.6rem" }}>SHRS</small>
-                </div>
-              </div>
-
               {/* Action Button */}
               <button
                 className="btn-sleek btn-sleek-green px-4 py-2"
-                disabled={latestMark <= 0 || amount <= 0}
+                disabled={latestMark <= 0}
                 style={{
-                  opacity: latestMark <= 0 || amount <= 0 ? 0.4 : 1,
+                  opacity: latestMark <= 0 ? 0.5 : 1,
                   fontSize: "0.8rem",
                   fontWeight: "bold",
                 }}
                 onClick={() => {
-                  setNewStocks((prev) => {
-                    const existing = prev[activeStock] || {
-                      id: activeStock,
-                      amount: 0,
-                      price: 0,
-                      portfolio_id: activePortfolio,
-                      client_id: clientID,
-                    };
-                    return {
-                      ...prev,
-                      [activeStock]: {
-                        ...existing,
-                        amount: existing.amount + amount,
-                      },
-                    };
-                  });
-                  ModifyTracker("newTracker");
-                  setActiveCard("newPortfolio");
+                  setActiveCard("backtestSelection");
                 }}
               >
                 ADD POSITION

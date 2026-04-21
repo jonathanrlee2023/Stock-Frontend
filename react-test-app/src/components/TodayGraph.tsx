@@ -37,7 +37,6 @@ interface TodayStockWSProps {
   stockSymbol: string;
   setActiveCard: (query: string) => void;
   activeCard: string;
-  activePortfolio: number;
 }
 
 type Timeframe = "Live" | "1W" | "1M" | "3M" | "1Y" | "3Y" | "All";
@@ -66,7 +65,6 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
   stockSymbol,
   setActiveCard,
   activeCard,
-  activePortfolio,
 }) => {
   const [timeframe, setTimeframe] = useState<Timeframe>("Live");
 

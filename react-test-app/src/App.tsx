@@ -15,13 +15,19 @@ import { COLORS } from "./constants/Colors";
 import { MetalText } from "./components/MetalText";
 import NewsTicker from "./components/ScrollingNews";
 import { useWS } from "./components/Contexts/WSContest";
+import { useStockContext } from "./components/Contexts/StockContext";
+import { BacktestSelection } from "./components/BacktestSelection";
+import BacktestGraphComponent from "./components/BacktestGraph";
+import BacktestStockCard from "./components/BacktestStockCard";
 const App: React.FC = () => {
   const { previousID } = useWS();
+  const { backtestPayload } = useStockContext();
   const [activeCard, setActiveCard] = useState<string>("home"); // State to track the active screen
   const [activeStock, setActiveStock] = useState<string>(previousID || ""); // Persistent state for search query
   const [fixedID, setFixedID] = useState<string>("");
   const [activePortfolio, setActivePortfolio] = useState<number>(1);
   const [newStocks, setNewStocks] = useState<Record<string, Position>>({});
+  const [weights, setWeights] = useState<Record<string, number>>({ Cash: 1.0 });
   const [tempPortfolioName, setTempPortfolioName] = useState<string>("");
 
   return (
@@ -80,15 +86,26 @@ const App: React.FC = () => {
             { id: "stock", label: "STOCKS" },
             { id: "options", label: "OPTIONS" },
             { id: "portfolioList", label: "PORTFOLIOS" },
+            { id: "backtestSelection", label: "BACKTEST" },
           ].map((item) => (
             <div
               key={item.id}
-              onClick={() => setActiveCard(item.id)}
+              onClick={() => {
+                if (item.id === "backtestSelection") {
+                  if (backtestPayload && backtestPayload.User?.length > 0) {
+                    setActiveCard("backtestGraph");
+                  } else {
+                    setActiveCard("backtestSelection");
+                  }
+                } else {
+                  setActiveCard(item.id);
+                }
+              }}
               style={{
                 display: "flex",
                 alignItems: "center",
                 cursor: "pointer",
-                fontSize: "0.7rem",
+                fontSize: "0.8rem",
                 fontWeight: 700,
                 color:
                   activeCard === item.id
@@ -196,6 +213,24 @@ const App: React.FC = () => {
             activePortfolio={activePortfolio}
             setNewStocks={setNewStocks}
             activeCard="stockToPortfolio"
+          />
+        )}
+        {activeCard === "backtestSelection" && (
+          <BacktestSelection
+            setActiveCard={setActiveCard}
+            weights={weights}
+            setWeights={setWeights}
+          />
+        )}
+        {activeCard === "backtestGraph" && (
+          <BacktestGraphComponent setActiveCard={setActiveCard} />
+        )}
+        {activeCard === "backtestStock" && (
+          <BacktestStockCard
+            setActiveCard={setActiveCard}
+            activeCard="backtestStock"
+            setWeight={setWeights}
+            weight={weights}
           />
         )}
       </div>

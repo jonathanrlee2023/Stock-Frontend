@@ -140,7 +140,6 @@ export const StockCard: React.FC<StockCardProps> = ({
               stockSymbol={activeStock}
               setActiveCard={setActiveCard}
               activeCard={activeCard}
-              activePortfolio={activePortfolio}
             />
           </div>
 
