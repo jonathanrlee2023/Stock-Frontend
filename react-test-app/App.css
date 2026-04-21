@@ -247,6 +247,22 @@ td:last-child {
   color: #ffffff !important;
 }
 
+.custom-date-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(0.5) sepia(1) saturate(5) hue-rotate(175deg); /* Adjust hue to match your blue/green */
+  opacity: 0.6;
+}
+
+.custom-date-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Removes the blue highlight on some browsers */
+.custom-date-input:focus {
+  border-color: var(--your-accent-color); /* e.g., COLORS.green.button */
+  box-shadow: 0 0 5px rgba(0, 255, 0, 0.1);
+}
+
 .is-pending {
   animation: pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
   color: #7e7cf3;

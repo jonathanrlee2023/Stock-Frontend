@@ -92,7 +92,6 @@ export const WSProvider = ({ children, clientID }: Props): JSX.Element => {
       }
 
       if (parsed.GlobalNews !== undefined) {
-        console.log(parsed);
         updateNews(parsed);
         return;
       }
@@ -121,7 +120,6 @@ export const WSProvider = ({ children, clientID }: Props): JSX.Element => {
       }
 
       if (parsed.Call !== undefined) {
-        console.log(parsed.News);
         updateOptionExpirations(parsed.Symbol, {
           Call: parsed.Call,
           Put: parsed.Put,

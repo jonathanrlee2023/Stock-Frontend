@@ -143,8 +143,6 @@ export const TodayStockWSComponent: React.FC<TodayStockWSProps> = ({
       );
     }
 
-    console.log(displayPoints);
-
     return {
       datasets: [
         {

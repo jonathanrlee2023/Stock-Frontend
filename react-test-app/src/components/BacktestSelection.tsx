@@ -15,6 +15,7 @@ export const BacktestSelection: React.FC<BacktestSelectionProps> = ({
   weights,
 }) => {
   const { clientID } = useWS();
+  const [startDate, setStartDate] = useState("2023-01-01");
   const { stockPoints, updateBacktestPayload } = useStockContext();
 
   const calculateCash = () => {
@@ -38,9 +39,14 @@ export const BacktestSelection: React.FC<BacktestSelectionProps> = ({
   };
 
   const submitBacktest = async () => {
+    const start = new Date(startDate);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    console.log(diffDays);
     weights = { ...weights, Cash: currentCash };
     const payload = {
-      DaysAgo: 730, // You could add a DatePicker for this
+      DaysAgo: diffDays, // You could add a DatePicker for this
       UserPortfolio: weights,
       BenchmarkPortfolio: { SPY: 1.0 },
       ClientID: clientID,
@@ -127,6 +133,43 @@ export const BacktestSelection: React.FC<BacktestSelectionProps> = ({
       }}
     >
       <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          padding: "20px 20px 0 20px", // Align with content padding
+        }}
+      >
+        <div
+          style={{
+            fontSize: "15px",
+            color: COLORS.infoTextColor,
+            fontFamily: "monospace",
+            textTransform: "uppercase",
+          }}
+        >
+          BACKTEST_CONFIGURATION
+        </div>
+
+        <div style={{ width: "150px" }}>
+          {" "}
+          {/* Fixed width keeps it in the corner */}
+          <label style={dateLabelStyle}>START_DATE</label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            style={{
+              ...dateInputStyle,
+              textAlign: "right", // Keeps text aligned to the right
+              fontSize: "11px",
+              padding: "4px 8px",
+            }}
+            className="custom-date-input"
+          />
+        </div>
+      </div>
+      <div
         className="custom-scrollbar"
         style={{ padding: "20px", overflowY: "auto", flex: 1 }}
       >
@@ -188,6 +231,32 @@ export const BacktestSelection: React.FC<BacktestSelectionProps> = ({
       </footer>
     </div>
   );
+};
+
+const dateInputStyle: React.CSSProperties = {
+  width: "100%",
+  background: "rgba(255, 255, 255, 0.03)", // Subtle depth
+  border: `1px solid ${COLORS.borderColor}`,
+  color: COLORS.mainFontColor,
+  fontFamily: "monospace",
+  fontSize: "11px",
+  padding: "4px 8px",
+  outline: "none",
+  borderRadius: "2px",
+  cursor: "pointer",
+  colorScheme: "dark", // Ensures the browser's calendar popup is dark
+  appearance: "none", // Removes default mobile styling
+  textAlign: "right",
+};
+
+const dateLabelStyle: React.CSSProperties = {
+  display: "block",
+  fontSize: "8px",
+  color: COLORS.infoTextColor,
+  marginBottom: "2px",
+  fontFamily: "monospace",
+  textAlign: "right",
+  letterSpacing: "1px",
 };
 
 const styles = {
