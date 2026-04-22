@@ -12,7 +12,11 @@ export type Position = {
   client_id: string;
 };
 interface StreamActionsContextValue {
-  startStockStream: (symbol: string, clientID: string) => Promise<void>;
+  startStockStream: (
+    symbol: string,
+    clientID: string,
+    getOptionsData: string,
+  ) => Promise<void>;
   startOptionStream: (
     stockSymbol: string,
     strikePrice: string,
@@ -120,7 +124,7 @@ export const StreamActionsProvider: React.FC<{ children: React.ReactNode }> = ({
     [optionPoints, pendingRequests],
   );
   const startStockStream = useCallback(
-    async (symbol: string, clientID: string) => {
+    async (symbol: string, clientID: string, getOptionData: string) => {
       const cleanSymbol = symbol.toUpperCase().trim();
 
       if (
@@ -141,11 +145,13 @@ export const StreamActionsProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         const baseUrl = "http://localhost:8080";
         const response = await fetch(
-          `${baseUrl}/startStockStream?symbol=${cleanSymbol}&clientID=${clientID}`,
+          `${baseUrl}/startStockStream?symbol=${cleanSymbol}&clientID=${clientID}&getOptionData=${getOptionData}`,
           {
             signal: controller.signal,
           },
         );
+
+        console.log("Called");
 
         if (!response.ok) throw new Error(`Server error: ${response.status}`);
 

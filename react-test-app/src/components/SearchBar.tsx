@@ -6,14 +6,20 @@ import { useStreamActionsContext } from "./Contexts/StreamActionsContext";
 import "../../App.css";
 import { useWS } from "./Contexts/WSContest";
 import { COLORS } from "../constants/Colors";
+import { get } from "http";
 
 interface SearchBarProps {
   setSearchQuery: (query: string) => void; // Function to update search query
   searchQuery: string; // Prop to hold the current search query
   inputMessage: string;
-  onEnter: (input: string, clientID: string) => void; // NEW
-  onSearchClick: (input: string, clientID: string) => void;
+  onEnter: (input: string, clientID: string, getOptionsData: string) => void; // NEW
+  onSearchClick: (
+    input: string,
+    clientID: string,
+    getOptionsData: string,
+  ) => void;
   setPreviousID: (query: string) => void;
+  getOptionsData: string;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
@@ -22,6 +28,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onEnter,
   onSearchClick,
   setPreviousID,
+  getOptionsData,
 }) => {
   const [inputValue, setInputValue] = useState<string>(searchQuery); // Local state to keep input value
   const [showDropdown, setShowDropdown] = useState(false); // Track visibility
@@ -48,7 +55,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const handleSelectRecent = (value: string) => {
     setInputValue(value);
     setSearchQuery(value);
-    onSearchClick(value, clientID);
+    onSearchClick(value, clientID, getOptionsData);
     setPreviousID(value);
     setShowDropdown(false);
   };
@@ -58,7 +65,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   const handleSearchClick = async () => {
     setSearchQuery(inputValue);
-    onSearchClick(inputValue, clientID);
+    onSearchClick(inputValue, clientID, getOptionsData);
     setPreviousID(inputValue);
     setShowDropdown(false); // Close after searching
 

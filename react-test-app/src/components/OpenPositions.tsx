@@ -78,7 +78,7 @@ export const IdCards: React.FC<IdCardProps> = ({
         return; // Exit early if parsing fails
       }
     } else {
-      startStockStream(id, clientID);
+      startStockStream(id, clientID, "Yes");
       setPreviousID(id);
       setActiveCard("fixedStock");
       setActiveStock(id);

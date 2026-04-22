@@ -64,7 +64,7 @@ export const StockToPortfolioCard: React.FC<StockCardProps> = ({
       >
         <button
           className="btn btn-sm btn-outline-secondary"
-          onClick={() => setActiveCard("BacktestSelection")}
+          onClick={() => setActiveCard("backtestSelection")}
           style={{ fontSize: "0.7rem", letterSpacing: "1px" }}
         >
           ← BACK TO SELECTION
@@ -95,6 +95,7 @@ export const StockToPortfolioCard: React.FC<StockCardProps> = ({
             onEnter={startStockStream}
             onSearchClick={startStockStream}
             setPreviousID={setPreviousID}
+            getOptionsData={"No"}
           />
 
           <div

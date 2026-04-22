@@ -141,6 +141,7 @@ export const StockToPortfolioCard: React.FC<StockCardProps> = ({
             onEnter={startStockStream}
             onSearchClick={startStockStream}
             setPreviousID={setPreviousID}
+            getOptionsData={"No"}
           />
 
           <div

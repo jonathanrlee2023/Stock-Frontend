@@ -124,6 +124,7 @@ export const StockCard: React.FC<StockCardProps> = ({
               onEnter={startStockStream}
               onSearchClick={startStockStream}
               setPreviousID={setPreviousID}
+              getOptionsData={"Yes"}
             />
           </div>
 
