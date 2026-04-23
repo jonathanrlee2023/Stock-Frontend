@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TodayStockWSComponent } from "./TodayGraph";
 import { useOptionContext } from "./Contexts/OptionContext";
 import { useStockContext } from "./Contexts/StockContext";
@@ -35,11 +35,32 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
 
   const portfolioHistory = balancePoints[activePortfolio] || [];
   const currentShares = ids[activePortfolio]?.[activeStock] ?? 0;
+  const totalAccountValue =
+    portfolioHistory.length > 0
+      ? portfolioHistory[portfolioHistory.length - 1].Balance
+      : 0;
 
   const latestCash =
     portfolioHistory.length > 0
       ? portfolioHistory[portfolioHistory.length - 1].Cash
       : 0;
+
+  const [portfolioPercentage, setPortfolioPercentage] = useState<number>(
+    currentShares > 0
+      ? ((latestMark * currentShares) / totalAccountValue) * 100
+      : 0,
+  );
+  const currentPortfolioPct =
+    totalAccountValue > 0
+      ? ((currentShares * latestMark) / totalAccountValue) * 100
+      : 0;
+
+  // The CHANGE in percentage based on the current input values
+  const orderImpactPct =
+    totalAccountValue > 0 ? (dollarValue / totalAccountValue) * 100 : 0;
+
+  // Helper for the UI to show the "Target" state
+  const targetPortfolioPct = currentPortfolioPct + orderImpactPct;
 
   const ModifyTracker = async (action: string) => {
     let data: { id: string } = { id: "" };
@@ -66,9 +87,13 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
   };
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const val = Number(e.target.value);
+    const newDollars = val * latestMark;
     setAmount(val);
     // Calculate dollar value: Shares * Price
-    setDollarValue(Number((val * latestMark).toFixed(2)));
+    setDollarValue(Number(newDollars.toFixed(2)));
+    setPortfolioPercentage(
+      Number(((newDollars / totalAccountValue) * 100).toFixed(2)),
+    );
   };
 
   // Handler for Dollar changes
@@ -78,7 +103,42 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
     // Calculate shares: Cash / Price (Check for division by zero)
     const calculatedShares = latestMark > 0 ? val / latestMark : 0;
     setAmount(Number(calculatedShares.toFixed(5))); // High precision for shares
+    setPortfolioPercentage(
+      Number(((val / totalAccountValue) * 100).toFixed(2)),
+    );
   };
+
+  useEffect(() => {
+    setAmount(0);
+    setDollarValue(0);
+    setPortfolioPercentage(0);
+  }, [activeStock]);
+
+  const handlePortfolioPercentageChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    const targetPctChange = Number(e.target.value);
+    setPortfolioPercentage(targetPctChange);
+
+    // Calculate order size based on the desired % increase/decrease
+    const targetDollars = totalAccountValue * (targetPctChange / 100);
+    setDollarValue(Number(targetDollars.toFixed(2)));
+    setAmount(
+      latestMark > 0 ? Number((targetDollars / latestMark).toFixed(5)) : 0,
+    );
+  };
+
+  const isInteracting = useRef(false);
+  useEffect(() => {
+    // 3. PRICE SYNC: Only update siblings if user isn't actively changing them
+    if (!isInteracting.current && latestMark > 0) {
+      const newDollars = amount * latestMark;
+      setDollarValue(Number(newDollars.toFixed(2)));
+      setPortfolioPercentage(
+        Number(((newDollars / totalAccountValue) * 100).toFixed(2)),
+      );
+    }
+  }, [latestMark, totalAccountValue]);
   return (
     <div
       style={{
@@ -138,7 +198,6 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
               stockSymbol={activeStock}
               setActiveCard={setActiveCard}
               activeCard={activeCard}
-              activePortfolio={activePortfolio}
             />
           </div>
 
@@ -151,75 +210,151 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
             }}
           >
             <div className="d-flex align-items-end justify-content-between">
-              <div className="d-flex gap-4">
-                {/* Shares Input */}
-                <div className="d-flex flex-column gap-1">
-                  <label
-                    style={{
-                      fontSize: "9px",
-                      color: COLORS.infoTextColor,
-                      fontWeight: "800",
-                    }}
-                  >
-                    QUANTITY
-                  </label>
-                  <input
-                    className="terminal-input"
-                    type="number"
-                    value={amount}
-                    onChange={handleAmountChange}
-                    style={{
-                      width: "90px",
-                      backgroundColor: COLORS.appBackground,
-                      border: `1px solid ${COLORS.borderColor}`,
-                      color: COLORS.mainFontColor,
-                      fontFamily: "monospace",
-                    }}
-                  />
-                </div>
+              <div className="d-flex flex-column">
+                <span
+                  style={{ fontSize: "0.6rem", color: COLORS.infoTextColor }}
+                >
+                  ORDER_SHARES
+                </span>
+                <input
+                  className="search-bar"
+                  type="number"
+                  value={amount}
+                  onChange={handleAmountChange}
+                  onFocus={() => (isInteracting.current = true)}
+                  onBlur={() => (isInteracting.current = false)}
+                  style={{
+                    width: "80px",
+                    textAlign: "center",
+                    borderBottom: `1px solid ${COLORS.borderColor}`,
+                  }}
+                />
+              </div>
 
-                {/* Dollar Value Input */}
-                <div className="d-flex flex-column gap-1">
-                  <label
-                    style={{
-                      fontSize: "9px",
-                      color: COLORS.infoTextColor,
-                      fontWeight: "800",
-                    }}
-                  >
-                    EST_TOTAL_VALUE ($)
-                  </label>
-                  <input
-                    className="terminal-input"
-                    type="number"
-                    value={dollarValue}
-                    onChange={handleDollarChange}
-                    style={{
-                      width: "120px",
-                      backgroundColor: COLORS.appBackground,
-                      border: `1px solid ${COLORS.borderColor}`,
-                      color: COLORS.mainFontColor,
-                      fontFamily: "monospace",
-                    }}
-                  />
-                </div>
+              {/* DOLLAR INPUT */}
+              <div className="d-flex flex-column">
+                <span
+                  style={{ fontSize: "0.6rem", color: COLORS.infoTextColor }}
+                >
+                  ORDER_VALUE
+                </span>
+                <input
+                  className="search-bar"
+                  type="number"
+                  value={dollarValue}
+                  onChange={handleDollarChange}
+                  onFocus={() => (isInteracting.current = true)}
+                  onBlur={() => (isInteracting.current = false)}
+                  style={{
+                    width: "100px",
+                    textAlign: "center",
+                    borderBottom: `1px solid ${COLORS.borderColor}`,
+                  }}
+                />
+              </div>
+              <div className="d-flex flex-column">
+                <span
+                  style={{
+                    fontSize: "0.6rem",
+                    color: COLORS.infoTextColor,
+                    marginBottom: "4px",
+                  }}
+                >
+                  ORDER_BY_%
+                </span>
+                <input
+                  className="search-bar"
+                  type="number"
+                  step="0.1" // Allows for fine-tuning like 1.5%
+                  value={portfolioPercentage}
+                  onFocus={() => (isInteracting.current = true)}
+                  onBlur={() => (isInteracting.current = false)}
+                  onChange={handlePortfolioPercentageChange} // <--- USE IT HERE
+                  style={{
+                    width: "100px",
+                    textAlign: "center",
+                    borderBottom: "1px solid " + COLORS.borderColor,
+                  }}
+                />
+              </div>
 
-                {/* Holdings Info */}
-                <div className="d-flex flex-column justify-content-end pb-1">
+              {/* PERCENTAGE IMPACT DISPLAY */}
+              <div className="d-flex flex-column">
+                <span
+                  style={{ fontSize: "0.6rem", color: COLORS.infoTextColor }}
+                >
+                  PORTFOLIO_IMPACT
+                </span>
+                <div
+                  style={{
+                    fontSize: "1rem",
+                    fontWeight: "bold",
+                    color: COLORS.mainFontColor,
+                  }}
+                >
+                  {/* Shows current % -> projected % */}
+                  <span style={{ color: COLORS.secondaryTextColor }}>
+                    {currentPortfolioPct.toFixed(2)}%
+                  </span>
+                  <span
+                    style={{ margin: "0 8px", color: COLORS.infoTextColor }}
+                  >
+                    →
+                  </span>
                   <span
                     style={{
-                      fontSize: "0.7rem",
-                      color: COLORS.infoTextColor,
-                      fontFamily: "monospace",
+                      color:
+                        amount > 0 ? COLORS.green.button : COLORS.mainFontColor,
                     }}
                   >
-                    OPEN_POSITION:{" "}
-                    <span style={{ color: COLORS.mainFontColor }}>
-                      {currentShares ?? 0}
-                    </span>{" "}
-                    SHRS
+                    {targetPortfolioPct.toFixed(2)}%
                   </span>
                 </div>
+              </div>
+              <div className="d-flex flex-column">
+                <span
+                  style={{
+                    fontSize: "0.6rem",
+                    color: COLORS.infoTextColor,
+                    marginBottom: "4px",
+                  }}
+                >
+                  Total Position Value
+                </span>
+                <span
+                  style={{
+                    fontSize: "1rem",
+                    fontWeight: "bold",
+                    color:
+                      currentShares > 0
+                        ? COLORS.mainFontColor
+                        : COLORS.infoTextColor, // Dim the color if 0
+                  }}
+                >
+                  {currentShares > 0
+                    ? `$${(currentShares * latestMark).toFixed(2)}`
+                    : "$0.00"}
+                </span>
+              </div>
+              <div className="d-flex flex-column">
+                <span
+                  style={{
+                    fontSize: "0.6rem",
+                    color: COLORS.infoTextColor,
+                    marginBottom: "4px",
+                  }}
+                >
+                  Open Positions
+                </span>
+                <span
+                  style={{
+                    fontSize: "1rem",
+                    fontWeight: "bold",
+                    color: COLORS.mainFontColor,
+                  }}
+                >
+                  {currentShares ?? 0}
+                </span>
               </div>
 
               {/* Action Buttons */}
@@ -259,7 +394,7 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
                     amount <= 0
                   }
                 >
-                  OPEN_LONG
+                  BUY
                 </button>
                 <button
                   className="btn-sleek btn-sleek-red"
@@ -294,7 +429,7 @@ export const StockCard: React.FC<FixedStockCardProps> = ({
                     latestMark <= 0 || amount <= 0 || amount > currentShares
                   }
                 >
-                  CLOSE_POS
+                  SELL
                 </button>
                 <button
                   className="btn-sleek btn-sleek-red"

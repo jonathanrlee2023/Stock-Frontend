@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import SearchBar from "./SearchBar";
 import { TodayStockWSComponent } from "./TodayGraph";
 import { useStockContext } from "./Contexts/StockContext";
@@ -27,7 +27,7 @@ export const StockCard: React.FC<StockCardProps> = ({
   activePortfolio,
   activeStock,
 }) => {
-  const { ids, setIds, clientID, previousID, setPreviousID } = useWS();
+  const { ids, setIds, clientID, setPreviousID } = useWS();
   const [amount, setAmount] = useState<number>(0);
   const [dollarValue, setDollarValue] = useState<number>(0); // Cash
   const { stockPoints } = useStockContext();
@@ -40,11 +40,30 @@ export const StockCard: React.FC<StockCardProps> = ({
 
   const portfolioHistory = balancePoints[activePortfolio] || [];
   const currentShares = ids[activePortfolio]?.[activeStock] ?? 0;
-
+  const totalAccountValue =
+    portfolioHistory.length > 0
+      ? portfolioHistory[portfolioHistory.length - 1].Balance
+      : 0;
   const latestCash =
     portfolioHistory.length > 0
       ? portfolioHistory[portfolioHistory.length - 1].Cash
       : 0;
+  const [portfolioPercentage, setPortfolioPercentage] = useState<number>(
+    currentShares > 0
+      ? ((latestMark * currentShares) / totalAccountValue) * 100
+      : 0,
+  );
+  const currentPortfolioPct =
+    totalAccountValue > 0
+      ? ((currentShares * latestMark) / totalAccountValue) * 100
+      : 0;
+
+  // The CHANGE in percentage based on the current input values
+  const orderImpactPct =
+    totalAccountValue > 0 ? (dollarValue / totalAccountValue) * 100 : 0;
+
+  // Helper for the UI to show the "Target" state
+  const targetPortfolioPct = currentPortfolioPct + orderImpactPct;
 
   const ModifyTracker = async (action: string) => {
     let data: { id: string } = { id: "" };
@@ -71,9 +90,13 @@ export const StockCard: React.FC<StockCardProps> = ({
   };
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const val = Number(e.target.value);
+    const newDollars = val * latestMark;
     setAmount(val);
     // Calculate dollar value: Shares * Price
-    setDollarValue(Number((val * latestMark).toFixed(2)));
+    setDollarValue(Number(newDollars.toFixed(2)));
+    setPortfolioPercentage(
+      Number(((newDollars / totalAccountValue) * 100).toFixed(2)),
+    );
   };
 
   // Handler for Dollar changes
@@ -83,7 +106,42 @@ export const StockCard: React.FC<StockCardProps> = ({
     // Calculate shares: Cash / Price (Check for division by zero)
     const calculatedShares = latestMark > 0 ? val / latestMark : 0;
     setAmount(Number(calculatedShares.toFixed(5))); // High precision for shares
+    setPortfolioPercentage(
+      Number(((val / totalAccountValue) * 100).toFixed(2)),
+    );
   };
+
+  useEffect(() => {
+    setAmount(0);
+    setDollarValue(0);
+    setPortfolioPercentage(0);
+  }, [activeStock]);
+
+  const handlePortfolioPercentageChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    const targetPctChange = Number(e.target.value);
+    setPortfolioPercentage(targetPctChange);
+
+    // Calculate order size based on the desired % increase/decrease
+    const targetDollars = totalAccountValue * (targetPctChange / 100);
+    setDollarValue(Number(targetDollars.toFixed(2)));
+    setAmount(
+      latestMark > 0 ? Number((targetDollars / latestMark).toFixed(5)) : 0,
+    );
+  };
+
+  const isInteracting = useRef(false);
+  useEffect(() => {
+    // 3. PRICE SYNC: Only update siblings if user isn't actively changing them
+    if (!isInteracting.current && latestMark > 0) {
+      const newDollars = amount * latestMark;
+      setDollarValue(Number(newDollars.toFixed(2)));
+      setPortfolioPercentage(
+        Number(((newDollars / totalAccountValue) * 100).toFixed(2)),
+      );
+    }
+  }, [latestMark, totalAccountValue]);
   return (
     <div
       style={{
@@ -156,24 +214,43 @@ export const StockCard: React.FC<StockCardProps> = ({
             <div className="d-flex align-items-center gap-4">
               <div className="d-flex flex-column">
                 <span
-                  style={{
-                    fontSize: "0.6rem",
-                    color: COLORS.infoTextColor,
-                    marginBottom: "4px",
-                  }}
+                  style={{ fontSize: "0.6rem", color: COLORS.infoTextColor }}
                 >
-                  SHARES
+                  ORDER_SHARES
                 </span>
                 <input
                   className="search-bar"
                   type="number"
                   value={amount}
-                  min={0}
                   onChange={handleAmountChange}
+                  onFocus={() => (isInteracting.current = true)}
+                  onBlur={() => (isInteracting.current = false)}
                   style={{
                     width: "80px",
                     textAlign: "center",
-                    borderBottom: "1px solid " + COLORS.borderColor,
+                    borderBottom: `1px solid ${COLORS.borderColor}`,
+                  }}
+                />
+              </div>
+
+              {/* DOLLAR INPUT */}
+              <div className="d-flex flex-column">
+                <span
+                  style={{ fontSize: "0.6rem", color: COLORS.infoTextColor }}
+                >
+                  ORDER_VALUE
+                </span>
+                <input
+                  className="search-bar"
+                  type="number"
+                  value={dollarValue}
+                  onChange={handleDollarChange}
+                  onFocus={() => (isInteracting.current = true)}
+                  onBlur={() => (isInteracting.current = false)}
+                  style={{
+                    width: "100px",
+                    textAlign: "center",
+                    borderBottom: `1px solid ${COLORS.borderColor}`,
                   }}
                 />
               </div>
@@ -185,14 +262,16 @@ export const StockCard: React.FC<StockCardProps> = ({
                     marginBottom: "4px",
                   }}
                 >
-                  TOTAL_VAL
+                  ORDER_BY_%
                 </span>
                 <input
                   className="search-bar"
                   type="number"
-                  value={dollarValue}
-                  min={0}
-                  onChange={handleDollarChange}
+                  step="0.1" // Allows for fine-tuning like 1.5%
+                  value={portfolioPercentage}
+                  onFocus={() => (isInteracting.current = true)}
+                  onBlur={() => (isInteracting.current = false)}
+                  onChange={handlePortfolioPercentageChange} // <--- USE IT HERE
                   style={{
                     width: "100px",
                     textAlign: "center",
@@ -200,6 +279,40 @@ export const StockCard: React.FC<StockCardProps> = ({
                   }}
                 />
               </div>
+
+              {/* PERCENTAGE IMPACT DISPLAY */}
+              <div className="d-flex flex-column">
+                <span
+                  style={{ fontSize: "0.6rem", color: COLORS.infoTextColor }}
+                >
+                  PORTFOLIO_IMPACT
+                </span>
+                <div
+                  style={{
+                    fontSize: "1rem",
+                    fontWeight: "bold",
+                    color: COLORS.mainFontColor,
+                  }}
+                >
+                  {/* Shows current % -> projected % */}
+                  <span style={{ color: COLORS.secondaryTextColor }}>
+                    {currentPortfolioPct.toFixed(2)}%
+                  </span>
+                  <span
+                    style={{ margin: "0 8px", color: COLORS.infoTextColor }}
+                  >
+                    →
+                  </span>
+                  <span
+                    style={{
+                      color:
+                        amount > 0 ? COLORS.green.button : COLORS.mainFontColor,
+                    }}
+                  >
+                    {targetPortfolioPct.toFixed(2)}%
+                  </span>
+                </div>
+              </div>
               <div className="d-flex flex-column">
                 <span
                   style={{
@@ -208,7 +321,32 @@ export const StockCard: React.FC<StockCardProps> = ({
                     marginBottom: "4px",
                   }}
                 >
-                  OPEN_POS
+                  Total Position Value
+                </span>
+                <span
+                  style={{
+                    fontSize: "1rem",
+                    fontWeight: "bold",
+                    color:
+                      currentShares > 0
+                        ? COLORS.mainFontColor
+                        : COLORS.infoTextColor, // Dim the color if 0
+                  }}
+                >
+                  {currentShares > 0
+                    ? `$${(currentShares * latestMark).toFixed(2)}`
+                    : "$0.00"}
+                </span>
+              </div>
+              <div className="d-flex flex-column">
+                <span
+                  style={{
+                    fontSize: "0.6rem",
+                    color: COLORS.infoTextColor,
+                    marginBottom: "4px",
+                  }}
+                >
+                  Open Positions
                 </span>
                 <span
                   style={{
