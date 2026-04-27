@@ -4,6 +4,7 @@ import { useStockContext } from "./Contexts/StockContext";
 import { useOptionContext } from "./Contexts/OptionContext";
 import { useStreamActionsContext } from "./Contexts/StreamActionsContext";
 import { COLORS } from "../constants/Colors";
+import { ParseOptionId } from "./BackendCom";
 
 interface IdCardProps {
   setActiveID: (query: string) => void;
@@ -12,33 +13,6 @@ interface IdCardProps {
   defaultMessage: string;
   activePortfolio: number;
 }
-interface OptionParts {
-  ticker: string;
-  month: string;
-  day: string;
-  year: string;
-  type: string;
-  strike: string;
-}
-
-export const ParseOptionId = (optionId: string): OptionParts | null => {
-  if (optionId.length < 15) return null;
-
-  // [A-Z]+ captures only letters, \s* consumes the OCC padding separately
-  const regex = /^([A-Z]+)\s*(\d{2})(\d{2})(\d{2})([CP])(\d+)$/;
-  const match = optionId.trim().match(regex);
-
-  if (!match) return null;
-
-  return {
-    ticker: match[1], // "SPY" — no trailing spaces
-    year: match[2],
-    month: match[3],
-    day: match[4],
-    type: match[5],
-    strike: String(parseInt(match[6]) / 1000),
-  };
-};
 
 export const IdCards: React.FC<IdCardProps> = ({
   setActiveID,

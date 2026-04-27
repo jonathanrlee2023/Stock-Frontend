@@ -18,6 +18,8 @@ import { useStreamActionsContext } from "./Contexts/StreamActionsContext";
 import { verticalLinePlugin } from "./TodayGraph";
 import { formatFriendlyId } from "./OptionExpirationCards";
 import { COLORS } from "../constants/Colors";
+import { postData, formatOptionSymbol, ModifyTracker } from "./BackendCom";
+import exp from "constants";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -38,57 +40,6 @@ interface OptionWSProps {
   type: string;
   activePortfolio: number;
 }
-
-function formatOptionSymbol(
-  stock: string,
-  day: string,
-  month: string,
-  year: string,
-  type: string,
-  strike: string,
-): string {
-  const ticker = stock.toUpperCase().padEnd(6, " ");
-
-  const yy = year.length === 4 ? year.slice(2) : year;
-
-  const typeLetter = type.toUpperCase().startsWith("C") ? "C" : "P";
-
-  const strikeNum = parseFloat(strike);
-  const strikeStr = Math.round(strikeNum * 1000)
-    .toString()
-    .padStart(8, "0");
-
-  return `${ticker}${yy}${month.padStart(2, "0")}${day.padStart(2, "0")}${typeLetter}${strikeStr}`;
-}
-export const postData = async (
-  openOrClose: string,
-  ID: string,
-  price: number,
-  amount: number,
-  portfolio_id: number,
-  clientID: string,
-) => {
-  const data = { id: ID, price, amount, portfolio_id, client_id: clientID };
-
-  try {
-    const response = await fetch(`http://localhost:8080/${openOrClose}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const result = await response.text();
-    console.log("Server response:", result);
-  } catch (error) {
-    console.error("POST request failed:", error);
-  }
-};
 
 // 1. Derive a type of only the non‐symbol keys
 export type OptionMetric = Exclude<keyof OptionPoint, "symbol">;
@@ -115,38 +66,6 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
   const { pendingRequests, startOptionStream } = useStreamActionsContext();
   const { optionPoints } = useOptionContext();
   const { ids, setIds, setTrackers, clientID } = useWS();
-
-  const ModifyTracker = async (action: string) => {
-    let data: { id: string } = { id: "" };
-
-    data.id = formatOptionSymbol(
-      stockSymbol,
-      day,
-      month,
-      year,
-      type,
-      strikePrice,
-    );
-
-    try {
-      const response = await fetch(`http://localhost:8080/${action}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const result = await response.text();
-      console.log("Server response:", result);
-    } catch (error) {
-      console.error("POST request failed:", error);
-    }
-  };
 
   const expectedSymbol = formatOptionSymbol(
     stockSymbol,
@@ -365,7 +284,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           <button
             className="btn-sleek btn-outline"
             onClick={() => {
-              ModifyTracker("newTracker");
+              ModifyTracker("newTracker", expectedSymbol);
               setTrackers((prev) =>
                 prev.includes(expectedSymbol)
                   ? prev
@@ -379,7 +298,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
           <button
             className="btn-sleek btn-outline text-danger"
             onClick={() => {
-              ModifyTracker("closeTracker");
+              ModifyTracker("closeTracker", expectedSymbol);
               setTrackers((prev) =>
                 prev.filter((item) => item !== expectedSymbol),
               );
@@ -521,7 +440,7 @@ export const OptionWSComponent: React.FC<OptionWSProps> = ({
                 activePortfolio,
                 clientID,
               );
-              ModifyTracker("newTracker");
+              ModifyTracker("newTracker", expectedSymbol);
               setIds((prev) => ({
                 ...prev,
                 [expectedSymbol]:

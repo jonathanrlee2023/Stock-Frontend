@@ -3,13 +3,13 @@ import SearchBar from "./SearchBar";
 import { TodayStockWSComponent } from "./TodayGraph";
 import { useStockContext } from "./Contexts/StockContext";
 import { useBalanceContext } from "./Contexts/BalanceContext";
-import { useOptionContext } from "./Contexts/OptionContext";
 import {
   Position,
   useStreamActionsContext,
 } from "./Contexts/StreamActionsContext";
 import { useWS } from "./Contexts/WSContest";
 import { COLORS } from "../constants/Colors";
+import { ModifyTracker } from "./BackendCom";
 
 interface StockCardProps {
   setActiveCard: (query: string) => void;
@@ -65,29 +65,6 @@ export const StockToPortfolioCard: React.FC<StockCardProps> = ({
   // Helper for the UI to show the "Target" state
   const targetPortfolioPct = currentPortfolioPct + orderImpactPct;
 
-  const ModifyTracker = async (action: string) => {
-    let data: { id: string } = { id: "" };
-    data.id = activeStock || "";
-
-    try {
-      const response = await fetch(`http://localhost:8080/${action}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const result = await response.text();
-      console.log("Server response:", result);
-    } catch (error) {
-      console.error("POST request failed:", error);
-    }
-  };
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const val = Number(e.target.value);
     const newDollars = val * latestMark;
@@ -425,7 +402,7 @@ export const StockToPortfolioCard: React.FC<StockCardProps> = ({
                       },
                     };
                   });
-                  ModifyTracker("newTracker");
+                  ModifyTracker("newTracker", activeStock);
                   setActiveCard("newPortfolio");
                 }}
               >

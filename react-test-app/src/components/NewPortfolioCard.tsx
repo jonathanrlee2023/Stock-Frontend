@@ -3,6 +3,7 @@ import { Position } from "./Contexts/StreamActionsContext";
 import { useStockContext } from "./Contexts/StockContext";
 import { useWS } from "./Contexts/WSContest";
 import { COLORS } from "../constants/Colors";
+import { CreatePortfolio } from "./BackendCom";
 
 interface NewPortfolioCardProps {
   setActiveCard: (query: string) => void;
@@ -14,39 +15,6 @@ interface NewPortfolioCardProps {
   activePortfolio: number;
   tempPortfolioName: string;
 }
-
-const PostData = async (
-  PID: number,
-  name: string,
-  clientID: string,
-  positions: Position[],
-) => {
-  const data = {
-    id: PID,
-    name: name,
-    clientID: clientID,
-    positions: positions,
-  };
-
-  try {
-    const response = await fetch(`http://localhost:8080/newPortfolio`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const result = await response.text();
-    console.log("Server response:", result);
-  } catch (error) {
-    console.error("POST request failed:", error);
-  }
-};
 
 export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
   setActiveCard,
@@ -374,7 +342,7 @@ export const NewPortfolioCard: React.FC<NewPortfolioCardProps> = ({
           }}
           onClick={() => {
             const positionsArray = Object.values(newStocks);
-            PostData(
+            CreatePortfolio(
               activePortfolio,
               tempPortfolioName,
               clientID,

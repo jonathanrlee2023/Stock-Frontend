@@ -18,6 +18,12 @@ import { OptionMetric } from "./OptionGraph";
 import { verticalLinePlugin } from "./TodayGraph";
 import { formatFriendlyId } from "./OptionExpirationCards";
 import { COLORS } from "../constants/Colors";
+import {
+  postData,
+  formatOptionSymbol,
+  ParseOptionId,
+  ModifyTracker,
+} from "./BackendCom";
 
 ChartJS.register(
   CategoryScale,
@@ -34,36 +40,6 @@ interface FixedOptionWSProps {
   optionID: string;
   activePortfolio: number;
 }
-
-export const postData = async (
-  openOrClose: string,
-  ID: string,
-  price: number,
-  amount: number,
-  portfolio_id: number,
-  clientID: string,
-) => {
-  const data = { id: ID, price, amount, portfolio_id, client_id: clientID };
-
-  try {
-    const response = await fetch(`http://localhost:8080/${openOrClose}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const result = await response.text();
-    console.log("Server response:", result);
-  } catch (error) {
-    console.error("POST request failed:", error);
-  }
-};
 
 export const addNewTracker = async (ID: string) => {
   const data = {
@@ -90,34 +66,6 @@ export const addNewTracker = async (ID: string) => {
   }
 };
 
-const parseOptionId = (optionID: string) => {
-  // Use a regex that handles both padded spaces and underscores
-  // This version is safe for "NVDA  260218C00182500"
-  const regex = /^([A-Z]+)[_\s]*(\d{2})(\d{2})(\d{2})([CP])(\d+)$/;
-  const match = optionID.trim().match(regex);
-
-  if (!match) {
-    // Instead of throwing, return null to let the component handle the 'Empty' state
-    console.warn("Could not parse option ID:", optionID);
-    return null;
-  }
-
-  const [_, underlying, yy, mm, dd, type, strikeStr] = match;
-
-  const year = parseInt(yy, 10) + 2000;
-  const month = parseInt(mm, 10);
-  const day = parseInt(dd, 10);
-  const expiration = new Date(year, month - 1, day);
-  const strike = parseInt(strikeStr, 10) / 1000;
-
-  return {
-    underlying: underlying.trim(),
-    expiration,
-    type: type === "C" ? "Call" : "Put",
-    strike,
-  };
-};
-
 const METRICS: OptionMetric[] = [
   "Mark",
   "IV",
@@ -135,7 +83,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
   const { ids, setIds, setTrackers, clientID } = useWS();
 
   // Parse optionID once per render
-  const parsedData = React.useMemo(() => parseOptionId(optionID), [optionID]);
+  const parsedData = React.useMemo(() => ParseOptionId(optionID), [optionID]);
   if (!parsedData) {
     return (
       <div className="d-flex justify-content-center align-items-center h-100">
@@ -144,7 +92,8 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
     );
   }
 
-  const { underlying, expiration, type, strike } = parsedData;
+  const { ticker, year, month, day, type, strike } = parsedData;
+  const expiration = new Date(`${year}-${month}-${day}`);
 
   const now = new Date();
   const isExpired = expiration < now;
@@ -156,15 +105,6 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
   const [dataPoint, setDataPoint] = useState<OptionMetric>("Mark");
   const latestPoint = points.length > 0 ? points[points.length - 1] : null;
   const latestMark = latestPoint?.Mark ?? 0;
-
-  // For the graph label
-  const stockSymbol = underlying;
-  const strikePrice = strike;
-  const month = expiration.getMonth() + 1;
-  const day = expiration.getDate();
-  const year = expiration.getFullYear();
-
-  // (rest of your code...)
 
   const graphData = React.useMemo(() => {
     // Your logic here, unchanged
@@ -207,7 +147,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
     return {
       datasets: [
         {
-          label: `${stockSymbol} $${strikePrice} ${type} Expiring ${month}/${day}/${year}`,
+          label: `${ticker} $${strike} ${type} Expiring ${month}/${day}/${year}`,
           data: filteredPoints.map((p) => ({
             x: new Date(p.timestamp * 1000),
             y: p[dataPoint as keyof typeof p] as number,
@@ -218,7 +158,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
         },
       ],
     };
-  }, [points, stockSymbol, strikePrice, type, month, day, year, dataPoint]);
+  }, [points, ticker, strike, type, month, day, year, dataPoint]);
   const options = React.useMemo(() => {
     return {
       responsive: true,
@@ -292,70 +232,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
         },
       },
     };
-  }, [dataPoint, stockSymbol]);
-
-  const ModifyTracker = async (action: string) => {
-    let data: { id: string } = { id: "" };
-
-    data.id = formatOptionSymbol(
-      stockSymbol,
-      day,
-      month,
-      year,
-      type,
-      strikePrice,
-    );
-
-    try {
-      const response = await fetch(`http://localhost:8080/${action}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const result = await response.text();
-      console.log("Server response:", result);
-    } catch (error) {
-      console.error("POST request failed:", error);
-    }
-  };
-
-  function formatOptionSymbol(
-    stock: string,
-    day: number,
-    month: number,
-    year: number,
-    type: string,
-    strike: number,
-  ): string {
-    // 1. Format Year to YY (e.g., 2026 -> "26")
-    const yearStr = String(year);
-    const yy =
-      yearStr.length === 4 ? yearStr.slice(2) : yearStr.padStart(2, "0");
-
-    // 2. Pad Month and Day (e.g., 2 -> "02")
-    const mm = String(month).padStart(2, "0");
-    const dd = String(day).padStart(2, "0");
-
-    // 3. Format Type (Call/Put -> C/P)
-    const typeLetter = type.toUpperCase().startsWith("C") ? "C" : "P";
-
-    // 4. Format Strike (e.g., 182.5 -> 182500 -> "00182500")
-    const strikeStr = (strike * 1000).toFixed(0).padStart(8, "0");
-
-    // 5. Format Ticker with padding spaces (OCC standard)
-    // The ticker section is 6 characters long.
-    // "NVDA" becomes "NVDA  " (2 spaces)
-    const paddedStock = stock.toUpperCase().padEnd(6, " ");
-
-    return `${paddedStock}${yy}${mm}${dd}${typeLetter}${strikeStr}`;
-  }
+  }, [dataPoint, ticker]);
 
   return (
     <div
@@ -380,7 +257,7 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
         }}
       >
         <Line
-          key={stockSymbol}
+          key={ticker}
           options={options}
           data={graphData}
           plugins={[verticalLinePlugin]}
@@ -472,7 +349,10 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
                     activePortfolio,
                     clientID,
                   );
-                  ModifyTracker("newTracker");
+                  ModifyTracker(
+                    "newTracker",
+                    formatOptionSymbol(ticker, day, month, year, type, strike),
+                  );
                   setIds((prev) => {
                     const nextState = { ...prev };
 
@@ -564,14 +444,17 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
                 borderColor: COLORS.borderColor,
               }}
               onClick={() => {
-                ModifyTracker("newTracker");
+                ModifyTracker(
+                  "newTracker",
+                  formatOptionSymbol(ticker, day, month, year, type, strike),
+                );
                 const symbol = formatOptionSymbol(
-                  stockSymbol,
+                  ticker,
                   day,
                   month,
                   year,
                   type,
-                  strikePrice,
+                  strike,
                 );
                 setTrackers((prev) =>
                   prev.includes(symbol) ? prev : [...prev, symbol],
@@ -584,14 +467,17 @@ export const FixedOptionWSComponent: React.FC<FixedOptionWSProps> = ({
             <button
               className="btn-sleek"
               onClick={() => {
-                ModifyTracker("closeTracker");
+                ModifyTracker(
+                  "closeTracker",
+                  formatOptionSymbol(ticker, day, month, year, type, strike),
+                );
                 const symbol = formatOptionSymbol(
-                  stockSymbol,
+                  ticker,
                   day,
                   month,
                   year,
                   type,
-                  strikePrice,
+                  strike,
                 );
                 setTrackers((prev) => prev.filter((item) => item !== symbol));
               }}

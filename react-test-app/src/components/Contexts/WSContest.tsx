@@ -53,8 +53,9 @@ export const WSProvider = ({ children, clientID }: Props): JSX.Element => {
   >({});
   const [previousCard, setPreviousCard] = useState<string>("");
   const [previousID, setPreviousID] = useState<string>("");
-  const [portfolioNames, setPortfolioNames] =
-    useState<Record<number, string>>("");
+  const [portfolioNames, setPortfolioNames] = useState<Record<number, string>>(
+    {},
+  );
 
   const { updateBalancePoint, updateNews } = useBalanceContext();
   const { updateCompanyStats } = useCompanyContext();
